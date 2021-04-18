@@ -71,14 +71,23 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 #  POSTRESQL
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': config('DB_NAME'),
+#         'USER': config('DB_USER'),
+#         'PASSWORD': config('DB_PASSWORD'),
+#         'HOST': config('DB_HOST'),
+#         'PORT': config('DB_PORT'),
+#     }
+# }
+
+# SQLITE
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'sqlite3.db',
     }
 }
 
@@ -141,6 +150,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Default Admin Account
+DEFAULT_ADMIN_USERNAME = config('ADMIN_USERNAME', 'admin')
 DEFAULT_ADMIN_EMAIL = config('ADMIN_EMAIL')
 DEFAULT_ADMIN_PHONE_NUMBER = config('ADMIN_PHONE_NUMBER')
 DEFAULT_ADMIN_PASSWORD = config('ADMIN_PASSWORD')
