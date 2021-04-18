@@ -247,3 +247,8 @@ deploy_key
 celerybeat.pid
 *.db
 
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
