@@ -73,12 +73,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
-        'PORT': '',
+        'PORT': config('DB_PORT'),
     }
 }
 
@@ -152,15 +152,6 @@ DEFAULT_ADMIN_LAST_NAME = config('ADMIN_LAST_NAME', '')
 PROJECT_NAME = 'Dukka API'
 
 
-# Celery
-CELERY_BROKER_URL = config('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = config('CELERY_BROKER_URL')
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-
-
 # Django Phonenumber Field
 PHONENUMBER_DEFAULT_REGION = 'NG'
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
@@ -168,7 +159,3 @@ PHONENUMBER_DB_FORMAT = 'NATIONAL'
 
 # Start-up fixtures
 FIXTURES = []
-
-
-# Environment
-ENVIRONMENT = config('ENVIRONMENT')

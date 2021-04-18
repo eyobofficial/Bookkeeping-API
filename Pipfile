@@ -34,6 +34,7 @@ django-guardian = "*"
 djangorestframework-jwt = "*"
 djangorestframework-simplejwt = "*"
 django-rest-auth = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.8"

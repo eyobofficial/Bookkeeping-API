@@ -4,3 +4,4 @@ from decouple import Csv
 
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+ENVIRONMENT = 'testing'

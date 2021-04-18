@@ -30,3 +30,4 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Update Admin Site Title
 admin.site.site_header = admin.site.site_title = settings.PROJECT_NAME
+admin.site.enable_nav_sidebar = False
