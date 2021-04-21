@@ -117,8 +117,8 @@ USE_TZ = True
 
 # Authentications
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'accounts.backends.PhoneNumberBackend'
+    'accounts.backends.phonebackend.PhoneNumberBackend',
+    'accounts.backends.emailbackend.EmailBackend',
 ]
 
 
@@ -131,7 +131,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Default Admin Account
-DEFAULT_ADMIN_USERNAME = config('ADMIN_USERNAME', 'admin')
 DEFAULT_ADMIN_EMAIL = config('ADMIN_EMAIL')
 DEFAULT_ADMIN_PHONE_NUMBER = config('ADMIN_PHONE_NUMBER')
 DEFAULT_ADMIN_PASSWORD = config('ADMIN_PASSWORD')

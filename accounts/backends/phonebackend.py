@@ -2,6 +2,7 @@ import phonenumbers
 
 from phonenumbers.phonenumberutil import NumberParseException
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 
@@ -16,7 +17,10 @@ class PhoneNumberBackend(ModelBackend):
 
     def authenticate(self, request, username=None, password=None):
         try:
-            number = phonenumbers.parse(username, 'ET')
+            number = phonenumbers.parse(
+                username,
+                settings.PHONENUMBER_DEFAULT_REGION
+            )
             if not phonenumbers.is_valid_number(number):
                 return
             try:

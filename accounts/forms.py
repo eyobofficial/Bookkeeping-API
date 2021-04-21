@@ -1,5 +1,6 @@
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django import forms
+from django.conf import settings
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from phonenumber_field.formfields import PhoneNumberField
 
@@ -8,13 +9,12 @@ from .models import CustomUser
 
 class CustomUserCreationForm(UserCreationForm):
     phone_number = PhoneNumberField(
-        required=False,
-        empty_value=None,
-        region='ET',
+        region=settings.PHONENUMBER_DEFAULT_REGION,
         error_messages={
-            'invalid': 'Enter a valid mobile phone number (e.g. 0911427805)'
+            'invalid': 'Enter a valid phone number.'
         }
     )
+    email = forms.EmailField(required=False, empty_value=None)
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
@@ -22,7 +22,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
-    phone_number = PhoneNumberField(required=False, empty_value=None)
+    email = forms.EmailField(required=False, empty_value=None)
 
     class Meta(UserChangeForm.Meta):
         model = CustomUser
@@ -39,11 +39,9 @@ class UserRegistrationForm(CustomUserCreationForm):
 
 class ProfileUpdateForm(forms.ModelForm):
     phone_number = PhoneNumberField(
-        required=False,
-        empty_value=None,
-        region='ET',
+        region=settings.PHONENUMBER_DEFAULT_REGION,
         error_messages={
-            'invalid': 'Enter a valid mobile phone number (e.g. 0911427805)'
+            'invalid': 'Enter a valid phone number.'
         }
     )
 
