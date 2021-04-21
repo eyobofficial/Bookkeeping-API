@@ -1,5 +1,4 @@
 from .base import *
-from decouple import Csv
 
 
 DEBUG = True

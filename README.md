@@ -5,7 +5,7 @@
 
 ## Requirements
 - Python 3.8
-- Pipenv
+- virtualenv
 - PostgreSQL
 - Redis
 
@@ -21,4 +21,3 @@
 ## DevOps Tools
 - Travis CI
 - Docker
-- Nginx

@@ -6,10 +6,6 @@
 echo 'Update server...'
 sudo apt-get update -y && sudo apt-get upgrade -y
 
-# Install MYSQL and Python
-echo 'Installing MYSQL...'
-sudo apt-get install mysql-server -y
-
 # Install Python
 echo 'Installing Python...'
 sudo apt-get install -y python3.8-dev \
@@ -18,7 +14,3 @@ sudo apt-get install -y python3.8-dev \
                      libpython3.8-dev \
                      nginx \
                      curl
-
-# Install Pipenv
-echo 'Install Pipenv...'
-pip3 install pipenv --user

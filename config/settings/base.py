@@ -1,5 +1,5 @@
 import os
-from decouple import config
+from decouple import config, Csv
 from environ import Path
 
 
@@ -29,6 +29,7 @@ INSTALLED_APPS += [
     'django_celery_beat',
     'django_celery_results',
     'phonenumber_field',
+    'storages',
 ]
 
 
@@ -69,25 +70,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+
 #  POSTRESQL
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': config('DB_NAME'),
-#         'USER': config('DB_USER'),
-#         'PASSWORD': config('DB_PASSWORD'),
-#         'HOST': config('DB_HOST'),
-#         'PORT': config('DB_PORT'),
-#     }
-# }
-
-# SQLITE
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'sqlite3.db',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': config('RDS_DB_NAME'),
+        'USER': config('RDS_USERNAME'),
+        'PASSWORD': config('RDS_PASSWORD'),
+        'HOST': config('RDS_HOSTNAME'),
+        'PORT': config('RDS_PORT'),
     }
 }
 
@@ -120,18 +113,6 @@ TIME_ZONE = 'Africa/Lagos'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-
-# Media
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
 
 # Authentications
