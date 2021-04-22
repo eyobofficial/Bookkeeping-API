@@ -28,7 +28,7 @@ class CustomUser(AbstractUser):
         default_related_name = 'users'
 
     def __str__(self):
-        return str(self.phone_number)
+        return self.phone_number.as_e164
 
     @property
     def full_name(self):
