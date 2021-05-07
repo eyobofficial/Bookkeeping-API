@@ -12,8 +12,9 @@ from drf_yasg.utils import swagger_auto_schema
 
 from accounts.utils.jwthandler import jwt_response_payload_handler
 from .serializers import UserSerializer, LoginSerializer, UserResponseSerializer, \
-    ValidEmailSerialzier, ValidPhoneNumberSerialzier
+    ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer
 from .sms.otp import OTPSMS
+from .permissions import IsAccountOwner
 
 
 User = get_user_model()
@@ -59,7 +60,7 @@ class LoginAPIView(GenericAPIView):
 
         },
         operation_id='user-login',
-        tags=['User Login']
+        tags=['Accounts']
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -106,7 +107,7 @@ class LoginAPIView(GenericAPIView):
             ),
         },
         operation_id='user-registration',
-        tags=['User Registration']
+        tags=['Accounts']
     )
 )
 class UserRegistrationAPIView(CreateAPIView):
@@ -134,7 +135,7 @@ class EmailValidatorAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='validate-email',
         operation_summary='Validate Email',
-        tags=['Email Validation'],
+        tags=['Accounts'],
         responses={
             '200': ValidEmailSerialzier(),
             '400': openapi.Response(
@@ -178,7 +179,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='validate-phone-number',
         operation_summary='Validate Phone Number',
-        tags=['Phone Number Validation'],
+        tags=['Accounts'],
         responses={
             '200': ValidPhoneNumberSerialzier(),
             '400': openapi.Response(
@@ -224,12 +225,58 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class PasswordChangeView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = PasswordChangeSerializer
+    permission_classes = [IsAccountOwner]
 
+    @swagger_auto_schema(
+        operation_id='change-password',
+        operation_summary='Change User Password',
+        tags=['Accounts'],
+        responses={
+            '200': openapi.Response(
+                description='Password Changed Successfully',
+                examples={
+                    'application/json': {
+                        'message': 'Password changed successfully.'
+                    }
+                }
+
+            ),
+            '400': openapi.Response(
+                description='Wrong Old Password',
+                examples={
+                    'application/json': {
+                        'old_password': ['wrong password.']
+                    }
+                }
+
+            ),
+        },
+        operation_description='''
+        **Endpoint URI**: `POST /accounts/change-password/`
+
+        Let authenticated users change their old password.
+        '''
+    )
     def post(self, request, *args, **kwargs):
         user = request.user
-
-        password1 = request.data.get('password1')
-        password2 = request.data.get('password1')
+        serializer = self.get_serializer(
+            context={'user': user},
+            data=request.data
+        )
+        if serializer.is_valid():
+            old_password = serializer.validated_data['old_password']
+            new_password = serializer.validated_data['new_password']
+            if user.check_password(old_password):
+                user.set_password(new_password)
+                user.save()
+                response_data = {'message': 'Password changed successfully.'}
+                return Response(response_data)
+            else:
+                response_data = {
+                    'old_password': ['Wrong password.']
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

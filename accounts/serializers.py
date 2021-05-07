@@ -1,11 +1,12 @@
 from random import randint
 
 from django.conf import settings
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model, authenticate, \
+    password_validation
 
+from allauth.account.adapter import get_adapter
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from allauth.account.adapter import get_adapter
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .fields import CustomPhoneNumberField
@@ -16,7 +17,10 @@ User = get_user_model()
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=100, help_text='Phone number or email', )
+    username = serializers.CharField(
+        max_length=100,
+        help_text='Phone number or email'
+    )
     password = serializers.CharField(
         max_length=120,
         write_only=True,
@@ -112,3 +116,14 @@ class UserResponseSerializer(UserSerializer):
             'id', 'phone_number', 'email',
             'first_name', 'last_name', 'is_active', 'tokens'
         )
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(
+        max_length=120, write_only=True,
+        style={'input_type': 'password'}
+    )
+    new_password = serializers.CharField(
+        max_length=120, write_only=True,
+        style={'input_type': 'password'}
+    )
