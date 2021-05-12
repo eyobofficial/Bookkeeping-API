@@ -4,10 +4,11 @@ from django.utils.decorators import method_decorator
 from django.core.validators import EmailValidator, ValidationError
 
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView, \
+    RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -130,7 +131,7 @@ class EmailValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='validate-email',
-        operation_summary='Validate email',
+        operation_summary='Validate Email',
         tags=['Accounts'],
         responses={
             '200': ValidEmailSerialzier(),
@@ -174,7 +175,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='validate-phone-number',
-        operation_summary='Validate phone number',
+        operation_summary='Validate Phone Number',
         tags=['Accounts'],
         responses={
             '200': ValidPhoneNumberSerialzier(),

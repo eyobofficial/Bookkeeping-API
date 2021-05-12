@@ -9,11 +9,14 @@ from django.utils.translation import gettext_lazy as _
 from allauth.account.adapter import get_adapter
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+
+from allauth.account.adapter import get_adapter
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
 from .fields import CustomPhoneNumberField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException
+from .models import Profile, Setting
 
 
 User = get_user_model()
@@ -78,6 +81,20 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         fields = ['phone_number', 'email', 'password']
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
+
+class SettingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Setting
+        fields = '__all__'
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=100, write_only=True)
     last_name = serializers.CharField(max_length=100, write_only=True)
@@ -94,12 +111,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     is_active = serializers.BooleanField(read_only=True)
     tokens = serializers.SerializerMethodField()
+    profile = ProfileSerializer(read_only=True)
+    settings = SettingSerializer(read_only=True)
 
     class Meta:
         model = User
         fields = (
-            'id', 'phone_number', 'email',
-            'password', 'first_name', 'last_name', 'is_active', 'tokens'
+            'id', 'phone_number', 'email', 'password',
+            'first_name', 'last_name', 'is_active',
+            'tokens', 'profile', 'settings'
         )
 
     def validate_password(self, password):
@@ -135,11 +155,35 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.save()
 
         # User Profile
-        # user.profile.first_name = first_name
-        # user.profile.last_name = last_name
-        # user.profile.save()
+        user.profile.first_name = first_name
+        user.profile.last_name = last_name
+        user.profile.save()
 
         return user
+
+
+class TokenResponseSerializer(serializers.Serializer):
+    access = serializers.ReadOnlyField()
+    refresh = serializers.ReadOnlyField()
+
+
+class UserResponseSerializer(UserRegistrationSerializer):
+    """
+    Read-only representation of the `User` model
+    in a successful response.
+    """
+    tokens = TokenResponseSerializer(read_only=True)
+    profile = ProfileSerializer(read_only=True)
+    settings = SettingSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'phone_number', 'email',
+            'first_name', 'last_name', 'is_active', 'tokens',
+            'profile', 'settings'
+        )
+
 
 
 class PasswordChangeSerializer(serializers.Serializer):

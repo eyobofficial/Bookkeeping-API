@@ -1,7 +1,6 @@
 from django.urls import path, include
 
 from drf_yasg.utils import swagger_auto_schema
-from dj_rest_auth.views import UserDetailsView as UserDetailAPIView, LoginView
 
 from .views import LoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
@@ -12,7 +11,6 @@ app_name = 'accounts'
 
 
 urlpatterns = [
-    path('user/', UserDetailAPIView.as_view(), name='user-detail'),
     path('register/', UserRegistrationAPIView.as_view(), name='register'),
     path('login/', LoginAPIView.as_view(), name='login'),
     path(

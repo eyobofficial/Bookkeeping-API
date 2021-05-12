@@ -40,6 +40,7 @@ django-rest-auth==0.9.5
 django-storages==1.11.1
 django-timezone-field==4.1.2
 djangorestframework==3.12.2
+djangorestframework-camel-case==1.2.0
 djangorestframework-jwt==1.11.0
 djangorestframework-simplejwt==4.6.0
 docker==4.4.4
@@ -71,6 +72,7 @@ pathspec==0.5.9
 pexpect==4.8.0
 phonenumbers==8.12.20
 pickleshare==0.7.5
+Pillow==8.2.0
 prompt-toolkit==3.0.17
 psycopg2-binary==2.8.6
 ptyprocess==0.7.0

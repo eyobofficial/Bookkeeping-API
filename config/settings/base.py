@@ -41,7 +41,7 @@ INSTALLED_APPS += [
 # Project apps
 INSTALLED_APPS += [
     'accounts.apps.AccountsConfig',
-    'shared.apps.SharedConfig'
+    'shared.apps.SharedConfig',
 ]
 
 MIDDLEWARE = [
@@ -139,8 +139,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 DEFAULT_ADMIN_EMAIL = config('ADMIN_EMAIL')
 DEFAULT_ADMIN_PHONE_NUMBER = config('ADMIN_PHONE_NUMBER')
 DEFAULT_ADMIN_PASSWORD = config('ADMIN_PASSWORD')
-DEFAULT_ADMIN_FIRST_NAME = config('ADMIN_FIRST_NAME', '')
-DEFAULT_ADMIN_LAST_NAME = config('ADMIN_LAST_NAME', '')
+DEFAULT_ADMIN_FIRST_NAME = config('ADMIN_FIRST_NAME', 'Admin')
+DEFAULT_ADMIN_LAST_NAME = config('ADMIN_LAST_NAME', 'User')
 
 
 # Project Name
