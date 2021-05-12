@@ -15,12 +15,11 @@ class CustomUserAdmin(UserAdmin):
     )
     list_filter = ('is_active', 'is_staff', 'is_superuser')
     filter_horizontal = ('user_permissions', 'groups')
-    search_fields = ('email', 'phone_number', 'first_name', 'last_name')
+    search_fields = ('email', 'phone_number')
     fieldsets = (
         (None,
             {'fields': ('phone_number', 'email', 'password')}
         ),
-        ('Personal info', {'fields': ('first_name', 'last_name')}),
         ('Permissions',
             {
                 'fields': (

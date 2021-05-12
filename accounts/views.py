@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.password_validation import validate_password
 from django.utils.decorators import method_decorator
 from django.core.validators import EmailValidator, ValidationError
 
@@ -6,13 +7,18 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenVerifyView, \
+    TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from accounts.utils.jwthandler import jwt_response_payload_handler
-from .serializers import UserSerializer, LoginSerializer, UserResponseSerializer, \
-    ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer
+from accounts.schema.serializers import UserResponseSerializer
+from .serializers import UserRegistrationSerializer, LoginSerializer, \
+    ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
+    TokenVerifySerializer
 from .sms.otp import OTPSMS
 from .permissions import IsAccountOwner
 
@@ -39,12 +45,12 @@ class LoginAPIView(GenericAPIView):
             It is used to access restricted resources in subsequent requests. \
             When attempting to perform any HTTP actions on a restricted \
             resource, the access token must be sent in the `Authorization` \
-            header of the request. The access token expires after 5 minutes.
+            header of the request. The access token expires after 60 minutes.
 
             #### 2. Refresh Token
             When the access token expires after 5 minutes, the refresh token \
             should be used get new access token. The refresh token expires in \
-            30 days.
+            90 days.
         ''',
         responses={
             200: UserResponseSerializer(),
@@ -65,22 +71,18 @@ class LoginAPIView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
-            password = serializer.validated_data['password']
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                token = RefreshToken.for_user(user)
-                data = {
-                    'refresh': str(token),
-                    'access': str(token.access_token)
-                }
-                return Response(data, status=status.HTTP_200_OK)
-            return Response(
-                {'detail': 'Wrong Username or Password'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+            user = serializer.validated_data['user']
+            serializer = UserRegistrationSerializer(user)
+            token = RefreshToken.for_user(user)
+            data = serializer.data
+            data['tokens'] = {
+                'refresh': str(token),
+                'access': str(token.access_token)
+            }
+            return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @method_decorator(
     name='post',
@@ -112,21 +114,15 @@ class LoginAPIView(GenericAPIView):
 )
 class UserRegistrationAPIView(CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
         # Validate serialized data
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        # Create new user
         user = serializer.save()
-
-        # Generate access & refresh token
-        token = RefreshToken.for_user(user)
-        data = jwt_response_payload_handler(token, user, request)
         headers = self.get_success_headers(serializer.data)
-        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class EmailValidatorAPIView(GenericAPIView):
@@ -134,7 +130,7 @@ class EmailValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='validate-email',
-        operation_summary='Validate Email',
+        operation_summary='Validate email',
         tags=['Accounts'],
         responses={
             '200': ValidEmailSerialzier(),
@@ -178,7 +174,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='validate-phone-number',
-        operation_summary='Validate Phone Number',
+        operation_summary='Validate phone number',
         tags=['Accounts'],
         responses={
             '200': ValidPhoneNumberSerialzier(),
@@ -232,23 +228,28 @@ class PasswordChangeView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='change-password',
-        operation_summary='Change User Password',
+        operation_summary='Change user password',
         tags=['Accounts'],
         responses={
             '200': openapi.Response(
-                description='Password Changed Successfully',
+                description='Password Changed Successfully.',
                 examples={
                     'application/json': {
-                        'message': 'Password changed successfully.'
+                        'detail': 'Password changed successfully.'
                     }
                 }
 
             ),
             '400': openapi.Response(
-                description='Wrong Old Password',
+                description='Validation Errors',
                 examples={
                     'application/json': {
-                        'old_password': ['wrong password.']
+                        'new_password': [
+                            ('This password is too short. '
+                            'It must contain at least 8 characters.'),
+                            'This password is too common.'
+                        ],
+                        'old_password': ['Wrong old password.']
                     }
                 }
 
@@ -267,16 +268,80 @@ class PasswordChangeView(GenericAPIView):
             data=request.data
         )
         if serializer.is_valid():
-            old_password = serializer.validated_data['old_password']
-            new_password = serializer.validated_data['new_password']
-            if user.check_password(old_password):
-                user.set_password(new_password)
-                user.save()
-                response_data = {'message': 'Password changed successfully.'}
-                return Response(response_data)
-            else:
-                response_data = {
-                    'old_password': ['Wrong password.']
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            response = {'detail': 'Password changed successfully.'}
+            return Response(response)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CustomTokenVerifyView(TokenVerifyView):
+    serializer_class = TokenVerifySerializer
+
+    @swagger_auto_schema(
+        operation_summary='Verify JWT Access Token',
+        operation_description='''
+        **Endpoint URI:** `/accounts/token/verify/`
+
+        Check if access token is valid and not expired.
+        ''',
+        responses={
+            200: openapi.Response(
+                description='Success',
+                examples={
+                    'application/json': {
+                        'detail': 'Token is valid'
+                    }
+                }
+
+            ),
+            401: openapi.Response(
+                description='Unauthorized',
+                examples={
+                    'application/json': {
+                        'code': 'token_not_valid',
+                        'detail': 'Token is invalid or expired.'
+                    }
+                }
+
+            ),
+        },
+        tags=['Accounts']
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+
+    @swagger_auto_schema(
+        operation_summary='Refresh JWT Access Token',
+        operation_description='''
+        **Endpoint URI:** `/accounts/token/refresh/`
+        ''',
+        responses={
+            200: openapi.Response(
+                description='Success',
+                examples={
+                    'application/json': {
+                        'access': 'string'
+                    }
+                }
+
+            ),
+            401: openapi.Response(
+                description='Unauthorized',
+                examples={
+                    'application/json': {
+                        'code': 'token_not_valid',
+                        'detail': 'Token is invalid or expired.'
+                    }
+                }
+
+            ),
+        },
+        tags=['Accounts']
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)

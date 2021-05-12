@@ -33,10 +33,7 @@ INSTALLED_APPS += [
     'django_celery_results',
     'phonenumber_field',
     'storages',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'rest_auth',
+    'dj_rest_auth',
     'drf_yasg',
 ]
 
@@ -170,11 +167,25 @@ SITE_ID = 1
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication'
     ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+        'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'djangorestframework_camel_case.parser.CamelCaseFormParser',
+        'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
+        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    ),
 }
+
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'dukka-auth'
+JWT_AUTH_REFRESH_COOKIE = 'dukka-refresh-token'
+JWT_AUTH_RETURN_EXPIRATION = True
 
 
 # All Auth
@@ -186,8 +197,8 @@ ACCOUNT_AUTHENTICATION_METHOD = 'phone_number'
 # Simple JWT
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,

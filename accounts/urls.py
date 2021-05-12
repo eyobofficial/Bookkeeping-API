@@ -1,17 +1,18 @@
 from django.urls import path, include
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from drf_yasg.utils import swagger_auto_schema
+from dj_rest_auth.views import UserDetailsView as UserDetailAPIView, LoginView
 
-from rest_auth.views import UserDetailsView
-
-from .views import UserRegistrationAPIView, EmailValidatorAPIView, \
-    PhoneNumberValidatorAPIView, LoginAPIView, PasswordChangeView
+from .views import LoginAPIView, UserRegistrationAPIView, \
+    EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
+    CustomTokenRefreshView, CustomTokenVerifyView
 
 
 app_name = 'accounts'
 
 
 urlpatterns = [
+    path('user/', UserDetailAPIView.as_view(), name='user-detail'),
     path('register/', UserRegistrationAPIView.as_view(), name='register'),
     path('login/', LoginAPIView.as_view(), name='login'),
     path(
@@ -24,11 +25,12 @@ urlpatterns = [
         PhoneNumberValidatorAPIView.as_view(),
         name='validate-phone-number'
     ),
-    path('users/me/', UserDetailsView.as_view(), name='user'),
     path(
         'change-password/',
         PasswordChangeView.as_view(),
         name='change-password'
-    )
-    # path('', include('rest_auth.urls')),
+    ),
+    path('token/verify/', CustomTokenVerifyView.as_view(), name='token-verify'),
+    path('token/refresh/', CustomTokenRefreshView.as_view(), name='token-refresh'),
 ]
+

@@ -1,4 +1,4 @@
-from accounts.serializers import UserSerializer
+from accounts.serializers import UserRegistrationSerializer
 
 
 def jwt_response_payload_handler(token, user=None, request=None):

@@ -31,9 +31,12 @@ class Command(BaseCommand):
                     phone_number=phone_number,
                     password=password,
                 )
-                user.first_name = first_name
-                user.last_name = last_name
                 user.save()
+
+                user.profile.first_name = first_name
+                user.profile.last_name = last_name
+                user.profile.save()
+
                 self.stdout.write('Superuser is successfully created.')
         except IntegrityError as error:
             logger.warning("DB Error Thrown %s" % error)

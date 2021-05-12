@@ -18,6 +18,8 @@ class CustomUser(AbstractUser):
     phone_number = PhoneNumberField(unique=True)
 
     username = None
+    first_name = None
+    last_name = None
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['email']
