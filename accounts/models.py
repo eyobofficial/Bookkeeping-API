@@ -3,6 +3,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -14,7 +15,7 @@ class CustomUser(AbstractUser):
     Default custom user.
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    email = models.EmailField('email address', unique=True, null=True)
+    email = models.EmailField(_('email address'), unique=True, null=True)
     phone_number = PhoneNumberField(unique=True)
 
     username = None
@@ -53,11 +54,11 @@ class Profile(models.Model):
         null=True, blank=True
     )
     bio = models.TextField(blank=True)
-    updated_at = models.DateTimeField('last updated date', auto_now=True)
+    updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
     class Meta:
-        verbose_name = 'User Profile'
-        verbose_name_plural = 'User Profiles'
+        verbose_name = _('User Profile')
+        verbose_name_plural = _('User Profiles')
 
     def __str__(self):
         return f'{self.user.phone_number}'
@@ -68,13 +69,17 @@ class Setting(models.Model):
     User specific settings, configurations, and preferences.
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='settings'
+    )
     currency = models.CharField(max_length=30, blank=True)
-    updated_at = models.DateTimeField('last updated date', auto_now=True)
+    updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
     class Meta:
-        verbose_name = 'User Setting'
-        verbose_name_plural = 'User Settings'
+        verbose_name = _('User Setting')
+        verbose_name_plural = _('User Settings')
 
     def __str__(self):
         return f'{self.user.phone_number}'

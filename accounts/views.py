@@ -1,73 +1,59 @@
 from django.contrib.auth import get_user_model, authenticate
-from django.contrib.auth.password_validation import validate_password
 from django.utils.decorators import method_decorator
-from django.core.validators import EmailValidator, ValidationError
+from django.utils.translation import gettext_lazy as _
 
-from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView, \
-    RetrieveAPIView, ListAPIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework_simplejwt.tokens import RefreshToken
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenVerifyView, \
-    TokenRefreshView
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
-from accounts.utils.jwthandler import jwt_response_payload_handler
-from accounts.schema.serializers import UserResponseSerializer
+from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
+
+from accounts import schema as account_schema
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
-    TokenVerifySerializer
+    TokenVerifySerializer, UserResponseSerializer
 from .sms.otp import OTPSMS
 from .permissions import IsAccountOwner
 
 
 User = get_user_model()
 
-class LoginAPIView(GenericAPIView):
+
+class UserLoginAPIView(GenericAPIView):
+    """
+    Authenticate existing users using phone number or email and password.
+    On successful authentication, a JSON Web Token (JWT) is returned in the
+    response body.
+
+
+    **HTTP Request** <br />
+    `POST /accounts/login/`
+
+    **Request Body Parameters** <br />
+    - username (*phone number or email*)
+    - password
+
+    **Response Body** <br />
+    The response body returns the user data with *access* and *refresh* JWT
+    tokens. The access token is used to perform HTTP operations on restricted
+    resource. The refersh token is used to retrieve new access tokens when the
+    existing token expires.
+
+    **Token Expirations** <br />
+    - Access Token: 60 minutes
+    - Refresh Token: 90 days
+    """
     serializer_class = LoginSerializer
 
     @swagger_auto_schema(
-        operation_summary='Sign in existing user',
-        operation_description='''
-            **Endpoint URI:** `POST /accounts/login/`
-
-            The Dukka API uses JWT (JSON Web Token) for authenticating existing\
-            users. The authentication is peformed by sending a `username` and \
-            `password` fields via POST request. The `username` can either be \
-            the user's phone number or email address.
-
-            After a successful authentication, the user's account data and two \
-            types of JWT tokes are returned in the response. These tokens are:
-
-            #### 1. Access Token
-            It is used to access restricted resources in subsequent requests. \
-            When attempting to perform any HTTP actions on a restricted \
-            resource, the access token must be sent in the `Authorization` \
-            header of the request. The access token expires after 60 minutes.
-
-            #### 2. Refresh Token
-            When the access token expires after 5 minutes, the refresh token \
-            should be used get new access token. The refresh token expires in \
-            90 days.
-        ''',
+        operation_summary='User Login',
         responses={
             200: UserResponseSerializer(),
-            400: openapi.Response(
-                description='Incorrect username or password.',
-                examples={
-                    "application/json": {
-                        "detail": "Wrong username or password"
-                    }
-                }
-
-            )
-
+            400: account_schema.login_400_response
         },
         operation_id='user-login',
-        tags=['Accounts']
+        tags=['User Accounts']
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -88,123 +74,109 @@ class LoginAPIView(GenericAPIView):
 @method_decorator(
     name='post',
     decorator=swagger_auto_schema(
-        operation_summary='Register new user',
-        operation_description='''
-        **Endpoint URI:** `POST /accounts/register/`
-        ''',
+        operation_summary='User Registration',
         responses={
-            '201': UserResponseSerializer(),
-            '400': openapi.Response(
-                description='Validation Errors',
-                examples={
-                    'application/json': {
-                        'phone_number': ['Enter a valid phone number.'],
-                        'email': ['Enter a valid email address.'],
-                        'password': [
-                            'This password is too short.',
-                            'This password is too common.'
-                        ]
-                    }
-                }
-
-            ),
+            201: UserResponseSerializer(),
+            400: account_schema.registration_400_response
         },
         operation_id='user-registration',
-        tags=['Accounts']
+        tags=['User Accounts']
     )
 )
 class UserRegistrationAPIView(CreateAPIView):
+    """
+    **HTTP Request** <br />
+    `POST /accounts/register/`
+
+    **Request Body Parameters** <br />
+    - First Name
+    - Last Name
+    - Phone Number
+    - Email Address
+    - Password
+
+    **Response Body** <br />
+    The response body returns the new user data with *access* and *refresh* JWT
+    tokens. The access token is used to perform HTTP operations on restricted
+    resource. The refersh token is used to retrieve new access tokens when the
+    existing token expires.
+    """
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
-        # Validate serialized data
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
 
 class EmailValidatorAPIView(GenericAPIView):
+    """
+    Check submitted email is a valid email address and not registered
+    in the system.
+
+    **HTTP Request** <br />
+    `POST /accounts/email/validate/`
+
+    **Request Body Parameters** <br />
+    - Email
+
+    **Response Body** <br />
+    - Email
+    """
     serializer_class = ValidEmailSerialzier
 
     @swagger_auto_schema(
-        operation_id='validate-email',
-        operation_summary='Validate Email',
-        tags=['Accounts'],
+        operation_id='email-validation',
+        operation_summary='Email Validation',
+        tags=['User Accounts'],
         responses={
-            '200': ValidEmailSerialzier(),
-            '400': openapi.Response(
-                description='Invalid Email Address',
-                examples={
-                    'application/json': {
-                        'detail': 'Enter a valid email address.'
-                    }
-                }
-
-            ),
-            '409': openapi.Response(
-                description='Duplicate Email Address',
-                examples={
-                    'application/json': {
-                        'detail': 'The email address is already registered.'
-                    }
-                }
-
-            ),
-        },
-        operation_description='''
-        **Endpoint URI**: `POST /accounts/validate-email/`
-
-        Check whether the email is:
-        - Valid email address
-        - Unique (i.e. not registered yet)
-        '''
+            200: ValidEmailSerialzier(),
+            400: account_schema.email_validation_400_response,
+            409: account_schema.email_validation_409_response
+        }
     )
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             return Response(serializer.data)
-        error = {'detail': 'Enter a valid email address.'}
+        error = {'detail': _('Enter a valid email address.')}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PhoneNumberValidatorAPIView(GenericAPIView):
+    """
+    Check submitted phone number is a valid phone number and not registered
+    in the system.
+
+    **HTTP Request** <br />
+    `POST /accounts/phone/validate/`
+
+    **Request Body Parameters** <br />
+    - Phone Number
+
+    **Response Body** <br />
+    - Phone Number
+    - One-Time Password (OTP)
+    """
     serializer_class = ValidPhoneNumberSerialzier
 
     @swagger_auto_schema(
-        operation_id='validate-phone-number',
-        operation_summary='Validate Phone Number',
-        tags=['Accounts'],
+        operation_id='phone-number-validation',
+        operation_summary='Phone Number Validation',
+        tags=['User Accounts'],
         responses={
-            '200': ValidPhoneNumberSerialzier(),
-            '400': openapi.Response(
-                description='Invalid Phone Number',
-                examples={
-                    'application/json': {
-                        'detail': 'Enter a valid phone number.'
-                    }
-                }
-
-            ),
-            '409': openapi.Response(
-                description='Duplicate Phone Number',
-                examples={
-                    'application/json': {
-                        'detail': 'The phone number is already registered.'
-                    }
-                }
-
-            ),
+            200: ValidPhoneNumberSerialzier(),
+            400: account_schema.phone_validation_400_response,
+            409: account_schema.phone_validation_409_response
         },
-        operation_description='''
-        **Endpoint URI**: `POST /accounts/validate-phone-number/`
-
-        Check whether the phone number is:
-        - Valid phone number
-        - Unique (i.e. not registered yet)
-        '''
+        security=[]
     )
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -218,49 +190,33 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
             sms.send()
             return Response(serializer.data)
 
-        error = {'detail': 'Enter a valid phone number.'}
+        error = {'detail': _('Enter a valid phone number.')}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordChangeView(GenericAPIView):
+    """
+    Change password for authenticated users.
+
+    **HTTP Request** <br />
+    `POST /accounts/password/change/`
+
+    **Request Body Parameters** <br />
+    - Current Password
+    - New Password
+    """
     queryset = User.objects.filter(is_active=True)
     serializer_class = PasswordChangeSerializer
     permission_classes = [IsAccountOwner]
 
     @swagger_auto_schema(
         operation_id='change-password',
-        operation_summary='Change user password',
-        tags=['Accounts'],
+        operation_summary='Change Password',
+        tags=['User Accounts'],
         responses={
-            '200': openapi.Response(
-                description='Password Changed Successfully.',
-                examples={
-                    'application/json': {
-                        'detail': 'Password changed successfully.'
-                    }
-                }
-
-            ),
-            '400': openapi.Response(
-                description='Validation Errors',
-                examples={
-                    'application/json': {
-                        'new_password': [
-                            ('This password is too short. '
-                            'It must contain at least 8 characters.'),
-                            'This password is too common.'
-                        ],
-                        'old_password': ['Wrong old password.']
-                    }
-                }
-
-            ),
-        },
-        operation_description='''
-        **Endpoint URI**: `POST /accounts/change-password/`
-
-        Let authenticated users change their old password.
-        '''
+            200: account_schema.password_change_200_response,
+            400: account_schema.password_change_400_response
+        }
     )
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -270,79 +226,55 @@ class PasswordChangeView(GenericAPIView):
         )
         if serializer.is_valid():
             serializer.save()
-            response = {'detail': 'Password changed successfully.'}
+            response = {'detail': _('Password changed successfully.')}
             return Response(response)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class CustomTokenVerifyView(TokenVerifyView):
+    """
+    Verify access token is a valid JWT token and is not yet expired.
+
+    **HTTP Request** <br />
+    `POST /accounts/token/verify/`
+    """
     serializer_class = TokenVerifySerializer
 
     @swagger_auto_schema(
-        operation_summary='Verify JWT Access Token',
-        operation_description='''
-        **Endpoint URI:** `/accounts/token/verify/`
-
-        Check if access token is valid and not expired.
-        ''',
+        operation_id='token-validation',
+        operation_summary='Token Validation',
         responses={
-            200: openapi.Response(
-                description='Success',
-                examples={
-                    'application/json': {
-                        'detail': 'Token is valid'
-                    }
-                }
-
-            ),
-            401: openapi.Response(
-                description='Unauthorized',
-                examples={
-                    'application/json': {
-                        'code': 'token_not_valid',
-                        'detail': 'Token is invalid or expired.'
-                    }
-                }
-
-            ),
+            200: account_schema.token_validation_200_response,
+            401: account_schema.token_validation_401_response
         },
-        tags=['Accounts']
+        tags=['User Accounts']
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
 
-
 class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Retrieve new access token to replace an expired token.
+
+    **HTTP Request** <br />
+    `POST /accounts/token/refresh/`
+
+    **Request Body Parameters** <br />
+    - Refresh Token
+
+    **Response Body** <br />
+    - New Access Token
+    """
 
     @swagger_auto_schema(
-        operation_summary='Refresh JWT Access Token',
-        operation_description='''
-        **Endpoint URI:** `/accounts/token/refresh/`
-        ''',
+        operation_id='token-refresh',
+        operation_summary='Token Refresh',
         responses={
-            200: openapi.Response(
-                description='Success',
-                examples={
-                    'application/json': {
-                        'access': 'string'
-                    }
-                }
-
-            ),
-            401: openapi.Response(
-                description='Unauthorized',
-                examples={
-                    'application/json': {
-                        'code': 'token_not_valid',
-                        'detail': 'Token is invalid or expired.'
-                    }
-                }
-
-            ),
+            200: account_schema.token_refresh_200_response,
+            401: account_schema.token_refresh_401_response
         },
-        tags=['Accounts']
+        tags=['User Accounts']
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)

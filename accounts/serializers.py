@@ -9,9 +9,6 @@ from django.utils.translation import gettext_lazy as _
 from allauth.account.adapter import get_adapter
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
-from allauth.account.adapter import get_adapter
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
 from .fields import CustomPhoneNumberField
@@ -24,8 +21,8 @@ User = get_user_model()
 
 class LoginSerializer(serializers.Serializer):
     """
-    Custom serializer to log users with password and either
-    phone number or email.
+    Custom serializer to log users with phone number or email
+    and password.
     """
     username = serializers.CharField(help_text='Phone number or email')
     password = serializers.CharField(
@@ -38,16 +35,21 @@ class LoginSerializer(serializers.Serializer):
         password = validated_data.get('password')
         user = authenticate(username=username, password=password)
         if not user:
-            raise serializers.ValidationError('Wrong username or password.')
+            err_message = _('Wrong username or password.')
+            raise serializers.ValidationError(err_message)
 
         if not user.is_active:
-            raise serializers.ValidationError('User account is disabled.')
+            err_message = _('User account is disabled.')
+            raise serializers.ValidationError(err_message)
 
         validated_data['user'] = user
         return validated_data
 
 
 class ValidEmailSerialzier(serializers.Serializer):
+    """
+    Check email address for valid email format and non-duplication.
+    """
     email = serializers.EmailField()
 
     def validate_email(self, value):
@@ -58,6 +60,9 @@ class ValidEmailSerialzier(serializers.Serializer):
 
 
 class ValidPhoneNumberSerialzier(serializers.Serializer):
+    """
+    Check phone number for valid phone number format and non-duplication.
+    """
     phone_number = CustomPhoneNumberField()
     otp = serializers.SerializerMethodField()
 
@@ -74,14 +79,10 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
         return randint(100000, 999999)
 
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-
-    class Meta:
-        model = User
-        fields = ['phone_number', 'email', 'password']
-
-
 class ProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the user profile model.
+    """
 
     class Meta:
         model = Profile
@@ -89,6 +90,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class SettingSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the user setting model.
+    """
 
     class Meta:
         model = Setting
@@ -96,6 +100,9 @@ class SettingSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for registrating new users.
+    """
     first_name = serializers.CharField(max_length=100, write_only=True)
     last_name = serializers.CharField(max_length=100, write_only=True)
     password = serializers.CharField(
@@ -106,7 +113,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     phone_number = CustomPhoneNumberField(
         required=True,
         error_messages={
-            'invalid': 'Enter a valid phone number.'
+            'invalid': _('Enter a valid phone number.')
         }
     )
     is_active = serializers.BooleanField(read_only=True)
@@ -130,8 +137,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         Validate phone number is unique.
         """
         if User.objects.filter(phone_number=value).exists():
-            message = 'user with this phone number already exists.'
-            raise serializers.ValidationError(message)
+            err_message = _('user with this phone number already exists.')
+            raise serializers.ValidationError(err_message)
         return value
 
     def get_tokens(self, obj):
@@ -163,14 +170,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class TokenResponseSerializer(serializers.Serializer):
+    """
+    A read-only representation of the token response for including
+    in the API documentation.
+    """
     access = serializers.ReadOnlyField()
     refresh = serializers.ReadOnlyField()
 
 
 class UserResponseSerializer(UserRegistrationSerializer):
     """
-    Read-only representation of the `User` model
-    in a successful response.
+    Read-only representation of the `User` model in a successful response.
     """
     tokens = TokenResponseSerializer(read_only=True)
     profile = ProfileSerializer(read_only=True)
@@ -179,15 +189,16 @@ class UserResponseSerializer(UserRegistrationSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'phone_number', 'email',
-            'first_name', 'last_name', 'is_active', 'tokens',
+            'id', 'phone_number', 'email', 'is_active', 'tokens',
             'profile', 'settings'
         )
 
 
-
 class PasswordChangeSerializer(serializers.Serializer):
-    old_password = serializers.CharField(
+    """
+    Serializer for changing user password.
+    """
+    current_password = serializers.CharField(
         max_length=120, write_only=True,
         style={'input_type': 'password'}
     )
@@ -196,10 +207,11 @@ class PasswordChangeSerializer(serializers.Serializer):
         style={'input_type': 'password'}
     )
 
-    def validate_old_password(self, value, *args, **kwargs):
+    def validate_current_password(self, value, *args, **kwargs):
         user = self.context.get('user')
         if not user.check_password(value):
-            raise serializers.ValidationError('Wrong old password.')
+            err_message = _('Wrong current password.')
+            raise serializers.ValidationError(err_message)
         return value
 
     def validate_new_password(self, value, *args, **kwargs):
@@ -218,6 +230,12 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 
 class TokenVerifySerializer(serializers.Serializer):
+    """
+    Serializer for verifying access tokens.
+
+    This serializer is adapation of the `TokenVerifySerializer` from
+    the `django-rest-simplejwt` library.
+    """
     token = serializers.CharField()
 
     def validate(self, attrs):

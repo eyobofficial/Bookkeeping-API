@@ -2,7 +2,7 @@ from django.urls import path, include
 
 from drf_yasg.utils import swagger_auto_schema
 
-from .views import LoginAPIView, UserRegistrationAPIView, \
+from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
     CustomTokenRefreshView, CustomTokenVerifyView
 
@@ -12,19 +12,19 @@ app_name = 'accounts'
 
 urlpatterns = [
     path('register/', UserRegistrationAPIView.as_view(), name='register'),
-    path('login/', LoginAPIView.as_view(), name='login'),
+    path('login/', UserLoginAPIView.as_view(), name='login'),
     path(
-        'validate-email/',
+        'email/validate/',
         EmailValidatorAPIView.as_view(),
         name='validate-email'
     ),
     path(
-        'validate-phone-number/',
+        'phone/validate/',
         PhoneNumberValidatorAPIView.as_view(),
         name='validate-phone-number'
     ),
     path(
-        'change-password/',
+        'password/change/',
         PasswordChangeView.as_view(),
         name='change-password'
     ),
