@@ -35,7 +35,7 @@ email_validation_400_response = openapi.Response(
     description=_('Invalid Email Address'),
     examples={
         'application/json': {
-            'detail': _('Enter a valid email address.')
+            'email': [_('Enter a valid email address.')]
         }
     }
 )
@@ -46,7 +46,7 @@ email_validation_409_response = openapi.Response(
     description='Duplicate Email Address',
     examples={
         'application/json': {
-            'detail': 'The email address is already registered.'
+            'detail': _('The email address is already registered.')
         }
     }
 )
@@ -57,7 +57,7 @@ phone_validation_400_response = openapi.Response(
     description=_('Invalid Phone Number'),
     examples={
         'application/json': {
-            'detail': _('Enter a valid phone number.')
+            'phoneNumber': [_('Enter a valid phone number.')]
         }
     }
 )

@@ -79,24 +79,36 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
         return randint(100000, 999999)
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class NestedProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer for the user profile model.
+    Read-only serializer for the user profile model to be nested
+    is user detail serializers.
     """
+    user = serializers.ReadOnlyField(
+        source='user.full_name',
+        help_text=_('User\'s full name')
+    )
 
     class Meta:
         model = Profile
         fields = '__all__'
+        ref_name = 'Profile'
 
 
-class SettingSerializer(serializers.ModelSerializer):
+class NestedSettingSerializer(serializers.ModelSerializer):
     """
-    Serializer for the user setting model.
+    Read-only serializer for the user setting model to be nested
+    is user detail serializers.
     """
+    user = serializers.ReadOnlyField(
+        source='user.full_name',
+        help_text=_('User\'s full name')
+    )
 
     class Meta:
         model = Setting
         fields = '__all__'
+        ref_name = 'Settings'
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -118,8 +130,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     is_active = serializers.BooleanField(read_only=True)
     tokens = serializers.SerializerMethodField()
-    profile = ProfileSerializer(read_only=True)
-    settings = SettingSerializer(read_only=True)
+    profile = NestedProfileSerializer(read_only=True)
+    settings = NestedSettingSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -183,8 +195,8 @@ class UserResponseSerializer(UserRegistrationSerializer):
     Read-only representation of the `User` model in a successful response.
     """
     tokens = TokenResponseSerializer(read_only=True)
-    profile = ProfileSerializer(read_only=True)
-    settings = SettingSerializer(read_only=True)
+    profile = NestedProfileSerializer(read_only=True)
+    settings = NestedSettingSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -192,6 +204,36 @@ class UserResponseSerializer(UserRegistrationSerializer):
             'id', 'phone_number', 'email', 'is_active', 'tokens',
             'profile', 'settings'
         )
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for a User model serializer.
+    """
+    email = serializers.EmailField()
+    profile = NestedProfileSerializer(
+        read_only=True,
+        help_text=_('A read-only representation of the user profile.')
+    )
+    settings = NestedSettingSerializer(
+        read_only=True,
+        help_text=_('A read-only representation of the user profile.')
+    )
+
+    class Meta:
+        model = User
+        fields = ('id', 'phone_number', 'email', 'is_active', 'profile', 'settings')
+        read_only_fields = ('phone_number', )
+
+    def validate_email(self, value):
+        """
+        Check if email is unique or raise `409 Conflict` error.
+        """
+        queryset = User.objects.filter(email=value)
+        if queryset.exists():
+            raise NonUniqueEmailException()
+        return value
+
 
 
 class PasswordChangeSerializer(serializers.Serializer):

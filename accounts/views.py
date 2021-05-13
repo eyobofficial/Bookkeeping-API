@@ -4,7 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView, \
+    RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
@@ -12,9 +13,9 @@ from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from accounts import schema as account_schema
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
-    TokenVerifySerializer, UserResponseSerializer
+    TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer
 from .sms.otp import OTPSMS
-from .permissions import IsAccountOwner
+from .permissions import IsAccountOwner, IsAccountActive
 
 
 User = get_user_model()
@@ -146,7 +147,7 @@ class EmailValidatorAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             return Response(serializer.data)
-        error = {'detail': _('Enter a valid email address.')}
+        error = {'email': [_('Enter a valid email address.')]}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -175,8 +176,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
             200: ValidPhoneNumberSerialzier(),
             400: account_schema.phone_validation_400_response,
             409: account_schema.phone_validation_409_response
-        },
-        security=[]
+        }
     )
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -190,7 +190,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
             sms.send()
             return Response(serializer.data)
 
-        error = {'detail': _('Enter a valid phone number.')}
+        error = {'phoneNumber': [_('Enter a valid phone number.')]}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -278,3 +278,100 @@ class CustomTokenRefreshView(TokenRefreshView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+@method_decorator(
+    name='get',
+    decorator=swagger_auto_schema(
+        operation_id='user-detail',
+        tags=['User Accounts']
+    )
+)
+@method_decorator(
+    name='put',
+    decorator=swagger_auto_schema(
+        operation_id='user-update',
+        tags=['User Accounts'],
+        responses={
+            200: UserDetailSerializer(),
+            400: account_schema.email_validation_400_response,
+            409: account_schema.email_validation_409_response
+        }
+    )
+)
+@method_decorator(
+    name='patch',
+    decorator=swagger_auto_schema(
+        operation_id='partial-user-update',
+        tags=['User Accounts'],
+        responses={
+            200: UserDetailSerializer(),
+            400: account_schema.email_validation_400_response,
+            409: account_schema.email_validation_409_response
+        }
+    )
+)
+class UserDetailAPIView(RetrieveUpdateAPIView):
+    """
+    get:
+    User Detail
+
+    Return the user details for an authenticated account.
+
+    **HTTP Request** <br />
+    `GET /accounts/user/`
+
+    **Response Body** <br />
+    - User ID
+    - Phone Number
+    - Email Address
+    - Active Boolean Flag
+    - Profile Object
+    - Settings Object
+
+    put:
+    User Update
+
+    Update the user details for an authenticated account.
+
+    **Request Body Parameters** <br />
+    - Email Address
+    - Active Boolean Flag
+
+    **HTTP Request** <br />
+    `PUT /accounts/user/`
+
+    **Response Body** <br />
+    - User ID
+    - Phone Number
+    - Email Address
+    - Active Boolean Flag
+    - Profile Object
+    - Settings Object
+
+    patch:
+    Partial User Update
+
+    Partially update the user details for an authenticated account.
+
+    **Request Body Parameters** <br />
+    - Email Address
+    - Active Boolean Flag
+
+    **HTTP Request** <br />
+    `PATCH /accounts/user/`
+
+    **Response Body** <br />
+    - User ID
+    - Phone Number
+    - Email Address
+    - Active Boolean Flag
+    - Profile Object
+    - Settings Object
+    """
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsAccountOwner, IsAccountActive]
+
+    def get_object(self, *args, **kwargs):
+        return self.request.user

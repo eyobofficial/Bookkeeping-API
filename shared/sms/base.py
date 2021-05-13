@@ -60,13 +60,6 @@ class BaseSMS:
         Send the SMS message.
         """
         sender = self._get_sender()
-
-        print('\n\n\n')
-        print(f'Message: {self.message}')
-        print(f'Recipients: {self.recipients}')
-        print(f'Sender: {sender}')
-        print('\n\n\n')
-
         try:
             response = self.sms.send(self.message, self.recipients, sender)
             print(response)
