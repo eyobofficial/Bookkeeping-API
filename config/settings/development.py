@@ -11,6 +11,9 @@ INSTALLED_APPS += [
 ]
 
 # Static & media files
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 USE_S3 = config('USE_S3', default=False, cast=bool)
 
 if USE_S3:
@@ -40,9 +43,6 @@ else:
     # Static
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STATICFILES_DIRS = (
-        os.path.join(BASE_DIR, 'static'),
-    )
 
     # Media
     MEDIA_URL = '/media/'

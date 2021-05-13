@@ -31,9 +31,9 @@ class UserLoginAPIView(GenericAPIView):
     **HTTP Request** <br />
     `POST /accounts/login/`
 
-    **Request Body Parameters** <br />
-    - username (*phone number or email*)
-    - password
+    **Request Body Parameters**
+      - username (*phone number or email*)
+      - password
 
     **Response Body** <br />
     The response body returns the user data with *access* and *refresh* JWT
