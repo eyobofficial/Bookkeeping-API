@@ -166,3 +166,42 @@ password_reset_400_response = openapi.Response(
         }
     }
 )
+
+
+# Example HTTP response with 200 status for password reset confirm view
+password_reset_confirm_200_response = openapi.Response(
+    description=_('Success'),
+    examples={
+        'application/json': {
+            'detail': _('New password is set successfully.')
+        }
+    }
+)
+
+
+# Example HTTP response with 400 status for password reset confirm view
+password_reset_confirm_400_response = openapi.Response(
+    description=_('Invalid Phone Number'),
+    examples={
+        'application/json': {
+            'otp': [_('This field may not be blank.')],
+            'phoneNumber': [_('Enter a valid phone number.')],
+            'newPassword': [
+                _('This password is too short. It must contain at least 8 characters.'),
+                _('This password is too common.')
+            ]
+        }
+    }
+)
+
+
+# Example HTTP response with 404 status for password reset confirm view
+password_reset_confirm_404_response = openapi.Response(
+    description=_('Invalid Code'),
+    examples={
+        'application/json': {
+            'detail': _('Invalid or expired code.')
+        }
+    }
+)
+

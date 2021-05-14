@@ -3,7 +3,7 @@ from django.urls import path, include
 from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
     CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
-    PasswordResetAPIView
+    PasswordResetAPIView, PasswordResetConfirmAPIView
 
 
 app_name = 'accounts'
@@ -31,6 +31,11 @@ urlpatterns = [
         'password/reset/',
         PasswordResetAPIView.as_view(),
         name='password-reset'
+    ),
+    path(
+        'password/reset/confirm/',
+        PasswordResetConfirmAPIView.as_view(),
+        name='password-reset-confirm'
     ),
     path('token/verify/', CustomTokenVerifyView.as_view(), name='token-verify'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token-refresh'),

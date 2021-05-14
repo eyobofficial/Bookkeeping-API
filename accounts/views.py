@@ -15,7 +15,7 @@ from accounts import schema as account_schema
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
     TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
-    PasswordResetSerializer
+    PasswordResetSerializer, PasswordResetConfirmSerializer
 from .sms.otp import OTPSMS
 from .permissions import IsAccountOwner, IsAccountActive
 from .models import PasswordResetCode
@@ -401,6 +401,9 @@ class PasswordResetAPIView(CreateAPIView):
     forgotten password. It also sends the OTP code to the user mobile
     phone via SMS.
 
+    **HTTP Request** <br />
+    `POST /accounts/password/reset/`
+
     **Request Body Parameters** <br />
     - Phone Number
 
@@ -418,4 +421,42 @@ class PasswordResetAPIView(CreateAPIView):
         if serializer.is_valid():
             self.perform_create(serializer)
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetConfirmAPIView(GenericAPIView):
+    """
+    post:
+    Password Reset Confirm
+
+    Reset a forgotten password using a one-time passowrds (OTP).
+
+    **HTTP Request** <br />
+    `POST /accounts/password/reset/confirm/`
+
+    **Request Body Parameters** <br />
+    - Phone Number
+    - One-time Password (OTP)
+    - New Password
+    """
+    queryset = PasswordResetCode.objects.all()
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_id='password-reset-confirm',
+        # operation_summary='Password Reset Confirm',
+        responses={
+            200: account_schema.password_reset_confirm_200_response,
+            400: account_schema.password_reset_confirm_400_response,
+            404: account_schema.password_reset_confirm_404_response
+        },
+        tags=['User Accounts']
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            message = {'detail': _('New password is set successfully.')}
+            return Response(message)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

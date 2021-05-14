@@ -108,7 +108,7 @@ class PasswordResetCode(models.Model):
         on_delete=models.CASCADE,
         related_name='password_reset_codes'
     )
-    code = models.CharField(
+    otp = models.CharField(
         max_length=6,
         default=generate_otp,
         help_text='A one-time password code.'
@@ -122,7 +122,7 @@ class PasswordResetCode(models.Model):
         ordering = ('-expire_at', )
 
     def __str__(self):
-        return self.code
+        return self.otp
 
     @property
     def phone_number(self):

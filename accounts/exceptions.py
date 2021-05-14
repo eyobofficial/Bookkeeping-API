@@ -19,3 +19,9 @@ class AccountNotRegisteredException(APIException):
     status_code = 404
     default_detail = _('The account is not registered.')
     default_code = 'non-registered-account'
+
+
+class InvalidCodeException(APIException):
+    status_code = 404
+    default_detail = _('Invalid or expired code.')
+    default_code = 'invalid-code'

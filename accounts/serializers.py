@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
-    AccountNotRegisteredException
+    AccountNotRegisteredException, InvalidCodeException
 from .models import Profile, Setting, PasswordResetCode
 from .sms.otp import OTPSMS
 
@@ -297,10 +297,10 @@ class PasswordResetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PasswordResetCode
-        fields = ('phone_number', 'code', 'expire_at')
-        read_only_fields = ('code', 'expire_at')
+        fields = ('phone_number', 'otp', 'expire_at')
+        read_only_fields = ('otp', 'expire_at')
         extra_kwargs = {
-            'code': {'help_text': 'A 6-digit numeric only one-time password.'}
+            'otp': {'help_text': 'A 6-digit numeric only one-time password.'}
         }
 
     def validate_phone_number(self, value):
@@ -313,7 +313,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         phone_number = validated_data['phone_number']
         user = User.objects.get(phone_number=phone_number)
         now = timezone.now()
-        otp, _ = PasswordResetCode.objects.filter(
+        reset_otp, _ = PasswordResetCode.objects.filter(
             expire_at__gt=now
         ).get_or_create(user=user)
 
@@ -321,7 +321,52 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         # TODO: Move to a celery task
         sms = OTPSMS()
         sms.recipients = str(phone_number)
-        sms.message = otp.code
+        sms.message = reset_otp.otp
         sms.send()
 
-        return otp
+        return reset_otp
+
+
+class PasswordResetConfirmSerializer(serializers.ModelSerializer):
+    phone_number = CustomPhoneNumberField()
+    new_password = serializers.CharField(
+        write_only=True,
+        style={'input_type': 'password'}
+    )
+
+    class Meta:
+        model = PasswordResetCode
+        fields = ('otp', 'phone_number', 'new_password')
+        extra_kwargs = {
+            'otp': {'required': True}
+        }
+
+    def validate_new_password(self, value, *args, **kwargs):
+        try:
+            validate_password(value)
+            return value
+        except ValidationError as e:
+            raise
+
+    def validate(self, validated_data):
+        now = timezone.now()
+        phone_number = validated_data['phone_number']
+        otp = validated_data['otp']
+
+        try:
+            query_params = {
+                'user__phone_number': phone_number,
+                'otp': otp,
+                'expire_at__gt': now
+            }
+            reset_code = PasswordResetCode.objects.get(**query_params)
+            validated_data['instance'] = reset_code
+            return validated_data
+        except PasswordResetCode.DoesNotExist:
+            raise InvalidCodeException()
+
+    def save(self):
+        instance = self.validated_data['instance']
+        instance.user.set_password(self.validated_data['new_password'])
+        instance.user.save()
+        instance.delete()

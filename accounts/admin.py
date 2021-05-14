@@ -56,5 +56,5 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(PasswordResetCode)
 class PasswordResetCodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'code', 'created_at', 'expire_at')
-    search_fields = ('code', )
+    list_display = ('user', 'otp', 'created_at', 'expire_at')
+    search_fields = ('otp', )
