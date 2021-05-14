@@ -2,7 +2,8 @@ from django.urls import path, include
 
 from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
-    CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView
+    CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
+    PasswordResetAPIView
 
 
 app_name = 'accounts'
@@ -25,6 +26,11 @@ urlpatterns = [
         'password/change/',
         PasswordChangeView.as_view(),
         name='change-password'
+    ),
+    path(
+        'password/reset/',
+        PasswordResetAPIView.as_view(),
+        name='password-reset'
     ),
     path('token/verify/', CustomTokenVerifyView.as_view(), name='token-verify'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token-refresh'),

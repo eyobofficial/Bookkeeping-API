@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.generics import GenericAPIView, CreateAPIView, \
     RetrieveUpdateAPIView
 from rest_framework.response import Response
@@ -13,9 +14,11 @@ from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from accounts import schema as account_schema
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
-    TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer
+    TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
+    PasswordResetSerializer
 from .sms.otp import OTPSMS
 from .permissions import IsAccountOwner, IsAccountActive
+from .models import PasswordResetCode
 
 
 User = get_user_model()
@@ -375,3 +378,44 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
 
     def get_object(self, *args, **kwargs):
         return self.request.user
+
+
+@method_decorator(
+    name='post',
+    decorator=swagger_auto_schema(
+        operation_id='password-reset',
+        tags=['User Accounts'],
+        responses={
+            200: PasswordResetSerializer(),
+            400: account_schema.password_reset_400_response,
+            404: account_schema.password_reset_404_response
+        }
+    )
+)
+class PasswordResetAPIView(CreateAPIView):
+    """
+    post:
+    Password Reset
+
+    Returns a one-time password (OTP) code to let users reset their
+    forgotten password. It also sends the OTP code to the user mobile
+    phone via SMS.
+
+    **Request Body Parameters** <br />
+    - Phone Number
+
+    **Response Body** <br />
+    - Phone Number
+    - OTP code (A 6-digit numeric code)
+    - Expiration timestamp in milliseconds
+    """
+    queryset = PasswordResetCode.objects.all()
+    serializer_class = PasswordResetSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

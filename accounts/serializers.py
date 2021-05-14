@@ -4,16 +4,20 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account.adapter import get_adapter
+from drf_yasg import openapi
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
-from .fields import CustomPhoneNumberField
-from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException
-from .models import Profile, Setting
+from .fields import CustomPhoneNumberField, TimestampField
+from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
+    AccountNotRegisteredException
+from .models import Profile, Setting, PasswordResetCode
+from .sms.otp import OTPSMS
 
 
 User = get_user_model()
@@ -235,7 +239,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
         return value
 
 
-
 class PasswordChangeSerializer(serializers.Serializer):
     """
     Serializer for changing user password.
@@ -283,3 +286,42 @@ class TokenVerifySerializer(serializers.Serializer):
     def validate(self, attrs):
         UntypedToken(attrs['token'])
         return {'detail': _('Token is valid')}
+
+
+class PasswordResetSerializer(serializers.ModelSerializer):
+    phone_number = CustomPhoneNumberField()
+    expire_at = TimestampField(
+        read_only=True,
+        help_text='Timestamp in milliseconds (JS-style).'
+    )
+
+    class Meta:
+        model = PasswordResetCode
+        fields = ('phone_number', 'code', 'expire_at')
+        read_only_fields = ('code', 'expire_at')
+        extra_kwargs = {
+            'code': {'help_text': 'A 6-digit numeric only one-time password.'}
+        }
+
+    def validate_phone_number(self, value):
+        # Make sure account exists
+        if not User.objects.filter(phone_number=value).exists():
+            raise AccountNotRegisteredException()
+        return value
+
+    def create(self, validated_data):
+        phone_number = validated_data['phone_number']
+        user = User.objects.get(phone_number=phone_number)
+        now = timezone.now()
+        otp, _ = PasswordResetCode.objects.filter(
+            expire_at__gt=now
+        ).get_or_create(user=user)
+
+        # Send OTP SMS
+        # TODO: Move to a celery task
+        sms = OTPSMS()
+        sms.recipients = str(phone_number)
+        sms.message = otp.code
+        sms.send()
+
+        return otp

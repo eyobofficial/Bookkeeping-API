@@ -144,3 +144,25 @@ token_refresh_401_response = openapi.Response(
         }
     }
 )
+
+
+# Example HTTP response with 404 status for password reset view
+password_reset_404_response = openapi.Response(
+    description=_('Account Not Found'),
+    examples={
+        'application/json': {
+            'detail': _('The account is not registered.')
+        }
+    }
+)
+
+
+# Example HTTP response with 400 status for password reset view
+password_reset_400_response = openapi.Response(
+    description=_('Invalid Phone Number'),
+    examples={
+        'application/json': {
+            'phoneNumber': [_('Enter a valid phone number.')]
+        }
+    }
+)

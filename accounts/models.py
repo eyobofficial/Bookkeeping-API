@@ -1,12 +1,15 @@
 from uuid import uuid4
+from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from phonenumber_field.modelfields import PhoneNumberField
 
+from shared.utils.otp import generate_otp
 from .managers import CustomUserManager
 
 
@@ -84,3 +87,43 @@ class Setting(models.Model):
     def __str__(self):
         return f'{self.user.phone_number}'
 
+
+
+def get_otp_expiration():
+    """
+    Returns the OTP code expiration date & time.
+    """
+    EXPIRATION_DURATION = 30  # 30 minutes
+    delta = timedelta(minutes=EXPIRATION_DURATION)
+    return timezone.now() + delta
+
+
+class PasswordResetCode(models.Model):
+    """
+    A one-time code to reset passwords.
+    """
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='password_reset_codes'
+    )
+    code = models.CharField(
+        max_length=6,
+        default=generate_otp,
+        help_text='A one-time password code.'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expire_at = models.DateTimeField(default=get_otp_expiration)
+
+    class Meta:
+        verbose_name = 'Password Reset Code'
+        verbose_name_plural = 'Password Reset Codes'
+        ordering = ('-expire_at', )
+
+    def __str__(self):
+        return self.code
+
+    @property
+    def phone_number(self):
+        return self.user.phone_number

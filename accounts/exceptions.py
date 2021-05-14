@@ -13,3 +13,9 @@ class NonUniquePhoneNumberException(APIException):
     status_code = 409
     default_detail = _('The phone number is already registered.')
     default_code = 'non-unique-phone-number'
+
+
+class AccountNotRegisteredException(APIException):
+    status_code = 404
+    default_detail = _('The account is not registered.')
+    default_code = 'non-registered-account'
