@@ -91,8 +91,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
-            'first_name', 'last_name', 'city', 'country', 'profile_photo',
-            'bio', 'updated_at'
+            'first_name', 'last_name', 'date_of_birth', 'address', 'city',
+            'country', 'postal_code', 'profile_photo', 'updated_at'
         )
         ref_name = 'Profile'
 

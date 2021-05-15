@@ -48,15 +48,17 @@ class Profile(models.Model):
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=100, null=True, blank=False)
-    last_name = models.CharField(max_length=100, null=True, blank=False)
-    city = models.CharField(max_length=120, blank=True)
-    country = models.CharField(max_length=120, blank=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    date_of_birth = models.DateField(blank=True, null=True)
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=10, blank=True)
     profile_photo = models.ImageField(
         upload_to='profiles',
         null=True, blank=True
     )
-    bio = models.TextField(blank=True)
     updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
     class Meta:
