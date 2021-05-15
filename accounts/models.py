@@ -88,7 +88,6 @@ class Setting(models.Model):
         return f'{self.user.phone_number}'
 
 
-
 def get_otp_expiration():
     """
     Returns the OTP code expiration date & time.

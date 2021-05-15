@@ -26,3 +26,12 @@ class IsProfileOwner(permissions.IsAuthenticated):
 
     def has_object_permission(self, request, view, obj):
         return obj == request.user.profile
+
+
+class IsSettingOwner(permissions.IsAuthenticated):
+    """
+    Check if a user settings is owned by the current authenticated user.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj == request.user.settings

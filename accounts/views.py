@@ -15,10 +15,12 @@ from accounts import schema as account_schema
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
     TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
-    PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer
+    PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer,\
+    SettingSerializer
 from .sms.otp import OTPSMS
-from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner
-from .models import Profile, PasswordResetCode
+from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
+    IsSettingOwner
+from .models import Profile, Setting, PasswordResetCode
 
 
 User = get_user_model()
@@ -409,7 +411,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
         operation_id='user-profile-detail',
         tags=['User Accounts'],
         responses={
-            200: UserDetailSerializer(),
+            200: ProfileSerializer(),
             401: account_schema.unauthorized_401_response
         }
     )
@@ -420,7 +422,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
         operation_id='user-profile-update',
         tags=['User Accounts'],
         responses={
-            200: UserDetailSerializer(),
+            200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
             401: account_schema.unauthorized_401_response
         }
@@ -429,10 +431,10 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
 @method_decorator(
     name='patch',
     decorator=swagger_auto_schema(
-        operation_id='user-profile-partially-update',
+        operation_id='partial-user-profile-update',
         tags=['User Accounts'],
         responses={
-            200: UserDetailSerializer(),
+            200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
             401: account_schema.unauthorized_401_response
         }
@@ -513,6 +515,92 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user.profile
 
+
+@method_decorator(
+    name='get',
+    decorator=swagger_auto_schema(
+        operation_id='user-settings',
+        tags=['User Accounts'],
+        responses={
+            200: SettingSerializer(),
+            401: account_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='put',
+    decorator=swagger_auto_schema(
+        operation_id='user-settings-update',
+        tags=['User Accounts'],
+        responses={
+            200: SettingSerializer(),
+            400: account_schema.user_profile_update_400_response,
+            401: account_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='patch',
+    decorator=swagger_auto_schema(
+        operation_id='partial-user-settings-update',
+        tags=['User Accounts'],
+        responses={
+            200: SettingSerializer(),
+            400: account_schema.user_profile_update_400_response,
+            401: account_schema.unauthorized_401_response
+        }
+    )
+)
+class UserSettingsAPIView(RetrieveUpdateAPIView):
+    """
+    get:
+    User Settings
+
+    Returns the settings of the current authenticated user.
+
+    **HTTP Request** <br />
+    `GET /accounts/user/settings/`
+
+    **Response Body** <br />
+    - Currency
+    - Last Update Date and Time
+
+    put:
+    User Settings Update
+
+    Updates the settings of the currently authenticated user.
+
+    **HTTP Request** <br />
+    `PUT /accounts/user/settings/`
+
+    **Request Body Parameters** <br />
+    - Currency (*required*)
+
+    **Response Body** <br />
+    - Currency
+    - Last Updated Date and Time
+
+    patch:
+    Partial User Settings Update
+
+    Partially updates the settings of the currently authenticated user.
+
+    **HTTP Request** <br />
+    `PATCH /accounts/user/settings/`
+
+    **Request Body Parameters** <br />
+    - Currency (*required*)
+
+    **Response Body** <br />
+    - Currency (*required*)
+    - Last Updated Date and Time
+    """
+    queryset = Setting.objects.all()
+    serializer_class = SettingSerializer
+    permission_classes = [IsSettingOwner]
+
+    def get_object(self):
+        return self.request.user.settings
 
 
 @method_decorator(

@@ -3,7 +3,8 @@ from django.urls import path, include
 from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
     CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
-    PasswordResetAPIView, PasswordResetConfirmAPIView, UserProfileDetailAPIView
+    PasswordResetAPIView, PasswordResetConfirmAPIView, \
+    UserProfileDetailAPIView, UserSettingsAPIView
 
 
 app_name = 'accounts'
@@ -44,6 +45,11 @@ urlpatterns = [
         'user/profile/',
         UserProfileDetailAPIView.as_view(),
         name='user-profile-detail'
+    ),
+    path(
+        'user/settings/',
+        UserSettingsAPIView.as_view(),
+        name='user-settings'
     ),
 ]
 
