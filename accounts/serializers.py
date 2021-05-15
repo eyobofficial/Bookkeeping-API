@@ -83,35 +83,28 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
         return randint(100000, 999999)
 
 
-class NestedProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     """
-    Read-only serializer for the user profile model to be nested
-    is user detail serializers.
+    Serializer for the user profile model.
     """
-    user = serializers.ReadOnlyField(
-        source='user.full_name',
-        help_text=_('User\'s full name')
-    )
 
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = (
+            'first_name', 'last_name', 'city', 'country', 'profile_photo',
+            'bio', 'updated_at'
+        )
         ref_name = 'Profile'
 
 
-class NestedSettingSerializer(serializers.ModelSerializer):
+class SettingSerializer(serializers.ModelSerializer):
     """
-    Read-only serializer for the user setting model to be nested
-    is user detail serializers.
+    Serializer for the user setting model.
     """
-    user = serializers.ReadOnlyField(
-        source='user.full_name',
-        help_text=_('User\'s full name')
-    )
 
     class Meta:
         model = Setting
-        fields = '__all__'
+        fields = ('currency', 'updated_at')
         ref_name = 'Settings'
 
 
@@ -134,8 +127,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     is_active = serializers.BooleanField(read_only=True)
     tokens = serializers.SerializerMethodField()
-    profile = NestedProfileSerializer(read_only=True)
-    settings = NestedSettingSerializer(read_only=True)
+    profile = ProfileSerializer(read_only=True)
+    settings = SettingSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -199,8 +192,8 @@ class UserResponseSerializer(UserRegistrationSerializer):
     Read-only representation of the `User` model in a successful response.
     """
     tokens = TokenResponseSerializer(read_only=True)
-    profile = NestedProfileSerializer(read_only=True)
-    settings = NestedSettingSerializer(read_only=True)
+    profile = ProfileSerializer(read_only=True)
+    settings = SettingSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -215,11 +208,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
     Serializer for a User model serializer.
     """
     email = serializers.EmailField()
-    profile = NestedProfileSerializer(
+    profile = ProfileSerializer(
         read_only=True,
         help_text=_('A read-only representation of the user profile.')
     )
-    settings = NestedSettingSerializer(
+    settings = SettingSerializer(
         read_only=True,
         help_text=_('A read-only representation of the user profile.')
     )

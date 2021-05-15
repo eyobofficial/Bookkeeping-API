@@ -15,10 +15,10 @@ from accounts import schema as account_schema
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
     TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
-    PasswordResetSerializer, PasswordResetConfirmSerializer
+    PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer
 from .sms.otp import OTPSMS
-from .permissions import IsAccountOwner, IsAccountActive
-from .models import PasswordResetCode
+from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner
+from .models import Profile, PasswordResetCode
 
 
 User = get_user_model()
@@ -26,6 +26,9 @@ User = get_user_model()
 
 class UserLoginAPIView(GenericAPIView):
     """
+    post:
+    User Login
+
     Authenticate existing users using phone number or email and password.
     On successful authentication, a JSON Web Token (JWT) is returned in the
     response body.
@@ -51,7 +54,6 @@ class UserLoginAPIView(GenericAPIView):
     serializer_class = LoginSerializer
 
     @swagger_auto_schema(
-        operation_summary='User Login',
         responses={
             200: UserResponseSerializer(),
             400: account_schema.login_400_response
@@ -78,7 +80,6 @@ class UserLoginAPIView(GenericAPIView):
 @method_decorator(
     name='post',
     decorator=swagger_auto_schema(
-        operation_summary='User Registration',
         responses={
             201: UserResponseSerializer(),
             400: account_schema.registration_400_response
@@ -89,6 +90,11 @@ class UserLoginAPIView(GenericAPIView):
 )
 class UserRegistrationAPIView(CreateAPIView):
     """
+    post:
+    User Registration
+
+    Register new users and create new user accounts for them.
+
     **HTTP Request** <br />
     `POST /accounts/register/`
 
@@ -122,6 +128,9 @@ class UserRegistrationAPIView(CreateAPIView):
 
 class EmailValidatorAPIView(GenericAPIView):
     """
+    post:
+    Email Validation
+
     Check submitted email is a valid email address and not registered
     in the system.
 
@@ -138,7 +147,6 @@ class EmailValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='email-validation',
-        operation_summary='Email Validation',
         tags=['User Accounts'],
         responses={
             200: ValidEmailSerialzier(),
@@ -156,6 +164,9 @@ class EmailValidatorAPIView(GenericAPIView):
 
 class PhoneNumberValidatorAPIView(GenericAPIView):
     """
+    post:
+    Phone Number Validation
+
     Check submitted phone number is a valid phone number and not registered
     in the system.
 
@@ -173,7 +184,6 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='phone-number-validation',
-        operation_summary='Phone Number Validation',
         tags=['User Accounts'],
         responses={
             200: ValidPhoneNumberSerialzier(),
@@ -199,6 +209,9 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
 
 class PasswordChangeView(GenericAPIView):
     """
+    post:
+    Change Password
+
     Change password for authenticated users.
 
     **HTTP Request** <br />
@@ -214,11 +227,11 @@ class PasswordChangeView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='change-password',
-        operation_summary='Change Password',
         tags=['User Accounts'],
         responses={
             200: account_schema.password_change_200_response,
-            400: account_schema.password_change_400_response
+            400: account_schema.password_change_400_response,
+            401: account_schema.unauthorized_401_response
         }
     )
     def post(self, request, *args, **kwargs):
@@ -236,6 +249,9 @@ class PasswordChangeView(GenericAPIView):
 
 class CustomTokenVerifyView(TokenVerifyView):
     """
+    post:
+    Token Validation
+
     Verify access token is a valid JWT token and is not yet expired.
 
     **HTTP Request** <br />
@@ -245,7 +261,6 @@ class CustomTokenVerifyView(TokenVerifyView):
 
     @swagger_auto_schema(
         operation_id='token-validation',
-        operation_summary='Token Validation',
         responses={
             200: account_schema.token_validation_200_response,
             401: account_schema.token_validation_401_response
@@ -258,7 +273,10 @@ class CustomTokenVerifyView(TokenVerifyView):
 
 class CustomTokenRefreshView(TokenRefreshView):
     """
-    Retrieve new access token to replace an expired token.
+    post:
+    Token Referesh
+
+    Returns new access token to replace an expired token.
 
     **HTTP Request** <br />
     `POST /accounts/token/refresh/`
@@ -272,7 +290,6 @@ class CustomTokenRefreshView(TokenRefreshView):
 
     @swagger_auto_schema(
         operation_id='token-refresh',
-        operation_summary='Token Refresh',
         responses={
             200: account_schema.token_refresh_200_response,
             401: account_schema.token_refresh_401_response
@@ -287,7 +304,11 @@ class CustomTokenRefreshView(TokenRefreshView):
     name='get',
     decorator=swagger_auto_schema(
         operation_id='user-detail',
-        tags=['User Accounts']
+        tags=['User Accounts'],
+        responses={
+            200: UserDetailSerializer(),
+            401: account_schema.unauthorized_401_response
+        }
     )
 )
 @method_decorator(
@@ -298,7 +319,8 @@ class CustomTokenRefreshView(TokenRefreshView):
         responses={
             200: UserDetailSerializer(),
             400: account_schema.email_validation_400_response,
-            409: account_schema.email_validation_409_response
+            401: account_schema.unauthorized_401_response,
+            409: account_schema.email_validation_409_response,
         }
     )
 )
@@ -310,6 +332,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         responses={
             200: UserDetailSerializer(),
             400: account_schema.email_validation_400_response,
+            401: account_schema.unauthorized_401_response,
             409: account_schema.email_validation_409_response
         }
     )
@@ -319,7 +342,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     get:
     User Detail
 
-    Return the user details for an authenticated account.
+    Returns the user details for an authenticated account.
 
     **HTTP Request** <br />
     `GET /accounts/user/`
@@ -335,7 +358,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     put:
     User Update
 
-    Update the user details for an authenticated account.
+    Updates the user details for an authenticated account.
 
     **Request Body Parameters** <br />
     - Email Address
@@ -355,7 +378,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     patch:
     Partial User Update
 
-    Partially update the user details for an authenticated account.
+    Partially updates the user details for an authenticated account.
 
     **Request Body Parameters** <br />
     - Email Address
@@ -378,6 +401,118 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
 
     def get_object(self, *args, **kwargs):
         return self.request.user
+
+
+@method_decorator(
+    name='get',
+    decorator=swagger_auto_schema(
+        operation_id='user-profile-detail',
+        tags=['User Accounts'],
+        responses={
+            200: UserDetailSerializer(),
+            401: account_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='put',
+    decorator=swagger_auto_schema(
+        operation_id='user-profile-update',
+        tags=['User Accounts'],
+        responses={
+            200: UserDetailSerializer(),
+            400: account_schema.user_profile_update_400_response,
+            401: account_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='patch',
+    decorator=swagger_auto_schema(
+        operation_id='user-profile-partially-update',
+        tags=['User Accounts'],
+        responses={
+            200: UserDetailSerializer(),
+            400: account_schema.user_profile_update_400_response,
+            401: account_schema.unauthorized_401_response
+        }
+    )
+)
+class UserProfileDetailAPIView(RetrieveUpdateAPIView):
+    """
+    get:
+    User Profile Detail
+
+    Returns the profile details of the current authenticated user.
+
+    **HTTP Request** <br />
+    `GET /accounts/user/profile/`
+
+    **Response Body** <br />
+    - First Name
+    - Last Name
+    - City
+    - Country
+    - Profile Photo
+    - Last Update Date and Time
+
+    put:
+    User Profile Update
+
+    Updates the profile details of the currently authenticated user.
+
+    **HTTP Request** <br />
+    `PUT /accounts/user/profile/`
+
+    **Request Body Parameters** <br />
+    - First Name (*required*)
+    - Last Name (*required*)
+    - City
+    - Country
+    - Profile Photo
+    - Bio
+
+    **Response Body** <br />
+    - First Name
+    - Last Name
+    - City
+    - Country
+    - Profile Photo
+    - Bio
+    - Last Updated Date and Time
+
+    patch:
+    Partial User Profile Update
+
+    Partially updates the profile details of the currently authenticated user.
+
+    **HTTP Request** <br />
+    `PATCH /accounts/user/profile/`
+
+    **Request Body Parameters** <br />
+    - First Name (*required*)
+    - Last Name (*required*)
+    - City
+    - Country
+    - Profile Photo
+    - Bio
+
+    **Response Body** <br />
+    - First Name
+    - Last Name
+    - City
+    - Country
+    - Profile Photo
+    - Bio
+    - Last Updated Date and Time
+    """
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [IsProfileOwner]
+
+    def get_object(self):
+        return self.request.user.profile
+
 
 
 @method_decorator(
@@ -429,7 +564,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     post:
     Password Reset Confirm
 
-    Reset a forgotten password using a one-time passowrds (OTP).
+    Resets a forgotten password using a one-time passowrds (OTP).
 
     **HTTP Request** <br />
     `POST /accounts/password/reset/confirm/`
@@ -445,7 +580,6 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='password-reset-confirm',
-        # operation_summary='Password Reset Confirm',
         responses={
             200: account_schema.password_reset_confirm_200_response,
             400: account_schema.password_reset_confirm_400_response,

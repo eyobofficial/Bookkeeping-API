@@ -48,8 +48,8 @@ class Profile(models.Model):
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=100, blank=True, default='')
-    last_name = models.CharField(max_length=100, blank=True, default='')
+    first_name = models.CharField(max_length=100, null=True, blank=False)
+    last_name = models.CharField(max_length=100, null=True, blank=False)
     city = models.CharField(max_length=120, blank=True)
     country = models.CharField(max_length=120, blank=True)
     profile_photo = models.ImageField(
