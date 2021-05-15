@@ -201,7 +201,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
             otp = serializer.data['otp']
             sms = OTPSMS()
             sms.recipients = str(phone_number)
-            sms.message = str(otp)
+            sms.message = otp
             sms.send()
             return Response(serializer.data)
 

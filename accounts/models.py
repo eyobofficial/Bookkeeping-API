@@ -79,7 +79,11 @@ class Setting(models.Model):
         on_delete=models.CASCADE,
         related_name='settings'
     )
-    currency = models.CharField(max_length=30, blank=True)
+    font_size = models.PositiveSmallIntegerField(
+        default=11,
+        help_text='Font size in pixels.'
+    )
+    terms_and_condition = models.BooleanField(default=False)
     updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
     class Meta:

@@ -1,5 +1,3 @@
-from random import randint
-
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
@@ -8,11 +6,11 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account.adapter import get_adapter
-from drf_yasg import openapi
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
+from shared.utils.otp import generate_otp
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
     AccountNotRegisteredException, InvalidCodeException
@@ -80,7 +78,7 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
         """
         Returns an 6-digit OTP (One-Time Password) code.
         """
-        return randint(100000, 999999)
+        return generate_otp()
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -101,10 +99,12 @@ class SettingSerializer(serializers.ModelSerializer):
     """
     Serializer for the user setting model.
     """
+    font_size = serializers.IntegerField(min_value=1, max_value=50, default=11)
+    terms_and_condition = serializers.NullBooleanField(default=None)
 
     class Meta:
         model = Setting
-        fields = ('currency', 'updated_at')
+        fields = ('font_size', 'terms_and_condition', 'updated_at')
         ref_name = 'Settings'
 
 
