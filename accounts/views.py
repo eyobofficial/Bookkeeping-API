@@ -64,10 +64,11 @@ class UserLoginAPIView(GenericAPIView):
     @swagger_auto_schema(
         responses={
             200: UserResponseSerializer(),
-            400: account_schema.login_400_response
+            401: account_schema.login_401_response,
+            404: account_schema.login_404_response
         },
         operation_id='user-login',
-        tags=['User Accounts']
+        tags=['User Account']
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -93,7 +94,7 @@ class UserLoginAPIView(GenericAPIView):
             400: account_schema.registration_400_response
         },
         operation_id='user-registration',
-        tags=['User Accounts']
+        tags=['User Account']
     )
 )
 class UserRegistrationAPIView(CreateAPIView):
@@ -155,7 +156,7 @@ class EmailValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='email-validation',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: ValidEmailSerialzier(),
             400: account_schema.email_validation_400_response,
@@ -192,7 +193,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='phone-number-validation',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: ValidPhoneNumberSerialzier(),
             400: account_schema.phone_validation_400_response,
@@ -235,7 +236,7 @@ class PasswordChangeView(GenericAPIView):
 
     @swagger_auto_schema(
         operation_id='change-password',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: account_schema.password_change_200_response,
             400: account_schema.password_change_400_response,
@@ -273,7 +274,7 @@ class CustomTokenVerifyView(TokenVerifyView):
             200: account_schema.token_validation_200_response,
             401: account_schema.token_validation_401_response
         },
-        tags=['User Accounts']
+        tags=['User Account']
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -302,7 +303,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             200: account_schema.token_refresh_200_response,
             401: account_schema.token_refresh_401_response
         },
-        tags=['User Accounts']
+        tags=['User Account']
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -312,7 +313,7 @@ class CustomTokenRefreshView(TokenRefreshView):
     name='get',
     decorator=swagger_auto_schema(
         operation_id='user-detail',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: UserDetailSerializer(),
             401: account_schema.unauthorized_401_response
@@ -323,7 +324,7 @@ class CustomTokenRefreshView(TokenRefreshView):
     name='put',
     decorator=swagger_auto_schema(
         operation_id='user-update',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: UserDetailSerializer(),
             400: account_schema.email_validation_400_response,
@@ -336,7 +337,7 @@ class CustomTokenRefreshView(TokenRefreshView):
     name='patch',
     decorator=swagger_auto_schema(
         operation_id='partial-user-update',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: UserDetailSerializer(),
             400: account_schema.email_validation_400_response,
@@ -415,7 +416,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     name='get',
     decorator=swagger_auto_schema(
         operation_id='user-profile-detail',
-        tags=['User Accounts'],
+        tags=['User Profile'],
         responses={
             200: ProfileSerializer(),
             401: account_schema.unauthorized_401_response
@@ -426,7 +427,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     name='put',
     decorator=swagger_auto_schema(
         operation_id='user-profile-update',
-        tags=['User Accounts'],
+        tags=['User Profile'],
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
@@ -438,7 +439,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     name='patch',
     decorator=swagger_auto_schema(
         operation_id='partial-user-profile-update',
-        tags=['User Accounts'],
+        tags=['User Profile'],
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
@@ -561,7 +562,7 @@ class ProfilePhotoUploadView(APIView):
             401: account_schema.unauthorized_401_response,
             415: account_schema.profile_photo_upload_415_response
         },
-        tags=['User Accounts']
+        tags=['User Profile']
     )
     def put(self, request, format=None):
         file_obj = request.data.get('file')
@@ -592,7 +593,7 @@ class ProfilePhotoUploadView(APIView):
             204: account_schema.profile_photo_remove_204_response,
             401: account_schema.unauthorized_401_response,
         },
-        tags=['User Accounts']
+        tags=['User Profile']
     )
     def delete(self, request, format=None):
         request.user.profile.profile_photo.delete(save=True)
@@ -604,7 +605,7 @@ class ProfilePhotoUploadView(APIView):
     name='get',
     decorator=swagger_auto_schema(
         operation_id='user-settings',
-        tags=['User Accounts'],
+        tags=['Settings'],
         responses={
             200: SettingSerializer(),
             401: account_schema.unauthorized_401_response
@@ -615,7 +616,7 @@ class ProfilePhotoUploadView(APIView):
     name='put',
     decorator=swagger_auto_schema(
         operation_id='user-settings-update',
-        tags=['User Accounts'],
+        tags=['Settings'],
         responses={
             200: SettingSerializer(),
             400: account_schema.user_profile_update_400_response,
@@ -627,7 +628,7 @@ class ProfilePhotoUploadView(APIView):
     name='patch',
     decorator=swagger_auto_schema(
         operation_id='partial-user-settings-update',
-        tags=['User Accounts'],
+        tags=['Settings'],
         responses={
             200: SettingSerializer(),
             400: account_schema.user_profile_update_400_response,
@@ -691,7 +692,7 @@ class UserSettingsAPIView(RetrieveUpdateAPIView):
     name='post',
     decorator=swagger_auto_schema(
         operation_id='password-reset',
-        tags=['User Accounts'],
+        tags=['User Account'],
         responses={
             200: PasswordResetSerializer(),
             400: account_schema.password_reset_400_response,
@@ -757,7 +758,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
             400: account_schema.password_reset_confirm_400_response,
             404: account_schema.password_reset_confirm_404_response
         },
-        tags=['User Accounts']
+        tags=['User Account']
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -14,7 +14,8 @@ from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from shared.utils.otp import generate_otp
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
-    AccountNotRegisteredException, InvalidCodeException
+    AccountNotRegisteredException, InvalidCodeException, \
+    InvalidCredentialsException, AccountDisabledException
 from .models import Profile, Setting, PasswordResetCode
 from .sms.otp import OTPSMS
 
@@ -38,12 +39,10 @@ class LoginSerializer(serializers.Serializer):
         password = validated_data.get('password')
         user = authenticate(username=username, password=password)
         if not user:
-            err_message = _('Wrong username or password.')
-            raise serializers.ValidationError(err_message)
+            raise InvalidCredentialsException()
 
         if not user.is_active:
-            err_message = _('User account is disabled.')
-            raise serializers.ValidationError(err_message)
+            raise AccountDisabledException()
 
         validated_data['user'] = user
         return validated_data
