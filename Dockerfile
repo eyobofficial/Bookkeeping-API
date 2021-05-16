@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /code
 COPY requirements.txt .
 RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y netcat libcairo2 libpango-1.0-0 \
+    apt-get install -y netcat libcairo2 libpango-1.0-0 libmagic1 \
     libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info && \
     pip install --upgrade pip && \
     pip install -r requirements.txt
