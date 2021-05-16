@@ -35,6 +35,7 @@ INSTALLED_APPS += [
     'storages',
     'dj_rest_auth',
     'drf_yasg',
+    'django_countries',
 ]
 
 

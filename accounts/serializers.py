@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account.adapter import get_adapter
+from django_countries.serializers import CountryFieldMixin
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
@@ -81,7 +82,7 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
         return generate_otp()
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
     """
     Serializer for the user profile model.
     """
@@ -92,6 +93,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'date_of_birth', 'address', 'city',
             'country', 'postal_code', 'profile_photo', 'updated_at'
         )
+        read_only_fields = ('profile_photo', 'updated_at')
         ref_name = 'Profile'
 
 

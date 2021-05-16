@@ -453,8 +453,11 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     **Response Body** <br />
     - First Name
     - Last Name
+    - Date of Birth
     - City
-    - Country
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - Address
+    - Postal Code
     - Profile Photo
     - Last Update Date and Time
 
@@ -467,21 +470,24 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     `PUT /accounts/user/profile/`
 
     **Request Body Parameters** <br />
-    - First Name (*required*)
-    - Last Name (*required*)
+    - First Name
+    - Last Name
+    - Date of Birth
     - City
-    - Country
-    - Profile Photo
-    - Bio
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - Address
+    - Postal Code
 
     **Response Body** <br />
     - First Name
     - Last Name
+    - Date of Birth
     - City
-    - Country
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - Address
+    - Postal Code
     - Profile Photo
-    - Bio
-    - Last Updated Date and Time
+    - Last Update Date and Time
 
     patch:
     Partial User Profile Update
@@ -492,21 +498,24 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     `PATCH /accounts/user/profile/`
 
     **Request Body Parameters** <br />
-    - First Name (*required*)
-    - Last Name (*required*)
+    - First Name
+    - Last Name
+    - Date of Birth
     - City
-    - Country
-    - Profile Photo
-    - Bio
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - Address
+    - Postal Code
 
     **Response Body** <br />
     - First Name
     - Last Name
+    - Date of Birth
     - City
-    - Country
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - Address
+    - Postal Code
     - Profile Photo
-    - Bio
-    - Last Updated Date and Time
+    - Last Update Date and Time
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer

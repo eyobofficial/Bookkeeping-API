@@ -9,8 +9,8 @@ class CustomPhoneNumberField(PhoneNumberField):
     Custom phone number field with a JSON serializable representation.
     """
 
-    def to_representation(self, value):
-        return value.as_e164
+    def to_representation(self, obj):
+        return obj.as_e164
 
 
 class TimestampField(serializers.Field):
@@ -23,5 +23,5 @@ class TimestampField(serializers.Field):
             'type': openapi.TYPE_INTEGER,
         }
 
-    def to_representation(self, value, *args, **kwargs):
-        return round(value.timestamp() * 1000)
+    def to_representation(self, obj, *args, **kwargs):
+        return round(obj.timestamp() * 1000)

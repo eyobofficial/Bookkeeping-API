@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from django_countries.fields import CountryField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from shared.utils.otp import generate_otp
@@ -53,7 +54,7 @@ class Profile(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, blank=True)
+    country = CountryField()
     postal_code = models.CharField(max_length=10, blank=True)
     profile_photo = models.ImageField(
         upload_to='profiles',
