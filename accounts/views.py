@@ -3,21 +3,27 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
+from PIL import Image
+
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, permissions
+from rest_framework.exceptions import ParseError, UnsupportedMediaType
 from rest_framework.generics import GenericAPIView, CreateAPIView, \
     RetrieveUpdateAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 
 from accounts import schema as account_schema
+from shared.utils.filetypes import get_mime_type, build_filename_ext
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
     TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
     PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer,\
     SettingSerializer
 from .sms.otp import OTPSMS
+from .parsers import ProfilePhotoUploadParser
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
     IsSettingOwner
 from .models import Profile, Setting, PasswordResetCode
@@ -523,6 +529,75 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile
+
+
+class ProfilePhotoUploadView(APIView):
+    """
+    put:
+    Profile Photo Upload
+
+    Upload a new profile photo for an authenticated user. Files are uploaded
+    as a form data. Only image files are accepted by the endpoint.
+
+    **HTTP Request** <br />
+    `PUT /accounts/user/profile/photo/`
+
+    delete:
+    Profile Photo Remove
+
+    Remove the profile photo of an authenticated user.
+
+    **HTTP Request** <br />
+    `DELETE /accounts/user/profile/photo/`
+    """
+    parser_classes = [ProfilePhotoUploadParser]
+    permission_classes = [IsProfileOwner]
+
+    @swagger_auto_schema(
+        operation_id='profile-photo-upload',
+        responses={
+            200: account_schema.profile_photo_upload_200_response,
+            400: account_schema.profile_photo_upload_400_response,
+            401: account_schema.unauthorized_401_response,
+            415: account_schema.profile_photo_upload_415_response
+        },
+        tags=['User Accounts']
+    )
+    def put(self, request, format=None):
+        file_obj = request.data.get('file')
+
+        if file_obj is None:
+            raise ParseError(_('No image file included.'))
+
+        # Media/Mime Type
+        media_type = get_mime_type(file_obj)
+
+        try:
+            img = Image.open(file_obj)
+            img.verify()
+        except:
+            err_message = _(f'Unsupported file type.')
+            raise UnsupportedMediaType(media_type, detail=err_message)
+
+        profile = request.user.profile
+        filename = f'{profile.first_name}-{profile.last_name}'
+        filename = build_filename_ext(filename, media_type)
+        profile.profile_photo.save(filename, file_obj, save=True)
+        message = {'detail': _('Profile photo uploaded.')}
+        return Response(message, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_id='profile-photo-remove',
+        responses={
+            204: account_schema.profile_photo_remove_204_response,
+            401: account_schema.unauthorized_401_response,
+        },
+        tags=['User Accounts']
+    )
+    def delete(self, request, format=None):
+        request.user.profile.profile_photo.delete(save=True)
+        message = {'detail': _('Profile photo deleted.')}
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @method_decorator(
