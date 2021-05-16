@@ -647,7 +647,8 @@ class UserSettingsAPIView(RetrieveUpdateAPIView):
     `GET /accounts/user/settings/`
 
     **Response Body** <br />
-    - Currency
+    - Font Size
+    - Terms and condition
     - Last Update Date and Time
 
     put:
@@ -659,10 +660,12 @@ class UserSettingsAPIView(RetrieveUpdateAPIView):
     `PUT /accounts/user/settings/`
 
     **Request Body Parameters** <br />
-    - Currency (*required*)
+    - Font Size
+    - Terms and condition
 
     **Response Body** <br />
-    - Currency
+    - Font Size
+    - Terms and condition
     - Last Updated Date and Time
 
     patch:
@@ -674,10 +677,12 @@ class UserSettingsAPIView(RetrieveUpdateAPIView):
     `PATCH /accounts/user/settings/`
 
     **Request Body Parameters** <br />
-    - Currency (*required*)
+    - Font Size
+    - Terms and condition
 
     **Response Body** <br />
-    - Currency (*required*)
+    - Font Size
+    - Terms and condition
     - Last Updated Date and Time
     """
     queryset = Setting.objects.all()
