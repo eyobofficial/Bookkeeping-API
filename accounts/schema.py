@@ -19,18 +19,18 @@ login_401_response = openapi.Response(
     description=_('Unauthorized'),
     examples={
         'application/json': {
-            'detail': _('User account is disabled.')
+            'detail': _('Wrong username or password.')
         }
     }
 )
 
 
-# Example HTTP response with 404 status for user login view
-login_404_response = openapi.Response(
-    description=_('Not Found'),
+# Example HTTP response with 403 status for user login view
+login_403_response = openapi.Response(
+    description=_('Permission Denied'),
     examples={
         'application/json': {
-            'detail': _('Wrong username or password.')
+            'detail': _('User account is disabled.')
         }
     }
 )

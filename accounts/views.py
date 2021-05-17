@@ -65,7 +65,7 @@ class UserLoginAPIView(GenericAPIView):
         responses={
             200: UserResponseSerializer(),
             401: account_schema.login_401_response,
-            404: account_schema.login_404_response
+            403: account_schema.login_403_response
         },
         operation_id='user-login',
         tags=['User Account']
