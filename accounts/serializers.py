@@ -138,6 +138,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'is_active',
             'tokens', 'profile', 'settings'
         )
+        extra_kwargs = {
+            'email': {'allow_blank': True}
+        }
+
+    def validate_email(self, value):
+        """
+        Convert blank values to None values.
+        """
+        if value.strip() == '':
+            return None
+        return value
 
     def validate_password(self, password):
         return get_adapter().clean_password(password)
