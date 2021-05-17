@@ -43,6 +43,7 @@ INSTALLED_APPS += [
 INSTALLED_APPS += [
     'accounts.apps.AccountsConfig',
     'shared.apps.SharedConfig',
+    'business.apps.BusinessConfig',
 ]
 
 MIDDLEWARE = [
@@ -154,7 +155,7 @@ PHONENUMBER_DB_FORMAT = 'NATIONAL'
 
 
 # Start-up fixtures
-FIXTURES = []
+FIXTURES = ['business_types']
 
 
 # Email backend

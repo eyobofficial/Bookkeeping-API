@@ -1,0 +1,40 @@
+- model: business.businesstype
+  pk: 1
+  fields:
+    title: Online Store
+- model: business.businesstype
+  pk: 2
+  fields:
+    title: Fashion, Healthy & Beauty
+- model: business.businesstype
+  pk: 3
+  fields:
+    title: Cafe & Restaurants
+- model: business.businesstype
+  pk: 4
+  fields:
+    title: Food & Drink
+- model: business.businesstype
+  pk: 5
+  fields:
+    title: Gifts & Toys
+- model: business.businesstype
+  pk: 6
+  fields:
+    title: Home & Lifestyle
+- model: business.businesstype
+  pk: 7
+  fields:
+    title: Service & Consulting
+- model: business.businesstype
+  pk: 8
+  fields:
+    title: Autoshop & Repairs
+- model: business.businesstype
+  pk: 9
+  fields:
+    title: Supermarket & Convenience store
+- model: business.businesstype
+  pk: 10
+  fields:
+    title: Others

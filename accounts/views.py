@@ -16,6 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 
 from accounts import schema as account_schema
+from shared import schema as shared_schema
 from shared.utils.filetypes import get_mime_type, build_filename_ext
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
@@ -240,7 +241,7 @@ class PasswordChangeView(GenericAPIView):
         responses={
             200: account_schema.password_change_200_response,
             400: account_schema.password_change_400_response,
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
     def post(self, request, *args, **kwargs):
@@ -316,7 +317,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         tags=['User Account'],
         responses={
             200: UserDetailSerializer(),
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
@@ -328,7 +329,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         responses={
             200: UserDetailSerializer(),
             400: account_schema.email_validation_400_response,
-            401: account_schema.unauthorized_401_response,
+            401: shared_schema.unauthorized_401_response,
             409: account_schema.email_validation_409_response,
         }
     )
@@ -341,7 +342,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         responses={
             200: UserDetailSerializer(),
             400: account_schema.email_validation_400_response,
-            401: account_schema.unauthorized_401_response,
+            401: shared_schema.unauthorized_401_response,
             409: account_schema.email_validation_409_response
         }
     )
@@ -419,7 +420,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
         tags=['User Profile'],
         responses={
             200: ProfileSerializer(),
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
@@ -431,7 +432,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
@@ -443,7 +444,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
@@ -559,7 +560,7 @@ class ProfilePhotoUploadView(APIView):
         responses={
             200: account_schema.profile_photo_upload_200_response,
             400: account_schema.profile_photo_upload_400_response,
-            401: account_schema.unauthorized_401_response,
+            401: shared_schema.unauthorized_401_response,
             415: account_schema.profile_photo_upload_415_response
         },
         tags=['User Profile']
@@ -591,7 +592,7 @@ class ProfilePhotoUploadView(APIView):
         operation_id='profile-photo-remove',
         responses={
             204: account_schema.profile_photo_remove_204_response,
-            401: account_schema.unauthorized_401_response,
+            401: shared_schema.unauthorized_401_response,
         },
         tags=['User Profile']
     )
@@ -608,7 +609,7 @@ class ProfilePhotoUploadView(APIView):
         tags=['Settings'],
         responses={
             200: SettingSerializer(),
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
@@ -620,7 +621,7 @@ class ProfilePhotoUploadView(APIView):
         responses={
             200: SettingSerializer(),
             400: account_schema.user_profile_update_400_response,
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
@@ -632,7 +633,7 @@ class ProfilePhotoUploadView(APIView):
         responses={
             200: SettingSerializer(),
             400: account_schema.user_profile_update_400_response,
-            401: account_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response
         }
     )
 )
