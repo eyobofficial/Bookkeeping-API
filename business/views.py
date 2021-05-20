@@ -1,15 +1,17 @@
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
+from customers.models import Customer
 
 from .models import BusinessType, BusinessAccount
-from .serializers import BusinessTypeSerializer, BusinessAccountSerializer
-from .permissions import IsAdminOrBusinessOwner
+from .serializers import BusinessTypeSerializer, BusinessAccountSerializer, \
+    BusinessCustomerSerializer
+from .permissions import IsAdminOrBusinessOwner, IsCustomerOwner
 
 
 @method_decorator(
@@ -155,3 +157,114 @@ class BusinessAccountViewSet(ReadOnlyModelViewSet):
         if not self.request.user.is_staff:
             qs = qs.filter(user=self.request.user)
         return qs
+
+
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        tags=['Customers'],
+        responses={
+            200: BusinessCustomerSerializer(many=True),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        tags=['Customers'],
+        responses={
+            200: BusinessCustomerSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        tags=['Customers'],
+        responses={
+            201: BusinessCustomerSerializer(),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema(
+        tags=['Customers'],
+        responses={
+            200: BusinessCustomerSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='partial_update',
+    decorator=swagger_auto_schema(
+        tags=['Customers'],
+        responses={
+            200: BusinessCustomerSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(
+        tags=['Customers'],
+        responses={
+            204: 'No Content',
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+class BusinessCustomerViewSet(ModelViewSet):
+    """
+    list:
+    Customers List
+
+    Returns a list of customers for the current business account.
+
+    retrieve:
+    Customers Detail
+
+    Returns the details of a customer recored.
+
+    create:
+    Customers Create
+
+    Creates a new customer recored for the current business account.
+
+    update:
+    Cutomers Update
+
+    Updates the details of a customer recored.
+
+    partial_update:
+    Cutomers Partial Update
+
+    Partially updates the details of a customer recored.
+
+    destroy:
+    Customers Delete
+
+    Deletes a customer recored.
+    """
+    queryset = Customer.objects.all()
+    serializer_class = BusinessCustomerSerializer
+    permission_classes = [IsCustomerOwner]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        business_id = self.kwargs.get('business_id')
+        return qs.filter(business_account__id=business_id)
+
+    def perform_create(self, serializer):
+        business_id = self.kwargs.get('business_id')
+        business_account = get_object_or_404(BusinessAccount, pk=business_id)
+        serializer.save(business_account=business_account)

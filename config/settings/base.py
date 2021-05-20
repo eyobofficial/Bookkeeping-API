@@ -44,6 +44,7 @@ INSTALLED_APPS += [
     'accounts.apps.AccountsConfig',
     'shared.apps.SharedConfig',
     'business.apps.BusinessConfig',
+    'customers.apps.CustomersConfig',
 ]
 
 MIDDLEWARE = [

@@ -10,3 +10,15 @@ class IsAdminOrBusinessOwner(permissions.IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         user = request.user
         return user.is_staff or obj.user == user
+
+
+class IsCustomerOwner(permissions.IsAuthenticated):
+    """
+    Check if current authenticated user is the owner of a
+    customer record.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        business_accounts = user.business_accounts.all()
+        return obj.business_account in business_accounts

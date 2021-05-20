@@ -838,7 +838,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     decorator=swagger_auto_schema(
         tags=['Bussiness Account'],
         responses={
-            204: UserBusinessAccountSerializer(),
+            204: 'No Content',
             401: shared_schema.unauthorized_401_response,
             404: shared_schema.not_found_404_response
         }
