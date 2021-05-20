@@ -11,7 +11,9 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
+from business.models import BusinessAccount, BusinessType
 from shared.utils.otp import generate_otp
+
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
     AccountNotRegisteredException, InvalidCodeException, \
@@ -375,3 +377,16 @@ class PasswordResetConfirmSerializer(serializers.ModelSerializer):
         instance.user.set_password(self.validated_data['new_password'])
         instance.user.save()
         instance.delete()
+
+
+class UserBusinessAccountSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the `BusinessAccount
+    """
+
+    class Meta:
+        model = BusinessAccount
+        fields = (
+            'id', 'name', 'business_type', 'currency', 'address', 'city',
+            'country', 'postal_code', 'email', 'created_at', 'updated_at'
+        )

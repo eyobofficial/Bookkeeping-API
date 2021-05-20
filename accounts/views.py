@@ -12,21 +12,23 @@ from rest_framework.generics import GenericAPIView, CreateAPIView, \
     RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 
 from accounts import schema as account_schema
+from business.models import BusinessAccount
 from shared import schema as shared_schema
 from shared.utils.filetypes import get_mime_type, build_filename_ext
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
     TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
     PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer,\
-    SettingSerializer
+    SettingSerializer, UserBusinessAccountSerializer
 from .sms.otp import OTPSMS
 from .parsers import ProfilePhotoUploadParser
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
-    IsSettingOwner
+    IsSettingOwner, IsBusinessOwner
 from .models import Profile, Setting, PasswordResetCode
 
 
@@ -773,3 +775,245 @@ class PasswordResetConfirmAPIView(GenericAPIView):
             message = {'detail': _('New password is set successfully.')}
             return Response(message)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        tags=['Bussiness Account'],
+        responses={
+            200: UserBusinessAccountSerializer(many=True),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        tags=['Bussiness Account'],
+        responses={
+            200: UserBusinessAccountSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        tags=['Bussiness Account'],
+        responses={
+            201: UserBusinessAccountSerializer(),
+            400: account_schema.user_business_account_create_400_response,
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema(
+        tags=['Bussiness Account'],
+        responses={
+            200: UserBusinessAccountSerializer(),
+            400: account_schema.user_business_account_create_400_response,
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='partial_update',
+    decorator=swagger_auto_schema(
+        tags=['Bussiness Account'],
+        responses={
+            200: UserBusinessAccountSerializer(),
+            400: account_schema.user_business_account_create_400_response,
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(
+        tags=['Bussiness Account'],
+        responses={
+            204: UserBusinessAccountSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+class BussinessAccountViewSet(ModelViewSet):
+    """
+    list:
+    User Business Account List
+
+    Returns a list of all business accounts for the current authenticated
+    user.
+
+    **HTTP Request** <br />
+    `GET /accounts/user/business/`
+
+    **Response Body** <br />
+    The response body includes a list (array) of a business account objects. The
+    business account object includes:
+    - Business ID
+    - Business Type
+    - Business Name
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+    - Created Date and Time
+    - Last Updated Date and Time
+
+    retrieve:
+    User Business Account Detail
+
+    **HTTP Request** <br />
+    `GET /accounts/user/business/{id}/`
+
+    **URL Parameters** <br />
+    - `id`: The ID of the business account.
+
+    **Response Body** <br />
+    - Business ID
+    - Business Type ID
+    - Business Name
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+    - Created Date and Time
+    - Last Updated Date and Time
+
+    Returns the details of a business account of the current authenticated user.
+
+    create:
+    User Business Account Create
+
+    Creates a new bussiness account that is tied with the current authenticated
+    user.
+
+    **HTTP Request** <br />
+    `POST /accounts/user/business/`
+
+    **Request Body Parameters** <br />
+    - Business Type ID (*required*)
+    - Business Name (*required*)
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+
+    **Response Body** <br />
+    - Business ID
+    - Business Type ID
+    - Business Name
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+    - Created Date and Time
+    - Last Updated Date and Time
+
+    update:
+    User Business Account Update
+
+    Update the details of a business account of the current authenticted user.
+
+    **HTTP Request** <br />
+    `PUT /accounts/user/business/{id}/`
+
+    **URL Parameters** <br />
+    - `id`: The ID of the business account.
+
+    **Request Body Parameters** <br />
+    - Business Type ID (*required*)
+    - Business Name (*required*)
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+
+    **Response Body** <br />
+    - Business ID
+    - Business Type ID
+    - Business Name
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+    - Created Date and Time
+    - Last Updated Date and Time
+
+
+    partial_update:
+    User Business Account Partial Update
+
+    Partially update the details of a business account of the current authenticted
+    user.
+
+    **HTTP Request** <br />
+    `PATCH /accounts/user/business/{id}/`
+
+    **URL Parameters** <br />
+    - `id`: The ID of the business account.
+
+    **Request Body Parameters** <br />
+    - Business Type ID (*required*)
+    - Business Name (*required*)
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+
+    **Response Body** <br />
+    - Business ID
+    - Business Type ID
+    - Business Name
+    - Currency
+    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
+    - City
+    - Address
+    - Postal Code
+    - Email Address
+    - Created Date and Time
+    - Last Updated Date and Time
+
+    destroy:
+    User Business Account Delete
+
+    Delete a business account of the current authenticated user.
+
+    **HTTP Request** <br />
+    `DELETE /accounts/user/business/{id}/`
+
+    **URL Parameters** <br />
+    - `id`: The ID of the business account.
+    """
+    queryset = BusinessAccount.objects.all()
+    serializer_class = UserBusinessAccountSerializer
+    permission_classes = [IsBusinessOwner]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

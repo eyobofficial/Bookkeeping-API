@@ -1,13 +1,20 @@
-from django.urls import path, re_path, include
+from django.urls import path, include
+
+from rest_framework.routers import DefaultRouter
 
 from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
     CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
     PasswordResetAPIView, PasswordResetConfirmAPIView, \
-    UserProfileDetailAPIView, UserSettingsAPIView, ProfilePhotoUploadView
+    UserProfileDetailAPIView, UserSettingsAPIView, ProfilePhotoUploadView, \
+    BussinessAccountViewSet
 
 
 app_name = 'accounts'
+
+
+router = DefaultRouter()
+router.register(r'business', BussinessAccountViewSet)
 
 
 urlpatterns = [
@@ -56,5 +63,7 @@ urlpatterns = [
         UserSettingsAPIView.as_view(),
         name='user-settings'
     ),
-]
 
+    # ViewSets
+    path('user/', include(router.urls)),
+]

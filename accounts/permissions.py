@@ -28,6 +28,15 @@ class IsProfileOwner(permissions.IsAuthenticated):
         return obj == request.user.profile
 
 
+class IsBusinessOwner(permissions.IsAuthenticated):
+    """
+    Check if a business account is owned by the current authenticated user.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
+
 class IsSettingOwner(permissions.IsAuthenticated):
     """
     Check if a user settings is owned by the current authenticated user.

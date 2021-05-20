@@ -272,3 +272,18 @@ profile_photo_remove_204_response = openapi.Response(
     }
 )
 
+
+# Example HTTP response with 400 status for user proflie update view
+user_business_account_create_400_response = openapi.Response(
+    description=_('Validation Error'),
+    examples={
+        'application/json': {
+            'name': [_('This field may not be blank.')],
+            'businessType': [
+                _('This field may not be blank.'),
+                _('Invalid pk 99 - object does not exist.')
+            ],
+            'country': [_('"EX" is not a valid choice')]
+        }
+    }
+)

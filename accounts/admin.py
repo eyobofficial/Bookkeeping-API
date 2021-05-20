@@ -1,19 +1,24 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
+from business.models import BusinessAccount
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import CustomUser, Profile, Setting, PasswordResetCode
 
 
 class ProfileInline(admin.StackedInline):
     model = Profile
-    exta = 0
-
+    extra = 0
 
 
 class SettingInline(admin.StackedInline):
     model = Setting
-    exta = 0
+    extra = 0
+
+
+class BusinessAccountInline(admin.StackedInline):
+    model = BusinessAccount
+    extra = 1
 
 
 @admin.register(CustomUser)
@@ -51,7 +56,7 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     ordering = ('email',)
-    inlines = [ProfileInline, SettingInline]
+    inlines = [ProfileInline, SettingInline, BusinessAccountInline]
 
 
 @admin.register(PasswordResetCode)
