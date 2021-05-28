@@ -1,17 +1,24 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, \
+    GenericViewSet
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, \
+    RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
 from customers.models import Customer
+from expenses.models import Expense
+from inventory.models import Stock
 
 from .models import BusinessType, BusinessAccount
 from .serializers import BusinessTypeSerializer, BusinessAccountSerializer, \
-    BusinessCustomerSerializer
-from .permissions import IsAdminOrBusinessOwner, IsCustomerOwner
+    BusinessCustomerSerializer, BusinessExpenseSerializer, \
+    BusinessStockSerializer
+from .permissions import IsAdminOrBusinessOwner, IsCustomerOwner, IsExpenseOwner,\
+    IsStockOwner
 
 
 @method_decorator(
@@ -159,6 +166,23 @@ class BusinessAccountViewSet(ReadOnlyModelViewSet):
         return qs
 
 
+class BaseBusinessAccountDetailViewSet:
+    """
+    Base view class for business account detail viewsets.
+    """
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        business_id = self.kwargs.get('business_id')
+        return qs.filter(business_account__id=business_id)
+
+    def perform_create(self, serializer):
+        business_id = self.kwargs.get('business_id')
+        business_account = get_object_or_404(BusinessAccount, pk=business_id)
+        serializer.save(business_account=business_account)
+
+
+
 @method_decorator(
     name='list',
     decorator=swagger_auto_schema(
@@ -223,48 +247,305 @@ class BusinessAccountViewSet(ReadOnlyModelViewSet):
         }
     )
 )
-class BusinessCustomerViewSet(ModelViewSet):
+class BusinessCustomerViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     """
     list:
     Customers List
 
     Returns a list of customers for the current business account.
 
+    **HTTP Request** <br />
+    `GET /business/{business_id}/customers/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+
     retrieve:
     Customers Detail
 
     Returns the details of a customer recored.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/customers/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the customer.
 
     create:
     Customers Create
 
     Creates a new customer recored for the current business account.
 
+    **HTTP Request** <br />
+    `POST /business/{business_id}/customers/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+
     update:
     Cutomers Update
 
     Updates the details of a customer recored.
+
+    **HTTP Request** <br />
+    `PUT /business/{business_id}/customers/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the customer.
 
     partial_update:
     Cutomers Partial Update
 
     Partially updates the details of a customer recored.
 
+    **HTTP Request** <br />
+    `PATCH /business/{business_id}/customers/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the customer.
+
     destroy:
     Customers Delete
 
     Deletes a customer recored.
+
+    **HTTP Request** <br />
+    `DELETE /business/{business_id}/customers/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the customer.
     """
     queryset = Customer.objects.all()
     serializer_class = BusinessCustomerSerializer
     permission_classes = [IsCustomerOwner]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        business_id = self.kwargs.get('business_id')
-        return qs.filter(business_account__id=business_id)
 
-    def perform_create(self, serializer):
-        business_id = self.kwargs.get('business_id')
-        business_account = get_object_or_404(BusinessAccount, pk=business_id)
-        serializer.save(business_account=business_account)
+# Mixins & base views to be inherited by the `BusinesssAccountExpenseViewset`
+expense_mixins = (
+    BaseBusinessAccountDetailViewSet,
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    GenericViewSet
+)
+
+
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        tags=['Expenses'],
+        responses={
+            200: BusinessExpenseSerializer(many=True),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        tags=['Expenses'],
+        responses={
+            200: BusinessExpenseSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        tags=['Expenses'],
+        responses={
+            201: BusinessExpenseSerializer(),
+            400: 'Validation Error',  # TODO: Change to sample reponse
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+class BusinessExpenseViewSet(*expense_mixins):
+    """
+    list:
+    Expense List
+
+    Returns a list (array) of expense objects for the current business account.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/expenses/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+
+    retrieve:
+    Expense Detail
+
+    Returns the details of an expense record.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/expenses/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the expense.
+
+    create:
+    Expense Create
+
+    Creates a new expense record for the current business account.
+
+    **HTTP Request** <br />
+    `POST /business/{business_id}/expenses/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    """
+    queryset = Expense.objects.all()
+    serializer_class = BusinessExpenseSerializer
+    permission_classes = [IsExpenseOwner]
+
+
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            200: BusinessStockSerializer(many=True),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            200: BusinessStockSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            201: BusinessStockSerializer(),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            200: BusinessStockSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            400: 'Validation Error',
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='partial_update',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            200: BusinessStockSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            400: 'Validation Error',
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            204: 'No Content',
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
+    """
+    list:
+    Stock List
+
+    Returns a list (array) of inventory stock objects for the
+    current business account.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/inventory/stocks/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+
+    retrieve:
+    Stock Detail
+
+    Returns the details of an inventory stock record.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/inventory/stocks/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the stock object.
+
+    create:
+    Stock Create
+
+    Creates a new inventory stock record for the current business account.
+
+    **HTTP Request** <br />
+    `POST /business/{business_id}/inventory/stocks/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+
+    update:
+    Stock Update
+
+    Updates the details of an inventory recored.
+
+    **HTTP Request** <br />
+    `PUT /business/{business_id}/inventory/stocks/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the inventory stock object.
+
+    partial_update:
+    Stock Partial Update
+
+    Partially updates the details of an inventory stock object.
+
+    **HTTP Request** <br />
+    `PATCH /business/{business_id}/inventory/stocks/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the inventory stock object.
+
+    destroy:
+    Stock Delete
+
+    Deletes an inventory stock recored.
+
+    **HTTP Request** <br />
+    `DELETE /business/{business_id}/inventory/stocks/{id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `id`: The ID of the inventory stock object.
+    """
+    queryset = Stock.objects.all()
+    serializer_class = BusinessStockSerializer
+    permissions_classes = [IsStockOwner]
