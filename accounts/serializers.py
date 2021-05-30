@@ -12,6 +12,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
 from business.models import BusinessAccount, BusinessType
+from business.serializers import BusinessTypeSerializer
 from shared.utils.otp import generate_otp
 
 from .fields import CustomPhoneNumberField, TimestampField
@@ -383,6 +384,7 @@ class UserBusinessAccountSerializer(serializers.ModelSerializer):
     """
     Serializer for the `BusinessAccount
     """
+    business_type = BusinessTypeSerializer(read_only=True)
 
     class Meta:
         model = BusinessAccount

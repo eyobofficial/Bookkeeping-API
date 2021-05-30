@@ -13,10 +13,11 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessType
-        fields = ('id', 'title', )
+        fields = ('id', 'title', 'icon')
 
 
 class BusinessAccountSerializer(CountryFieldMixin, serializers.ModelSerializer):
+    business_type = BusinessTypeSerializer(read_only=True)
 
     class Meta:
         model = BusinessAccount

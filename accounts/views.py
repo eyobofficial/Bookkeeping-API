@@ -780,7 +780,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 @method_decorator(
     name='list',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: UserBusinessAccountSerializer(many=True),
             401: shared_schema.unauthorized_401_response
@@ -790,7 +790,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: UserBusinessAccountSerializer(),
             401: shared_schema.unauthorized_401_response,
@@ -801,7 +801,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 @method_decorator(
     name='create',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             201: UserBusinessAccountSerializer(),
             400: account_schema.user_business_account_create_400_response,
@@ -812,7 +812,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 @method_decorator(
     name='update',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: UserBusinessAccountSerializer(),
             400: account_schema.user_business_account_create_400_response,
@@ -824,7 +824,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 @method_decorator(
     name='partial_update',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: UserBusinessAccountSerializer(),
             400: account_schema.user_business_account_create_400_response,
@@ -836,7 +836,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
 @method_decorator(
     name='destroy',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             204: 'No Content',
             401: shared_schema.unauthorized_401_response,
@@ -844,7 +844,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
         }
     )
 )
-class BussinessAccountViewSet(ModelViewSet):
+class BusinessAccountViewSet(ModelViewSet):
     """
     list:
     User Business Account List
@@ -859,7 +859,7 @@ class BussinessAccountViewSet(ModelViewSet):
     The response body includes a list (array) of a business account objects. The
     business account object includes:
     - Business ID
-    - Business Type
+    - Business Type Object
     - Business Name
     - Currency
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
@@ -881,7 +881,7 @@ class BussinessAccountViewSet(ModelViewSet):
 
     **Response Body** <br />
     - Business ID
-    - Business Type ID
+    - Business Type Object
     - Business Name
     - Currency
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
@@ -897,7 +897,7 @@ class BussinessAccountViewSet(ModelViewSet):
     create:
     User Business Account Create
 
-    Creates a new bussiness account that is tied with the current authenticated
+    Creates a new business account that is tied with the current authenticated
     user.
 
     **HTTP Request** <br />

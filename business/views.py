@@ -24,7 +24,7 @@ from .permissions import IsAdminOrBusinessOwner, IsCustomerOwner, IsExpenseOwner
 @method_decorator(
     name='list',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: BusinessTypeSerializer(many=True),
             401: shared_schema.unauthorized_401_response
@@ -34,7 +34,7 @@ from .permissions import IsAdminOrBusinessOwner, IsCustomerOwner, IsExpenseOwner
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: BusinessTypeSerializer(),
             401: shared_schema.unauthorized_401_response
@@ -81,7 +81,7 @@ class BusinessTypeViewSet(ReadOnlyModelViewSet):
 @method_decorator(
     name='list',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: BusinessAccountSerializer(many=True),
             401: shared_schema.unauthorized_401_response
@@ -91,7 +91,7 @@ class BusinessTypeViewSet(ReadOnlyModelViewSet):
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema(
-        tags=['Bussiness Account'],
+        tags=['Business Account'],
         responses={
             200: BusinessAccountSerializer(),
             401: shared_schema.unauthorized_401_response,
@@ -119,7 +119,7 @@ class BusinessAccountViewSet(ReadOnlyModelViewSet):
     business account object includes:
     - Business ID
     - User ID
-    - Business Type
+    - Business Type Object
     - Business Name
     - Currency
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
@@ -144,7 +144,7 @@ class BusinessAccountViewSet(ReadOnlyModelViewSet):
     **Response Body** <br />
     - Business ID
     - User ID
-    - Business Type ID
+    - Business Type Object
     - Business Name
     - Currency
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)

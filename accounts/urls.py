@@ -7,14 +7,14 @@ from .views import UserLoginAPIView, UserRegistrationAPIView, \
     CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
     PasswordResetAPIView, PasswordResetConfirmAPIView, \
     UserProfileDetailAPIView, UserSettingsAPIView, ProfilePhotoUploadView, \
-    BussinessAccountViewSet
+    BusinessAccountViewSet
 
 
 app_name = 'accounts'
 
 
 router = DefaultRouter()
-router.register(r'business', BussinessAccountViewSet)
+router.register(r'business', BusinessAccountViewSet)
 
 
 urlpatterns = [
