@@ -10,7 +10,6 @@ app_name = 'business'
 
 
 router = DefaultRouter()
-
 router.register(r'types', BusinessTypeViewSet)
 router.register(r'(?P<business_id>[0-9a-f-]+)/customers', BusinessCustomerViewSet)
 router.register(r'(?P<business_id>[0-9a-f-]+)/expenses', BusinessExpenseViewSet)

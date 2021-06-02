@@ -19,6 +19,7 @@ from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from accounts import schema as account_schema
 from business.models import BusinessAccount
 from shared import schema as shared_schema
+from shared.parsers import PhotoUploadParser
 from shared.utils.filetypes import get_mime_type, build_filename_ext
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
@@ -26,7 +27,6 @@ from .serializers import UserRegistrationSerializer, LoginSerializer, \
     PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer,\
     SettingSerializer, UserBusinessAccountSerializer
 from .sms.otp import OTPSMS
-from .parsers import ProfilePhotoUploadParser
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
     IsSettingOwner, IsBusinessOwner
 from .models import Profile, Setting, PasswordResetCode
@@ -554,7 +554,7 @@ class ProfilePhotoUploadView(APIView):
     **HTTP Request** <br />
     `DELETE /accounts/user/profile/photo/`
     """
-    parser_classes = [ProfilePhotoUploadParser]
+    parser_classes = [PhotoUploadParser]
     permission_classes = [IsProfileOwner]
 
     @swagger_auto_schema(

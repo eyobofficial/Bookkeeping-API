@@ -28,9 +28,10 @@ class BusinessCustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = (
-            'id', 'name', 'phone_number',
-            'email', 'created_at', 'updated_at'
+            'id', 'name', 'phone_number', 'email',
+            'photo', 'created_at', 'updated_at'
         )
+        read_only_fields = ('photo', 'created_at', 'updated_at')
 
 
 class BusinessExpenseSerializer(serializers.ModelSerializer):

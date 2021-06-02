@@ -1,7 +1,7 @@
 from rest_framework.parsers import FileUploadParser
 
 
-class ProfilePhotoUploadParser(FileUploadParser):
+class PhotoUploadParser(FileUploadParser):
     """
     Restrict the content-type (as reported by the client during upload)
     to only accept images types.

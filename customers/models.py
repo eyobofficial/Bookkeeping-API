@@ -21,6 +21,10 @@ class Customer(models.Model):
     name = models.CharField(_('customer name'), max_length=100)
     phone_number = PhoneNumberField(blank=True)
     email = models.EmailField(blank=True)
+    photo = models.ImageField(
+        upload_to='customers',
+        null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
