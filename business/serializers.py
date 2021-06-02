@@ -17,7 +17,6 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
 
 
 class BusinessAccountSerializer(CountryFieldMixin, serializers.ModelSerializer):
-    business_type = BusinessTypeSerializer(read_only=True)
 
     class Meta:
         model = BusinessAccount

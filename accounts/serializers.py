@@ -384,7 +384,6 @@ class UserBusinessAccountSerializer(serializers.ModelSerializer):
     """
     Serializer for the `BusinessAccount
     """
-    business_type = BusinessTypeSerializer(read_only=True)
 
     class Meta:
         model = BusinessAccount
