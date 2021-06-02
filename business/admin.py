@@ -10,6 +10,7 @@ from .models import BusinessType, BusinessAccount
 @admin.register(BusinessType)
 class BusinessTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'title')
+    list_display_links = ('title', )
 
 
 class CustomerInline(admin.TabularInline):

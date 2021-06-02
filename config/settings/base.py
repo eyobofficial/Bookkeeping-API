@@ -158,7 +158,7 @@ PHONENUMBER_DB_FORMAT = 'NATIONAL'
 
 
 # Start-up fixtures
-FIXTURES = ['business_types']
+FIXTURES = []
 
 
 # Email backend
