@@ -10,14 +10,12 @@ class Stock(models.Model):
 
     # Measurement units
     PCS = 'pc'
-    HOURS = 'hr'
     KILOGRAMS = 'kg'
     LITERS = 'lt'
     METERS = 'mt'
 
     UNIT_CHOICES = (
         (PCS, _('pcs')),
-        (HOURS, _('hours')),
         (KILOGRAMS, _('kilograms')),
         (LITERS, _('lt')),
         (METERS, _('mt')),

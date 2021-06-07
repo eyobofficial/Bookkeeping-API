@@ -19,8 +19,8 @@ class Customer(models.Model):
         related_name='customers'
     )
     name = models.CharField(_('customer name'), max_length=100)
-    phone_number = PhoneNumberField(blank=True)
-    email = models.EmailField(blank=True)
+    phone_number = PhoneNumberField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
     photo = models.ImageField(
         upload_to='customers',
         null=True, blank=True

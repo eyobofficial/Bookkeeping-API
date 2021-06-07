@@ -2,23 +2,49 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from .views.business_accounts import BusinessTypeViewSet, BusinessAccountViewSet
-from .views.business_customers import BusinessCustomerViewSet
-from .views.business_expenses import BusinessExpenseViewSet
-from .views.business_inventory import BusinessStockViewSet
+from business.views import business_accounts, business_customers, \
+    business_expenses, business_inventory,  business_orders
 
 
 app_name = 'business'
 
 
+# Routers
 router = DefaultRouter()
-router.register(r'types', BusinessTypeViewSet)
-router.register(r'(?P<business_id>[0-9a-f-]+)/customers', BusinessCustomerViewSet)
-router.register(r'(?P<business_id>[0-9a-f-]+)/expenses', BusinessExpenseViewSet)
+router.register(r'types', business_accounts.BusinessTypeViewSet)
+router.register(
+    r'(?P<business_id>[0-9a-f-]+)/customers',
+    business_customers.BusinessCustomerViewSet
+)
+router.register(
+    r'(?P<business_id>[0-9a-f-]+)/expenses',
+    business_expenses.BusinessExpenseViewSet
+)
 router.register(
     r'(?P<business_id>[0-9a-f-]+)/inventory/stocks',
-    BusinessStockViewSet
+    business_inventory.BusinessStockViewSet
 )
-router.register(r'', BusinessAccountViewSet)  # Must be at the bottom
 
-urlpatterns = router.urls
+# Must be at the bottom to match '' pattern
+router.register(r'', business_accounts.BusinessAccountViewSet)
+
+
+# URL Confs
+urlpatterns = [
+    path(
+        '<uuid:business_id>/orders/',
+        business_orders.OrderListView.as_view(),
+        name='order-list'
+    ),
+    path(
+        '<uuid:business_id>/orders/from-list/',
+        business_orders.InventoryOrderCreateView.as_view(),
+        name='order-create-from-list'
+    ),
+    path(
+        '<uuid:business_id>/orders/custom/',
+        business_orders.CustomOrderCreateView.as_view(),
+        name='order-create-custom'
+    ),
+    path('', include(router.urls)),
+]
