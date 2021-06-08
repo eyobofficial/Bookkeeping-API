@@ -8,7 +8,7 @@ from shared import schema as shared_schema
 from inventory.models import Stock
 
 from business.serializers import BusinessStockSerializer
-from business.permissions import IsStockOwner
+from business.permissions import IsBusinessOwnedResource
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -153,4 +153,4 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     """
     queryset = Stock.objects.all()
     serializer_class = BusinessStockSerializer
-    permissions_classes = [IsStockOwner]
+    permissions_classes = [IsBusinessOwnedResource]

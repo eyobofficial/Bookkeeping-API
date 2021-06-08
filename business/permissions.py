@@ -12,38 +12,19 @@ class IsAdminOrBusinessOwner(permissions.IsAuthenticated):
         return user.is_staff or obj.user == user
 
 
-class IsCustomerOwner(permissions.IsAuthenticated):
+class IsBusinessOwnedResource(permissions.IsAuthenticated):
     """
-    Check if the current authenticated user is the owner of a
-    customer record.
-    """
+    Check if the current resource is owned by the active business
+    account record.
 
-    def has_object_permission(self, request, view, obj):
-        user = request.user
-        business_accounts = user.business_accounts.all()
-        return obj.business_account in business_accounts
-
-
-class IsExpenseOwner(permissions.IsAuthenticated):
-    """
-    Check if the current authenticated user is the owner of a
-    expense record.
+    This resources include:
+    - Customer
+    - Expense
+    - Inventory Stock
+    - Customer Order
     """
 
     def has_object_permission(self, request, view, obj):
         user = request.user
         business_accounts = user.business_accounts.all()
         return obj.business_account in business_accounts
-
-
-class IsStockOwner(permissions.IsAuthenticated):
-    """
-    Check if the current authenticated user is the owner of an inventory
-    stock record.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        user = request.user
-        business_accounts = user.business_accounts.all()
-        return obj.business_account in business_accounts
-

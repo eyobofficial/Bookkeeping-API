@@ -201,9 +201,14 @@ ACCOUNT_AUTHENTICATION_METHOD = 'phone_number'
 
 
 # Simple JWT
+ACCESS_TOKEN_LIFETIME = config(
+    'ACCESS_TOKEN_LIFETIME',
+    default=60,
+    cast=int
+)  # In minutes
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=200),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=ACCESS_TOKEN_LIFETIME),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,

@@ -46,5 +46,10 @@ urlpatterns = [
         business_orders.CustomOrderCreateView.as_view(),
         name='order-create-custom'
     ),
+    path(
+        '<uuid:business_id>/orders/<uuid:pk>/',
+        business_orders.OrderDetailView.as_view(),
+        name='order-detail'
+    ),
     path('', include(router.urls)),
 ]

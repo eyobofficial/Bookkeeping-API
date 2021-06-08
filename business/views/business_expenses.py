@@ -11,7 +11,7 @@ from expenses.models import Expense
 from inventory.models import Stock
 
 from business.serializers import BusinessExpenseSerializer, BusinessStockSerializer
-from business.permissions import IsExpenseOwner, IsStockOwner
+from business.permissions import IsBusinessOwnedResource
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -95,4 +95,4 @@ class BusinessExpenseViewSet(*expense_mixins):
     """
     queryset = Expense.objects.all()
     serializer_class = BusinessExpenseSerializer
-    permission_classes = [IsExpenseOwner]
+    permission_classes = [IsBusinessOwnedResource]

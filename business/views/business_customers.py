@@ -17,7 +17,7 @@ from shared.utils.filetypes import get_mime_type, build_filename_ext
 from customers.models import Customer
 
 from business.serializers import BusinessCustomerSerializer
-from business.permissions import IsCustomerOwner
+from business.permissions import IsBusinessOwnedResource
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -163,7 +163,7 @@ class BusinessCustomerViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     """
     queryset = Customer.objects.all()
     serializer_class = BusinessCustomerSerializer
-    permission_classes = [IsCustomerOwner]
+    permission_classes = [IsBusinessOwnedResource]
 
     def get_queryset(self):
         qs = super().get_queryset()

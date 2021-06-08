@@ -14,10 +14,11 @@ class OrderAdmin(admin.ModelAdmin):
         'customer',
         'business_account',
         'order_type',
-        'custom_cost',
-        'total_cost',
+        'cost',
+        'mode_of_payment',
         'created_at',
         'updated_at'
     )
+    list_editable = ('order_type', 'mode_of_payment')
     list_filter = ('order_type', )
     inlines = [OrderItemInline]
