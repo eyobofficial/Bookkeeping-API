@@ -1,4 +1,4 @@
-from django.db.models import query
+from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from rest_framework import permissions
 from rest_framework.generics import RetrieveAPIView, ListAPIView, \
@@ -29,7 +29,7 @@ from .base import BaseBusinessAccountDetailViewSet
 class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     """
     get:
-    Business Order List
+    Customer Order List
 
     Returns a list of all outstanding customer orders for a
     business account.
@@ -44,7 +44,6 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     - `modeOfPayment`: Filter the customer orders of a business account by
       the their mode of payments. The possible value are: `CASH`, `BANK`,
       `CARD`, and `CREDIT`.
-
 
     **Response Body** <br />
     - Order ID
@@ -85,7 +84,7 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
 class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
     """
     get:
-    Business Order Detail
+    Customer Order Detail
 
     Returns a detail of an outstanding customer orders for a
     business account.
@@ -117,7 +116,7 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
 class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     """
     post:
-    Business Order From Inventory
+    Inventory Customer Order
 
     Creates a customer order for a business account using a
     list of items from the inventory.
@@ -174,7 +173,7 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
 class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     """
     put:
-    Business Order Inventory Update
+    Inventory Customer Order Update
 
     Updates a customer order for a business account that that an order type
     of `FROM_LIST`.
@@ -212,7 +211,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - `payLaterDate` cannot be date in the past.
 
     patch:
-    Business Order Inventory Partial Update
+    Inventory Order Partial Update
 
     Partially updates a customer order for a business account that that an
     order type of `FROM_LIST`.
@@ -283,7 +282,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
 class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     """
     post:
-    Business Order Custom
+    Custom Customer Order
 
     Creates a customer order for a business account using a custom
     user described order description.
@@ -340,7 +339,7 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
 class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     """
     put:
-    Business Order Custom Update
+    Custom Order Update
 
     Updates a customer order for a business account that that an order type
     of `CUSTOM`.
@@ -378,7 +377,7 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - `payLaterDate` cannot be date in the past.
 
     patch:
-    Business Order Custom Partial Update
+    Custom Order Partial Update
 
     Partial updates a customer order for a business account that
     that an order type of `CUSTOM`.
@@ -444,3 +443,43 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
+
+
+@method_decorator(
+    name='get',
+    decorator=swagger_auto_schema(
+        operation_id='customer-order-download',
+        tags=['Orders'],
+        responses={
+            200: 'A PDF Download URL',
+            401: 'Unauthorized',
+            404: 'Not Found',
+        }
+    )
+)
+class OrderPdfDownloadView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
+    """
+    get:
+    Cutomer Order Receipt
+
+    Returns a URL to PDF receipt file for the custom order.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/orders/{order_id}/download/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `order_id`: The ID of the customer order.
+
+    **Response Body** <br />
+    A URL to the PDF receipt download link.
+    """
+    queryset = Order.objects.all()
+    permission_classes = [IsBusinessOwnedResource]
+
+    def retrieve(self, request, *args, **kwargs):
+        order = self.get_object()
+        order.generate_pdf()
+        response = HttpResponse(order.pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="Receipt.pdf"'
+        return response

@@ -3,7 +3,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from business.views import business_accounts, business_customers, \
-    business_expenses, business_inventory,  business_orders
+    business_expenses, business_inventory, business_orders
 
 
 app_name = 'business'
@@ -60,6 +60,11 @@ urlpatterns = [
         '<uuid:business_id>/orders/<uuid:pk>/',
         business_orders.OrderDetailView.as_view(),
         name='order-detail'
+    ),
+    path(
+        '<uuid:business_id>/orders/<uuid:pk>/download/',
+        business_orders.OrderPdfDownloadView.as_view(),
+        name='order-receipt-download'
     ),
     path('', include(router.urls)),
 ]

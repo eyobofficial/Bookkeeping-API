@@ -1,13 +1,16 @@
 from uuid import uuid4
 from django.core.exceptions import ValidationError
-
+from django.core.files.base import ContentFile
 from django.db import models
+from django.template.loader import get_template
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
+
+from weasyprint import HTML
 
 from business.models import BusinessAccount
 from customers.models import Customer
 from inventory.models import Stock
-
 
 class Order(models.Model):
     """
@@ -59,6 +62,10 @@ class Order(models.Model):
         help_text=_('Required if mode of payment is `CREDIT`.')
     )
     is_completed = models.BooleanField(_('completed'), default=False)
+    pdf_file = models.FileField(
+        upload_to='orders/receipts/',
+        null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -71,7 +78,7 @@ class Order(models.Model):
     def __str__(self):
         return self.customer.name
 
-    @property
+    @cached_property
     def cost(self) -> float:
         """
         Return a total cost of the order.
@@ -84,6 +91,14 @@ class Order(models.Model):
             items = self.order_items.all()
             return sum([item.cost for item in items], 2)
         return self.custom_cost
+
+    def generate_pdf(self):
+        """Generate a PDF file of the order."""
+        template = get_template('receipts/placeholder.html')
+        context = {'order': self}
+        html = template.render(context)
+        pdf_file = HTML(string=html).write_pdf()
+        self.pdf_file.save('receipt.pdf', ContentFile(pdf_file), save=True)
 
 
 class OrderItem(models.Model):
@@ -105,8 +120,8 @@ class OrderItem(models.Model):
     def __str__(self):
         return self.order.customer.name
 
-    @property
-    def cost(self):
+    @cached_property
+    def cost(self) -> float:
         """
         Sub-total of the order item.
         """

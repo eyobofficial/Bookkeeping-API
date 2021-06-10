@@ -1,5 +1,6 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
+from rest_framework.generics import RetrieveAPIView
 
 from rest_framework.viewsets import ModelViewSet
 from drf_yasg.utils import swagger_auto_schema
