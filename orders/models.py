@@ -94,14 +94,13 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Stock, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Order Item')
         verbose_name_plural = _('Order Items')
         default_related_name = 'order_items'
-        ordering = ('created_at', )
+        ordering = ('updated_at', )
 
     def __str__(self):
         return self.order.customer.name
@@ -112,3 +111,18 @@ class OrderItem(models.Model):
         Sub-total of the order item.
         """
         return round(self.quantity * self.item.price, 2)
+
+    def save(self, *args, **kwargs):
+        """
+        Consolidate the quantities of order item of the same order.
+        """
+        order_item = None
+        qs = OrderItem.objects.filter(order=self.order, item=self.item)
+        if qs.exists():
+            order_item = qs.first()
+            self.quantity += order_item.quantity
+
+        super().save(*args, **kwargs)
+
+        if order_item is not None:
+            order_item.delete()

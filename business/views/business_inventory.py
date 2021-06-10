@@ -89,6 +89,10 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     **HTTP Request** <br />
     `GET /business/{business_id}/inventory/stocks/`
 
+    **Query Parameters** <br />
+    - `search`: All or part of the product's name (case-insensitive) you are
+    searching for.
+
     **URL Parameters** <br />
     - `business_id`: The ID of the business account.
 
@@ -154,3 +158,11 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     queryset = Stock.objects.all()
     serializer_class = BusinessStockSerializer
     permissions_classes = [IsBusinessOwnedResource]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            search_query = self.request.query_params.get('search')
+            if search_query is not None:
+                qs = qs.filter(product__icontains=search_query)
+        return qs

@@ -16,7 +16,6 @@ class OrderAdmin(admin.ModelAdmin):
         'order_type',
         'cost',
         'mode_of_payment',
-        'created_at',
         'updated_at'
     )
     list_editable = ('order_type', 'mode_of_payment')

@@ -1,3 +1,6 @@
+from collections import Counter
+from functools import reduce
+
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
@@ -117,13 +120,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ('id', 'item', 'quantity')
+        validators = []
 
     def validate(self, validated_data):
         order_quantity = validated_data['quantity']
         total_quantity = validated_data['item'].quantity
-
         if order_quantity > total_quantity:
-            raise serializers.ValidationError(_('Ordered quantity is more than the stock.'))
+            error = {'quantity': _('Ordered quantity is more than the stock.')}
+            raise serializers.ValidationError(error)
         return validated_data
 
     def to_representation(self, instance):
@@ -132,7 +136,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'product': instance.item.product,
             'quantity': instance.quantity,
             'unit': instance.item.unit,
-            'created_at': instance.created_at,
             'updated_at': instance.updated_at
         }
 
@@ -218,9 +221,21 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
         return order
 
     def update(self, instance, validated_data):
-        item_data = validated_data.pop('order_items')
+        items_data = validated_data.pop('order_items')
         instance.customer = validated_data.get('customer', instance.customer)
-        # TODO
+        instance.mode_of_payment = validated_data.get(
+            'mode_of_payment',
+            instance.mode_of_payment
+        )
+        instance.pay_later_date = validated_data.get(
+            'pay_later_date',
+            instance.pay_later_date
+        )
+        instance.save()
+        instance.order_items.all().delete()
+        for item_data in items_data:
+            instance.order_items.create(**item_data)
+        return instance
 
 
 class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
@@ -254,6 +269,24 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
         validated_data['order_type'] = Order.CUSTOM
         order = Order.objects.create(**validated_data)
         return order
+
+    def update(self, instance, validated_data):
+        instance.customer = validated_data.get('customer', instance.customer)
+        instance.description = validated_data.get(
+            'description',
+            instance.description
+        )
+        instance.mode_of_payment = validated_data.get(
+            'mode_of_payment',
+            instance.mode_of_payment
+        )
+        instance.pay_later_date = validated_data.get(
+            'pay_later_date',
+            instance.pay_later_date
+        )
+        instance.custom_cost = validated_data.get('cost', instance.custom_cost)
+        instance.save()
+        return instance
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):

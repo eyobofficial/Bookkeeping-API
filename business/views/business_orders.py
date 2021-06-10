@@ -1,7 +1,8 @@
+from django.db.models import query
 from django.utils.decorators import method_decorator
 from rest_framework import permissions
 from rest_framework.generics import RetrieveAPIView, ListAPIView, \
-    CreateAPIView
+    CreateAPIView, UpdateAPIView
 from drf_yasg.utils import swagger_auto_schema
 
 from orders.models import Order
@@ -113,19 +114,6 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
     permission_classes = [IsBusinessOwnedResource]
 
 
-@method_decorator(
-    name='post',
-    decorator=swagger_auto_schema(
-        operation_id='business-inventory-order-create',
-        tags=['Orders'],
-        responses={
-            201: BusinessInventoryOrdersSerializer(),
-            400: 'Validation Error',
-            401: 'Unauthorized',
-            404: 'Business Account Not Found',
-        }
-    )
-)
 class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     """
     post:
@@ -144,7 +132,7 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Customer ID
     - Order Item Objects
     - Mode Of Payment
-    - Pay Later Date (*If Mode of Payment is `CASH`*)
+    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
 
     **Response Body** <br />
     - Order ID
@@ -169,20 +157,129 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     serializer_class = BusinessInventoryOrdersSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
-@method_decorator(
-    name='post',
-    decorator=swagger_auto_schema(
-        operation_id='business-custom-order-create',
+    @swagger_auto_schema(
+        operation_id='business-inventory-order-create',
         tags=['Orders'],
         responses={
-            201: BusinessCustomOrderSerializer(),
+            201: BusinessInventoryOrdersSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
             404: 'Business Account Not Found',
         }
     )
-)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
+    """
+    put:
+    Business Order Inventory Update
+
+    Updates a customer order for a business account that that an order type
+    of `FROM_LIST`.
+
+    **HTTP Request** <br />
+    `PUT /business/{business_id}/orders/{order_id}/from-list/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `order_id`: The ID of the customer order.
+
+    **Request Body Parameters** <br />
+    - Customer ID
+    - Order Item Objects
+    - Mode Of Payment
+    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+
+    **Response Body** <br />
+    - Order ID
+    - Order Type (*Always `FROM_LIST`*)
+    - Customer Object
+    - Cost
+    - Order Item Objects
+    - Mode of Payment
+    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Create Date & Time
+    - Last Updated Date & Time
+
+    **Validation Error Events** <br />
+    - `customerId`, `orderItems`, and `modeOfPayments` are all required.
+    - `payLaterDate` field is required if `modeOfPayment` has a
+      value of `CREDIT`.
+    - `quantity` of each `orderItems` cannot be more than what is available in
+      the inventory.
+    - `payLaterDate` cannot be date in the past.
+
+    patch:
+    Business Order Inventory Partial Update
+
+    Partially updates a customer order for a business account that that an
+    order type of `FROM_LIST`.
+
+    **HTTP Request** <br />
+    `PATCH /business/{business_id}/orders/{order_id}/from-list/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `order_id`: The ID of the customer order.
+
+    **Request Body Parameters** <br />
+    - Customer ID
+    - Order Item Objects
+    - Mode Of Payment
+    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+
+    **Response Body** <br />
+    - Order ID
+    - Order Type (*Always `FROM_LIST`*)
+    - Customer Object
+    - Cost
+    - Order Item Objects
+    - Mode of Payment
+    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Create Date & Time
+    - Last Updated Date & Time
+
+    **Validation Error Events** <br />
+    - `customerId`, `orderItems`, and `modeOfPayments` are all required.
+    - `payLaterDate` field is required if `modeOfPayment` has a
+      value of `CREDIT`.
+    - `quantity` of each `orderItems` cannot be more than what is available in
+      the inventory.
+    - `payLaterDate` cannot be date in the past.
+    """
+    queryset = Order.objects.filter(is_completed=False)
+    serializer_class = BusinessInventoryOrdersSerializer
+    permission_classes = [IsBusinessOwnedResource]
+
+    @swagger_auto_schema(
+        operation_id='business-inventory-order-update',
+        tags=['Orders'],
+        responses={
+            200: BusinessInventoryOrdersSerializer(),
+            400: 'Validation Error',
+            401: 'Unauthorized',
+            404: 'Business Account Not Found',
+        }
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id='business-inventory-order-partial-update',
+        tags=['Orders'],
+        responses={
+            200: BusinessInventoryOrdersSerializer(),
+            400: 'Validation Error',
+            401: 'Unauthorized',
+            404: 'Business Account Not Found',
+        }
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+
 class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     """
     post:
@@ -202,7 +299,7 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Description
     - Cost
     - Mode of Payment
-    - Pay Later Date (*If Mode of Payment is `CASH`*)
+    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
 
     **Response Body** <br />
     - Order Object
@@ -226,3 +323,124 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     serializer_class = BusinessCustomOrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_id='business-custom-order-create',
+        tags=['Orders'],
+        responses={
+            201: BusinessCustomOrderSerializer(),
+            400: 'Validation Error',
+            401: 'Unauthorized',
+            404: 'Business Account Not Found',
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
+    """
+    put:
+    Business Order Custom Update
+
+    Updates a customer order for a business account that that an order type
+    of `CUSTOM`.
+
+    **HTTP Request** <br />
+    `PUT /business/{business_id}/orders/{order_id}/custom/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `order_id`: The ID of the customer order.
+
+    **Request Body Parameters** <br />
+    - Customer ID
+    - Description
+    - Cost
+    - Mode of Payment
+    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+
+    **Response Body** <br />
+    - Order Object
+    - Order Type (*Always `CUSTOM`*)
+    - Customer Object
+    - Description
+    - Cost
+    - Mode of Payment
+    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Create Date & Time
+    - Last Updated Date & Time
+
+    **Validation Error Events** <br />
+    - `customerId`, `description`, `cost`, and `modeOfPayments` are
+      all required.
+    - `payLaterDate` field is required if `modeOfPayment` has a
+      value of `CREDIT`.
+    - `payLaterDate` cannot be date in the past.
+
+    patch:
+    Business Order Custom Partial Update
+
+    Partial updates a customer order for a business account that
+    that an order type of `CUSTOM`.
+
+    **HTTP Request** <br />
+    `PATCH /business/{business_id}/orders/{order_id}/custom/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `order_id`: The ID of the customer order.
+
+    **Request Body Parameters** <br />
+    - Customer ID
+    - Description
+    - Cost
+    - Mode of Payment
+    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+
+    **Response Body** <br />
+    - Order Object
+    - Order Type (*Always `CUSTOM`*)
+    - Customer Object
+    - Description
+    - Cost
+    - Mode of Payment
+    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Create Date & Time
+    - Last Updated Date & Time
+
+    **Validation Error Events** <br />
+    - `customerId`, `description`, `cost`, and `modeOfPayments` are
+      all required.
+    - `payLaterDate` field is required if `modeOfPayment` has a
+      value of `CREDIT`.
+    - `payLaterDate` cannot be date in the past.
+    """
+    queryset = Order.objects.filter(is_completed=False)
+    serializer_class = BusinessCustomOrderSerializer
+    permission_classes = [IsBusinessOwnedResource]
+
+    @swagger_auto_schema(
+        operation_id='business-custom-order-update',
+        tags=['Orders'],
+        responses={
+            200: BusinessCustomOrderSerializer(),
+            400: 'Validation Error',
+            401: 'Unauthorized',
+            404: 'Business Account Not Found',
+        }
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id='business-custom-order-partial-update',
+        tags=['Orders'],
+        responses={
+            200: BusinessCustomOrderSerializer(),
+            400: 'Validation Error',
+            401: 'Unauthorized',
+            404: 'Business Account Not Found',
+        }
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)

@@ -186,6 +186,7 @@ REST_FRAMEWORK = {
         'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ),
+    'COERCE_DECIMAL_TO_STRING': False,
 }
 
 REST_USE_JWT = True

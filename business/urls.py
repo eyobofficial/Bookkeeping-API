@@ -42,9 +42,19 @@ urlpatterns = [
         name='order-create-from-list'
     ),
     path(
+        '<uuid:business_id>/orders/<uuid:pk>/from-list/',
+        business_orders.InventoryOrderUpdateView.as_view(),
+        name='order-update-from-list'
+    ),
+    path(
         '<uuid:business_id>/orders/custom/',
         business_orders.CustomOrderCreateView.as_view(),
         name='order-create-custom'
+    ),
+    path(
+        '<uuid:business_id>/orders/<uuid:pk>/custom/',
+        business_orders.CustomOrderUpdateView.as_view(),
+        name='order-update-custom'
     ),
     path(
         '<uuid:business_id>/orders/<uuid:pk>/',
