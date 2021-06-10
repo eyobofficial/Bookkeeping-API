@@ -122,6 +122,10 @@ class UserRegistrationAPIView(CreateAPIView):
     tokens. The access token is used to perform HTTP operations on restricted
     resource. The refersh token is used to retrieve new access tokens when the
     existing token expires.
+
+    **Password Requirements**
+    - Password should be at least 8 characters long.
+    - Password should not be similar to the user phone number or email address.
     """
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -232,6 +236,10 @@ class PasswordChangeView(GenericAPIView):
     **Request Body Parameters** <br />
     - Current Password
     - New Password
+
+    **Password Requirements**
+    - Password should be at least 8 characters long.
+    - Password should not be similar to the user phone number or email address.
     """
     queryset = User.objects.filter(is_active=True)
     serializer_class = PasswordChangeSerializer
@@ -754,6 +762,10 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     - Phone Number
     - One-time Password (OTP)
     - New Password
+
+    **Password Requirements**
+    - Password should be at least 8 characters long.
+    - Password should not be similar to the user phone number or email address.
     """
     queryset = PasswordResetCode.objects.all()
     serializer_class = PasswordResetConfirmSerializer
