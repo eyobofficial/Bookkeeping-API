@@ -24,6 +24,10 @@ router.register(
     r'(?P<business_id>[0-9a-f-]+)/inventory/stocks',
     business_inventory.BusinessStockViewSet
 )
+router.register(
+    r'(?P<business_id>[0-9a-f-]+)/inventory/sold',
+    business_inventory.SoldInventoryViewSet
+)
 
 # Must be at the bottom to match '' pattern
 router.register(r'', business_accounts.BusinessAccountViewSet)

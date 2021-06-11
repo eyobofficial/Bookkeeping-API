@@ -9,7 +9,7 @@ from django_countries.serializers import CountryFieldMixin
 
 from customers.models import Customer
 from expenses.models import Expense
-from inventory.models import Stock
+from inventory.models import Stock, Sold
 from orders.models import Order, OrderItem
 
 from .models import BusinessType, BusinessAccount
@@ -53,6 +53,25 @@ class BusinessStockSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'product', 'unit', 'quantity',
             'price', 'created_at', 'updated_at'
+        )
+
+
+class BusinessSoldSerializer(serializers.ModelSerializer):
+    """
+    Inventory sold serializer class.
+    """
+    product = serializers.ReadOnlyField(source='stock.product')
+    unit = serializers.ReadOnlyField(source='stock.unit')
+    price = serializers.DecimalField(
+        read_only=True, source='stock.price',
+        max_digits=10, decimal_places=2
+    )
+
+    class Meta:
+        model = Sold
+        fields = (
+            'id', 'product', 'unit', 'quantity',
+            'price', 'sales_date'
         )
 
 

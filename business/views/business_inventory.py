@@ -1,15 +1,15 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
-from rest_framework.generics import RetrieveAPIView
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
-from inventory.models import Stock
+from inventory.models import Stock, Sold
 
-from business.serializers import BusinessStockSerializer
-from business.permissions import IsBusinessOwnedResource
+from business.serializers import BusinessStockSerializer, BusinessSoldSerializer
+from business.permissions import IsBusinessOwnedResource, \
+    IsBusinessOwnedSoldItem
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -166,4 +166,68 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
             search_query = self.request.query_params.get('search')
             if search_query is not None:
                 qs = qs.filter(product__icontains=search_query)
+        return qs
+
+
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            200: BusinessSoldSerializer(many=True),
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        tags=['Inventory'],
+        responses={
+            200: BusinessSoldSerializer(),
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+)
+class SoldInventoryViewSet(ReadOnlyModelViewSet):
+    """
+    list:
+    Sold Inventory List
+
+    Returns a list (array) of sold inventory objects for the
+    current business account.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/inventory/sold/`
+
+    **Query Parameters** <br />
+    - `search`: All or part of the product's name (case-insensitive) you are
+    searching for.
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+
+    retrieve:
+    Sold Inventory Detail
+
+    Returns the details of a sold inventory record.
+
+    **HTTP Request** <br />
+    `GET /business/{business_id}/inventory/sold/{stock_id}`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `sold_id`: The ID of the sold inventory object.
+    """
+    queryset = Sold.objects.filter(quantity__gt=0)
+    serializer_class = BusinessSoldSerializer
+    permission_classes = [IsBusinessOwnedSoldItem]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            search_query = self.request.query_params.get('search')
+            if search_query is not None:
+                qs = qs.filter(stock__product__icontains=search_query)
         return qs

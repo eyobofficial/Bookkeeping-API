@@ -28,3 +28,13 @@ class IsBusinessOwnedResource(permissions.IsAuthenticated):
         user = request.user
         business_accounts = user.business_accounts.all()
         return obj.business_account in business_accounts
+
+
+class IsBusinessOwnedSoldItem(permissions.IsAuthenticated):
+    """
+    Check if a `Sold` instance is owned by a business owner.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        business_accounts = request.user.business_accounts.all()
+        return obj.stock.business_account in business_accounts
