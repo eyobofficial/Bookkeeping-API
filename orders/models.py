@@ -92,12 +92,15 @@ class Order(models.Model):
             return sum([item.cost for item in items], 2)
         return self.custom_cost
 
-    def generate_pdf(self):
+    def generate_pdf(self, request):
         """Generate a PDF file of the order."""
         template = get_template('receipts/placeholder.html')
         context = {'order': self}
         html = template.render(context)
-        pdf_file = HTML(string=html).write_pdf()
+        pdf_file = HTML(
+            string=html,
+            base_url=request.build_absolute_uri()
+        ).write_pdf()
         self.pdf_file.save('receipt.pdf', ContentFile(pdf_file), save=True)
 
 

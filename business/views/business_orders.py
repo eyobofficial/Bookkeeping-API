@@ -479,7 +479,7 @@ class OrderPdfDownloadView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         order = self.get_object()
-        order.generate_pdf()
+        order.generate_pdf(request)
         response = HttpResponse(order.pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="Receipt.pdf"'
         return response
