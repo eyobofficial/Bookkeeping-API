@@ -3,7 +3,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from business.views import business_accounts, business_customers, \
-    business_expenses, business_inventory, business_orders
+    business_expenses, business_inventory, business_orders, business_payments
 
 
 app_name = 'business'
@@ -27,6 +27,10 @@ router.register(
 router.register(
     r'(?P<business_id>[0-9a-f-]+)/inventory/sold',
     business_inventory.SoldInventoryViewSet
+)
+router.register(
+    r'(?P<business_id>[0-9a-f-]+)/payments',
+    business_payments.BusinessPaymentViewSet
 )
 
 # Must be at the bottom to match '' pattern
@@ -64,11 +68,6 @@ urlpatterns = [
         '<uuid:business_id>/orders/<uuid:pk>/',
         business_orders.OrderDetailView.as_view(),
         name='order-detail'
-    ),
-    path(
-        '<uuid:business_id>/orders/<uuid:pk>/download/',
-        business_orders.OrderPdfDownloadView.as_view(),
-        name='order-receipt-download'
     ),
     path('', include(router.urls)),
 ]

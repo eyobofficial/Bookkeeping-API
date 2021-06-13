@@ -11,6 +11,7 @@ from customers.models import Customer
 from expenses.models import Expense
 from inventory.models import Stock, Sold
 from orders.models import Order, OrderItem
+from payments.models import Payment
 
 from .models import BusinessType, BusinessAccount
 
@@ -90,7 +91,6 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
     Serializer class for the list view of all orders.
     """
     customer = CustomerSerializer(read_only=True)
-    description = serializers.SerializerMethodField()
     cost = serializers.SerializerMethodField()
 
     class Meta:
@@ -101,8 +101,7 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
             'customer',
             'cost',
             'description',
-            'mode_of_payment',
-            'pay_later_date',
+            'status',
             'created_at',
             'updated_at'
         )
@@ -110,28 +109,6 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
 
     def get_cost(self, obj) -> float:
         return obj.cost
-
-    def get_description(self, obj):
-        if obj.order_type == Order.FROM_LIST:
-            qs = obj.order_items.all()
-            return ', '.join(
-                [f'{self._stringfy_num(i.quantity)} {i.item.product}' for i in qs]
-            )
-        return obj.description
-
-    def _stringfy_num(self, num):
-        """
-        Convert a decimal number to a human readable format.
-
-        Examples:
-          * 3.00 -> 3
-          * 4.50 -> 4.5
-          * 9.99 -> 9.99
-        """
-        whole, fraction = str(num).split('.')
-        if fraction.rstrip('0') == '':
-            return whole
-        return '.'.join([whole, fraction.rstrip('0')])
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -167,41 +144,12 @@ class BaseOrderModelSerializer(serializers.ModelSerializer):
     in accordance to the DRY principle.
     """
 
-    def validate_pay_later_date(self, value):
-        # Do not allow past dates
-        now = timezone.now()
-        if value < now.date():
-            raise serializers.ValidationError(_('Date cannot be in the past.'))
-        return value
-
-    def validate(self, validated_data):
-        mode_of_payment = validated_data['mode_of_payment']
-        pay_later_date = validated_data.get('pay_later_date')
-
-        # Make `pay_later_date` required is mode of payment is `CREDIT`
-        if mode_of_payment == Order.CREDIT and not pay_later_date:
-            error = {'pay_later_field': _('This field is required.')}
-            raise serializers.ValidationError(error)
-        return validated_data
-
-    def to_internal_value(self, data):
-        fields = super().to_internal_value(data)
-
-        # If mode of payment is not credit, don't set `pay_later_date`
-        if data['mode_of_payment'] != Order.CREDIT:
-            fields.pop('pay_later_date', None)
-        return fields
-
     def to_representation(self, instance):
         fields = super().to_representation(instance)
 
         # Include customer object serializered data
         customer_serializer = CustomerSerializer(instance.customer)
         fields['customer'] = customer_serializer.data
-
-        # Include `pay_later_date` if only mode of payment is credit.
-        if fields['mode_of_payment'] != Order.CREDIT:
-            fields.pop('pay_later_date', None)
         return fields
 
 
@@ -219,9 +167,9 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
             'order_type',
             'customer',
             'cost',
+            'description',
+            'status',
             'order_items',
-            'mode_of_payment',
-            'pay_later_date',
             'created_at',
             'updated_at'
         )
@@ -242,14 +190,6 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
     def update(self, instance, validated_data):
         items_data = validated_data.pop('order_items')
         instance.customer = validated_data.get('customer', instance.customer)
-        instance.mode_of_payment = validated_data.get(
-            'mode_of_payment',
-            instance.mode_of_payment
-        )
-        instance.pay_later_date = validated_data.get(
-            'pay_later_date',
-            instance.pay_later_date
-        )
         instance.save()
         instance.order_items.all().delete()
         for item_data in items_data:
@@ -274,9 +214,8 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
             'order_type',
             'customer',
             'description',
+            'status',
             'cost',
-            'mode_of_payment',
-            'pay_later_date',
             'created_at',
             'updated_at'
         )
@@ -294,14 +233,6 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
         instance.description = validated_data.get(
             'description',
             instance.description
-        )
-        instance.mode_of_payment = validated_data.get(
-            'mode_of_payment',
-            instance.mode_of_payment
-        )
-        instance.pay_later_date = validated_data.get(
-            'pay_later_date',
-            instance.pay_later_date
         )
         instance.custom_cost = validated_data.get('cost', instance.custom_cost)
         instance.save()
@@ -322,11 +253,50 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            'id', 'order_type', 'customer', 'description',
-            'order_items', 'cost', 'mode_of_payment',
-            'pay_later_date', 'created_at', 'updated_at'
+            'id', 'order_type', 'customer', 'description', 'status',
+            'order_items', 'cost', 'created_at', 'updated_at'
         )
 
     def get_cost(self, obj) -> float:
         # Required for `drf-yasg` to return the right type
         return obj.cost
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    customer = serializers.ReadOnlyField(source='order.customer.name')
+    description = serializers.ReadOnlyField(source='order.description')
+
+    class Meta:
+        model = Payment
+        fields = (
+            'id', 'order', 'customer', 'description', 'amount', 'status',
+            'mode_of_payment', 'pay_later_date', 'created_at', 'updated_at'
+        )
+        read_only_fields = (
+            'customer', 'description', 'amount', 'created_at', 'updated_at'
+        )
+
+    def validate_pay_later_date(self, value):
+        # Do not allow past dates
+        now = timezone.now()
+        if value < now.date():
+            raise serializers.ValidationError(_('Date cannot be in the past.'))
+        return value
+
+    def validate(self, validated_data):
+        mode_of_payment = validated_data['mode_of_payment']
+        pay_later_date = validated_data.get('pay_later_date')
+
+        # Make `pay_later_date` required if mode of payment is `CREDIT`
+        if mode_of_payment == Payment.CREDIT and not pay_later_date:
+            error = {'pay_later_field': _('This field is required.')}
+            raise serializers.ValidationError(error)
+        return validated_data
+
+    def to_internal_value(self, data):
+        fields = super().to_internal_value(data)
+
+        # If mode of payment is not credit, don't set `pay_later_date`
+        if data['mode_of_payment'] != Payment.CREDIT:
+            fields.pop('pay_later_date', None)
+        return fields

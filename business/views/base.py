@@ -1,7 +1,5 @@
 from django.shortcuts import get_object_or_404
 
-from business.models import BusinessAccount
-
 
 class BaseBusinessAccountDetailViewSet:
     """

@@ -15,9 +15,9 @@ class OrderAdmin(admin.ModelAdmin):
         'business_account',
         'order_type',
         'cost',
-        'mode_of_payment',
+        'status',
         'updated_at'
     )
-    list_editable = ('order_type', 'mode_of_payment')
-    list_filter = ('order_type', )
+    list_editable = ('order_type', 'status')
+    list_filter = ('order_type', 'status')
     inlines = [OrderItemInline]

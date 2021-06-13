@@ -2,6 +2,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
@@ -17,6 +18,14 @@ from .base import BaseBusinessAccountDetailViewSet
     name='list',
     decorator=swagger_auto_schema(
         tags=['Inventory'],
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by all or part of a product name.')
+            )
+        ],
         responses={
             200: BusinessStockSerializer(many=True),
             401: shared_schema.unauthorized_401_response
@@ -173,6 +182,14 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     name='list',
     decorator=swagger_auto_schema(
         tags=['Inventory'],
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by all or part of a product name.')
+            )
+        ],
         responses={
             200: BusinessSoldSerializer(many=True),
             401: shared_schema.unauthorized_401_response

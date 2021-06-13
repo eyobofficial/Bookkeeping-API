@@ -126,9 +126,9 @@
         <th>Cost</th>
       </thead>
 
-      {% if order.order_type == order.FROM_LIST %}
+      {% if payment.order.order_type == payment.order.FROM_LIST %}
       <tbody>
-        {% for order_item in order.order_items.all %}
+        {% for order_item in payment.order.order_items.all %}
         <tr>
           <td>{{ order_item.item.product }}</td>
           <td>{{ order_item.item.unit }}</td>
@@ -138,20 +138,20 @@
         {% endfor %}
         <tr id="total">
           <td colspan="3">Total</td>
-          <td>{{ order.cost|intcomma }}</td>
+          <td>{{ payment.order.cost|intcomma }}</td>
         </tr>
       </tbody>
-      {% elif order.order_type == order.CUSTOM %}
+      {% elif payment.order.order_type == order.CUSTOM %}
       <tbody>
         <tr>
-          <td>{{ order.description }}</td>
+          <td>{{ payment.order.description }}</td>
           <td>pcs</td>
           <td>1.0</td>
-          <td>{{ order.cost|intcomma }}</td>
+          <td>{{ payment.order.cost|intcomma }}</td>
         </tr>
         <tr id="total">
           <td colspan="3">Total</td>
-          <td>{{ order.cost|intcomma }}</td>
+          <td>{{ payment.order.cost|intcomma }}</td>
         </tr>
       </tbody>
       {% endif %}

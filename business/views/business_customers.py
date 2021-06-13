@@ -8,6 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError, UnsupportedMediaType
+
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
@@ -25,6 +27,14 @@ from .base import BaseBusinessAccountDetailViewSet
     name='list',
     decorator=swagger_auto_schema(
         tags=['Customers'],
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by all or part of a customer name.')
+            )
+        ],
         responses={
             200: BusinessCustomerSerializer(many=True),
             401: shared_schema.unauthorized_401_response

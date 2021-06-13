@@ -1,15 +1,18 @@
-from django.http import HttpResponse
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import permissions
 from rest_framework.generics import RetrieveAPIView, ListAPIView, \
     CreateAPIView, UpdateAPIView
+
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from orders.models import Order
 from business.serializers import BusinessAllOrdersSerialize, \
     BusinessInventoryOrdersSerializer, BusinessCustomOrderSerializer, \
     OrderDetailSerializer
-from business.permissions import IsAdminOrBusinessOwner, IsBusinessOwnedResource
+from business.permissions import IsBusinessOwnedResource
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -18,11 +21,20 @@ from .base import BaseBusinessAccountDetailViewSet
     decorator=swagger_auto_schema(
         operation_id='business-order-list',
         tags=['Orders'],
+        manual_parameters=[
+            openapi.Parameter(
+                'status',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by the status of an order.'),
+                enum=('OPEN', 'CLOSED')
+            )
+        ],
         responses={
             200: BusinessAllOrdersSerialize(many=True),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
 )
@@ -31,7 +43,7 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     get:
     Customer Order List
 
-    Returns a list of all outstanding customer orders for a
+    Returns a list of all (both open and closed) customer orders for a
     business account.
 
     **HTTP Request** <br />
@@ -41,9 +53,8 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     - `business_id`: The ID of the business account.
 
     **Query Parameters** <br />
-    - `modeOfPayment`: Filter the customer orders of a business account by
-      the their mode of payments. The possible value are: `CASH`, `BANK`,
-      `CARD`, and `CREDIT`.
+    - `status`: Filter the customer orders of a business account by
+      the their status. The possible value are: `OPEN` and `CLOSED`.
 
     **Response Body** <br />
     - Order ID
@@ -51,20 +62,21 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     - Customer Object
     - Cost
     - Description
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
     """
-    queryset = Order.objects.filter(is_completed=False)
+    queryset = Order.objects.all()
     serializer_class = BusinessAllOrdersSerialize
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         qs = super().get_queryset()
-        mode_of_payment = self.request.query_params.get('modeOfPayment')
-        if mode_of_payment is not None:
-            qs = qs.filter(mode_of_payment=mode_of_payment)
+
+        # Filter by by payment status
+        status_query = self.request.query_params.get('status')
+        if status_query is not None:
+            qs = qs.filter(status=status_query)
         return qs
 
 
@@ -77,7 +89,7 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
             200: OrderDetailSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
 )
@@ -100,15 +112,14 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
     - Order ID
     - Order Type
     - Customer Object
-    - Description (*`Null` for orders with `FROM_LIST` order types.*)
+    - Description
     - Order Item Objects (*Empty for orders with `CUSTOM` order types.*)
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
     """
-    queryset = Order.objects.filter(is_completed=False)
+    queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
     permission_classes = [IsBusinessOwnedResource]
 
@@ -130,8 +141,7 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     **Request Body Parameters** <br />
     - Customer ID
     - Order Item Objects
-    - Mode Of Payment
-    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
 
     **Response Body** <br />
     - Order ID
@@ -139,20 +149,16 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Customer Object
     - Cost
     - Order Item Objects
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
 
     **Validation Error Events** <br />
-    - `customerId`, `orderItems`, and `modeOfPayments` are all required.
-    - `payLaterDate` field is required if `modeOfPayment` has a
-      value of `CREDIT`.
+    - `customerId` and `orderItems` are all required.
     - `quantity` of each `orderItems` cannot be more than what is available in
       the inventory.
-    - `payLaterDate` cannot be date in the past.
     """
-    queryset = Order.objects.filter(is_completed=False)
+    queryset = Order.objects.all()
     serializer_class = BusinessInventoryOrdersSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -163,7 +169,7 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
             201: BusinessInventoryOrdersSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
     def post(self, request, *args, **kwargs):
@@ -188,8 +194,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     **Request Body Parameters** <br />
     - Customer ID
     - Order Item Objects
-    - Mode Of Payment
-    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
 
     **Response Body** <br />
     - Order ID
@@ -197,18 +202,14 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Customer Object
     - Cost
     - Order Item Objects
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
 
     **Validation Error Events** <br />
-    - `customerId`, `orderItems`, and `modeOfPayments` are all required.
-    - `payLaterDate` field is required if `modeOfPayment` has a
-      value of `CREDIT`.
+    - `customerId` and `orderItems` are all required.
     - `quantity` of each `orderItems` cannot be more than what is available in
       the inventory.
-    - `payLaterDate` cannot be date in the past.
 
     patch:
     Inventory Order Partial Update
@@ -226,8 +227,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     **Request Body Parameters** <br />
     - Customer ID
     - Order Item Objects
-    - Mode Of Payment
-    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
 
     **Response Body** <br />
     - Order ID
@@ -235,20 +235,16 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Customer Object
     - Cost
     - Order Item Objects
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
 
     **Validation Error Events** <br />
-    - `customerId`, `orderItems`, and `modeOfPayments` are all required.
-    - `payLaterDate` field is required if `modeOfPayment` has a
-      value of `CREDIT`.
+    - `customerId` and `orderItems` are all required.
     - `quantity` of each `orderItems` cannot be more than what is available in
       the inventory.
-    - `payLaterDate` cannot be date in the past.
     """
-    queryset = Order.objects.filter(is_completed=False)
+    queryset = Order.objects.all()
     serializer_class = BusinessInventoryOrdersSerializer
     permission_classes = [IsBusinessOwnedResource]
 
@@ -259,7 +255,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessInventoryOrdersSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
     def put(self, request, *args, **kwargs):
@@ -272,7 +268,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessInventoryOrdersSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
     def patch(self, request, *args, **kwargs):
@@ -297,8 +293,7 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Customer ID
     - Description
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
 
     **Response Body** <br />
     - Order Object
@@ -306,19 +301,14 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Customer Object
     - Description
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
 
     **Validation Error Events** <br />
-    - `customerId`, `description`, `cost`, and `modeOfPayments` are
-      all required.
-    - `payLaterDate` field is required if `modeOfPayment` has a
-      value of `CREDIT`.
-    - `payLaterDate` cannot be date in the past.
+    - `customerId`, `description`, and `cost` are all required.
     """
-    queryset = Order.objects.filter(is_completed=False)
+    queryset = Order.objects.all()
     serializer_class = BusinessCustomOrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -329,7 +319,7 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
             201: BusinessCustomOrderSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
     def post(self, request, *args, **kwargs):
@@ -355,8 +345,7 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Customer ID
     - Description
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
 
     **Response Body** <br />
     - Order Object
@@ -364,17 +353,12 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Customer Object
     - Description
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
 
     **Validation Error Events** <br />
-    - `customerId`, `description`, `cost`, and `modeOfPayments` are
-      all required.
-    - `payLaterDate` field is required if `modeOfPayment` has a
-      value of `CREDIT`.
-    - `payLaterDate` cannot be date in the past.
+    - `customerId`, `description`, and `cost` are all required.
 
     patch:
     Custom Order Partial Update
@@ -393,8 +377,7 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Customer ID
     - Description
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*If Mode of Payment is `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
 
     **Response Body** <br />
     - Order Object
@@ -402,19 +385,14 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Customer Object
     - Description
     - Cost
-    - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
 
     **Validation Error Events** <br />
-    - `customerId`, `description`, `cost`, and `modeOfPayments` are
-      all required.
-    - `payLaterDate` field is required if `modeOfPayment` has a
-      value of `CREDIT`.
-    - `payLaterDate` cannot be date in the past.
+    - `customerId`, `description`, and `cost` are all required.
     """
-    queryset = Order.objects.filter(is_completed=False)
+    queryset = Order.objects.all()
     serializer_class = BusinessCustomOrderSerializer
     permission_classes = [IsBusinessOwnedResource]
 
@@ -425,7 +403,7 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessCustomOrderSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
     def put(self, request, *args, **kwargs):
@@ -438,48 +416,8 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessCustomOrderSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
-            404: 'Business Account Not Found',
+            404: 'Not Found',
         }
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
-
-
-@method_decorator(
-    name='get',
-    decorator=swagger_auto_schema(
-        operation_id='customer-order-download',
-        tags=['Orders'],
-        responses={
-            200: 'A PDF Download URL',
-            401: 'Unauthorized',
-            404: 'Not Found',
-        }
-    )
-)
-class OrderPdfDownloadView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
-    """
-    get:
-    Cutomer Order Receipt
-
-    Returns a URL to PDF receipt file for the custom order.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}/orders/{order_id}/download/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of the customer order.
-
-    **Response Body** <br />
-    A URL to the PDF receipt download link.
-    """
-    queryset = Order.objects.all()
-    permission_classes = [IsBusinessOwnedResource]
-
-    def retrieve(self, request, *args, **kwargs):
-        order = self.get_object()
-        order.generate_pdf(request)
-        response = HttpResponse(order.pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="Receipt.pdf"'
-        return response

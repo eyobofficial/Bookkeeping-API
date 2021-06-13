@@ -1,5 +1,5 @@
+import inflect
 from uuid import uuid4
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models
 from django.template.loader import get_template
@@ -11,6 +11,7 @@ from weasyprint import HTML
 from business.models import BusinessAccount
 from customers.models import Customer
 from inventory.models import Stock
+
 
 class Order(models.Model):
     """
@@ -26,17 +27,13 @@ class Order(models.Model):
         (CUSTOM, _('custom order'))
     )
 
-    # Payment Options
-    CASH = 'CASH'
-    BANK = 'BANK'
-    CARD = 'CARD'
-    CREDIT = 'CREDIT'
+    # Status Choices
+    OPEN = 'OPEN'
+    CLOSED = 'CLOSED'
 
-    PAYMENT_CHOICES = (
-        (CASH, _('Cash')),
-        (BANK, _('Bank Transfer')),
-        (CARD, _('Card Transfer')),
-        (CREDIT, _('Pay Later'))
+    STATUS_CHOICES = (
+        (OPEN, _('Open')),
+        (CLOSED, _('Closed'))
     )
 
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
@@ -56,15 +53,10 @@ class Order(models.Model):
         null=True, blank=True,
         help_text=_('A total price offer for custom order.')
     )
-    mode_of_payment = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
-    pay_later_date = models.DateField(
-        blank=True, null=True,
-        help_text=_('Required if mode of payment is `CREDIT`.')
-    )
-    is_completed = models.BooleanField(_('completed'), default=False)
-    pdf_file = models.FileField(
-        upload_to='orders/receipts/',
-        null=True, blank=True
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=OPEN
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -92,16 +84,50 @@ class Order(models.Model):
             return sum([item.cost for item in items], 2)
         return self.custom_cost
 
-    def generate_pdf(self, request):
-        """Generate a PDF file of the order."""
-        template = get_template('receipts/placeholder.html')
-        context = {'order': self}
-        html = template.render(context)
-        pdf_file = HTML(
-            string=html,
-            base_url=request.build_absolute_uri()
-        ).write_pdf()
-        self.pdf_file.save('receipt.pdf', ContentFile(pdf_file), save=True)
+    def save_order_items_description(self):
+        """
+        Saves an appropriate description field for `FROM_LIST` orders.
+
+        If order is of type `FROM_LIST` (i.e. created from inventory),
+        the value of the `description` field should be calculated from the
+        selected order items.
+        """
+        if self.order_type == Order.CUSTOM:
+            return
+
+        qs = self.order_items.all()
+        p = inflect.engine()
+
+        order_items = {}
+
+        for order_item in qs:
+            product = order_item.item.product
+            count = order_items.get(product, 0)
+            order_items[product] = count + order_item.quantity
+
+        description = ', '.join(
+            [
+                f'{Order.stringfy_num(quantity)} {p.plural(product, quantity)}'
+                for product, quantity in order_items.items()
+            ]
+        )
+        self.description = description
+        self.save()
+
+    @staticmethod
+    def stringfy_num(num):
+        """
+        Convert a decimal number to a human readable format.
+
+        Examples:
+          * 3.00 -> 3
+          * 4.50 -> 4.5
+          * 9.99 -> 9.99
+        """
+        whole, fraction = str(num).split('.')
+        if fraction.rstrip('0') == '':
+            return whole
+        return '.'.join([whole, fraction.rstrip('0')])
 
 
 class OrderItem(models.Model):
@@ -132,8 +158,14 @@ class OrderItem(models.Model):
 
     def save(self, *args, **kwargs):
         """
+        Overwrite `save` method to modify some fields.
+
+        The following modifications are implemented:
         Consolidate the quantities of order item of the same order.
+        2. Conditionally set the `description` field.
         """
+
+        # 1. Consolidate quantity
         order_item = None
         qs = OrderItem.objects.filter(order=self.order, item=self.item)
         if qs.exists():
@@ -142,5 +174,9 @@ class OrderItem(models.Model):
 
         super().save(*args, **kwargs)
 
+        # Delete the previous (now duplicate) order item
         if order_item is not None:
             order_item.delete()
+
+        # 2. Conditionally set the description field
+        self.order.save_order_items_description()
