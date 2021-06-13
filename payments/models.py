@@ -18,12 +18,12 @@ class Payment(models.Model):
 
     # Payment Status Choices
     PENDING = 'PENDING'
-    SUCCESS = 'COMPLETED'
+    COMPLETED = 'COMPLETED'
     FAILED  = 'FAILED'
 
     PAYMENT_STATUS_CHOIES = (
         (PENDING, _('Pending')),
-        (SUCCESS, _('Completed')),
+        (COMPLETED, _('Completed')),
         (FAILED, _('Failed'))
     )
 

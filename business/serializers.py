@@ -338,3 +338,32 @@ class PaymentSerializer(serializers.ModelSerializer):
         if data['mode_of_payment'] != Payment.CREDIT:
             fields.pop('pay_later_date', None)
         return fields
+
+
+class SalesSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for completed sales.
+    """
+    customer = serializers.ReadOnlyField(source='order.customer.name')
+    description = serializers.ReadOnlyField(source='order.description')
+    amount = serializers.SerializerMethodField(
+        help_text=_('Total payment amount (including TAX and order cost).')
+    )
+    date = serializers.DateTimeField(read_only=True, source='updated_at')
+
+    class Meta:
+        model = Payment
+        fields = (
+            'id',
+            'customer',
+            'description',
+            'amount',
+            'mode_of_payment',
+            'date'
+        )
+
+    def get_amount(self, obj) -> Decimal:
+        """
+        Returns the total payment amount.
+        """
+        return obj.amount

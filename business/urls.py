@@ -3,7 +3,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from business.views import business_accounts, business_customers, \
-    business_expenses, business_inventory, business_orders, business_payments
+    business_expenses, business_inventory, business_orders, business_payments,\
+    business_sales
 
 
 app_name = 'business'
@@ -31,6 +32,11 @@ router.register(
 router.register(
     r'(?P<business_id>[0-9a-f-]+)/payments',
     business_payments.BusinessPaymentViewSet
+)
+router.register(
+    r'(?P<business_id>[0-9a-f-]+)/sales',
+    business_sales.SalesViewSet,
+    basename='sales'
 )
 
 # Must be at the bottom to match '' pattern
