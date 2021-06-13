@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.core.files.base import ContentFile
+from django.conf import settings
 from django.db import models
 from django.template.loader import get_template
 from django.utils.translation import gettext_lazy as _
@@ -45,10 +46,6 @@ class Payment(models.Model):
         on_delete=models.CASCADE,
         related_name='payment'
     )
-    amount = models.DecimalField(
-        max_digits=12, decimal_places=2,
-        null=True, blank=True
-    )
     mode_of_payment = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
     status = models.CharField(
         max_length=10,
@@ -79,6 +76,20 @@ class Payment(models.Model):
 
     def __str__(self):
         return self.order
+
+    @property
+    def vat_amount(self) -> float:
+        """
+        Returns the VAT Tax amount based order's cost.
+        """
+        return round(self.order.cost * settings.VAT, 2)
+
+    @property
+    def amount(self):
+        """
+        Returns a total amount for the payment.
+        """
+        return round(self.order.cost + self.vat_amount, 2)
 
     def generate_pdf(self, request):
         """Generate a PDF file of the order."""

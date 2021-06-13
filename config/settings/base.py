@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from decimal import Decimal
 from decouple import config, Csv
 from environ import Path
 
@@ -238,3 +239,7 @@ SIMPLE_JWT = {
 AFRICASTALKING_USERNAME = config('AFRICASTALKING_USERNAME')
 AFRICASTALKING_API_KEY = config('AFRICASTALKING_API_KEY')
 AFRICASTALKING_SENDER_ID = config('AFRICASTALKING_SENDER_ID')
+
+
+# TAX Constants
+VAT = Decimal('0.075')  # 7.5%

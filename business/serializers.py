@@ -1,6 +1,7 @@
-from collections import Counter
+from decimal import Decimal
 from functools import reduce
 
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
@@ -265,16 +266,53 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 class PaymentSerializer(serializers.ModelSerializer):
     customer = serializers.ReadOnlyField(source='order.customer.name')
     description = serializers.ReadOnlyField(source='order.description')
+    cost = serializers.SerializerMethodField(
+        help_text=_('Total cost of the orders')
+    )
+    vat_percentage = serializers.SerializerMethodField(
+        help_text=_('VAT Percentage in decimals.')
+    )
+    vat_amount = serializers.SerializerMethodField(
+        help_text=_('VAT Tax amount in current currency.')
+    )
+    amount = serializers.SerializerMethodField(
+        help_text=_('Total payment amount (including TAX and order cost).')
+    )
 
     class Meta:
         model = Payment
         fields = (
-            'id', 'order', 'customer', 'description', 'amount', 'status',
+            'id', 'order', 'customer', 'description', 'cost',
+            'vat_percentage', 'vat_amount', 'amount', 'status',
             'mode_of_payment', 'pay_later_date', 'created_at', 'updated_at'
         )
         read_only_fields = (
             'customer', 'description', 'amount', 'created_at', 'updated_at'
         )
+
+    def get_cost(self, obj) -> Decimal:
+        """
+        Returns a `cost` of order.
+        """
+        return obj.order.cost
+
+    def get_vat_percentage(self, obj) -> Decimal:
+        """
+        Returns the VAT percentage.
+        """
+        return settings.VAT
+
+    def get_vat_amount(self, obj) -> Decimal:
+        """
+        Returns the VAT amount.
+        """
+        return obj.vat_amount
+
+    def get_amount(self, obj) -> Decimal:
+        """
+        Returns the total payment amount.
+        """
+        return obj.amount
 
     def validate_pay_later_date(self, value):
         # Do not allow past dates

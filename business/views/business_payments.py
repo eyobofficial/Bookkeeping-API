@@ -134,6 +134,9 @@ class BusinessPaymentViewSet(*cls_args):
     - Order ID
     - Orders Description
     - Customer Name
+    - Order Cost
+    - VAT Percent
+    - VAT Amount
     - Amount
     - Mode of Payment
     - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
@@ -157,6 +160,9 @@ class BusinessPaymentViewSet(*cls_args):
     - Order ID
     - Orders Description
     - Customer Name
+    - Order Cost
+    - VAT Percent
+    - VAT Amount
     - Amount
     - Mode of Payment
     - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
@@ -185,6 +191,9 @@ class BusinessPaymentViewSet(*cls_args):
     - Order ID
     - Orders Description
     - Customer Name
+    - Order Cost
+    - VAT Percent
+    - VAT Amount
     - Amount
     - Mode of Payment
     - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
@@ -220,6 +229,9 @@ class BusinessPaymentViewSet(*cls_args):
     - Order ID
     - Orders Description
     - Customer Name
+    - Order Cost
+    - VAT Percent
+    - VAT Amount
     - Amount
     - Mode of Payment
     - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
@@ -256,6 +268,9 @@ class BusinessPaymentViewSet(*cls_args):
     - Order ID
     - Orders Description
     - Customer Name
+    - Order Cost
+    - VAT Percent
+    - VAT Amount
     - Amount
     - Mode of Payment
     - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
