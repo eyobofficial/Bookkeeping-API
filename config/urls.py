@@ -30,7 +30,7 @@ schema_view = get_schema_view(
       title="Dukka API",
       default_version='v1.0.0',
       description=('RESTful API endpoints for Dukka MVP version 1.0 app.'),
-      contact=openapi.Contact(email="hello@limestart.com")
+      contact=openapi.Contact(email="hello@dukka.com")
    ),
    public=True,
    permission_classes=[permissions.AllowAny]
