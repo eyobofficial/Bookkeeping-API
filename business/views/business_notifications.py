@@ -1,4 +1,5 @@
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.decorators import permission_classes
@@ -6,6 +7,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, \
     UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from notifications.models import Notification
@@ -29,6 +31,14 @@ cls_mixins = (
     decorator=swagger_auto_schema(
         operation_id='business-notification-list',
         tags=['Notifications'],
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by all or part of a notification type.')
+            )
+        ],
         responses={
             200: NotificationSerializer(many=True),
             401: 'Unauthorized'
@@ -86,6 +96,10 @@ class NotificationViewSet(*cls_mixins):
 
     **URL Parameters** <br />
     - `business_id`: The ID of the business account.
+
+    **Query Parameters** <br />
+    - `search`: All or part of the notification type (case-insensitive) you are
+    searching for.
 
     **Response Body** <br />
     An array of a notification object which includes:
@@ -179,3 +193,10 @@ class NotificationViewSet(*cls_mixins):
     queryset = Notification.objects.filter(is_seen=False)
     serializer_class = NotificationSerializer
     permission_classes = [IsBusinessOwnedResource]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        search_query = self.request.query_params.get('search')
+        if search_query is not None:
+            qs = qs.filter(notification_type__icontains=search_query)
+        return qs
