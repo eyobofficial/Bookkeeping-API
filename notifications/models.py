@@ -44,4 +44,4 @@ class Notification(models.Model):
         ordering = ('is_seen', '-created_at')
 
     def __str__(self):
-        return self.action
+        return self.action_message

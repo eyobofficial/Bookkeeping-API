@@ -75,7 +75,7 @@ class Payment(models.Model):
         ordering = ('-created_at', )
 
     def __str__(self):
-        return self.order
+        return self.order.customer.name
 
     @property
     def vat_amount(self) -> float:

@@ -12,6 +12,8 @@ from drf_yasg.utils import swagger_auto_schema
 from payments.models import Payment
 from business.serializers import PaymentSerializer
 from business.permissions import IsBusinessOwnedPayment
+from notifications.models import Notification
+from notifications.helpers.payment_notifications import pay_later_reminder
 
 
 # Arguments for `BusinessPaymentViewSet`
@@ -341,3 +343,12 @@ class BusinessPaymentViewSet(*cls_args):
         response = HttpResponse(payment.pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="Receipt.pdf"'
         return response
+
+    def perform_create(self, serializer):
+        payment = serializer.save()
+
+        # Create reminder for completed `PAY LATER` payments
+        if (payment.mode_of_payment == Payment.CREDIT
+            and payment.status == Payment.COMPLETED):
+            business_id = self.kwargs.get('business_id')
+            pay_later_reminder(payment, business_id, self.request)
