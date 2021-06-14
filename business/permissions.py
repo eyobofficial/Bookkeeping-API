@@ -22,6 +22,7 @@ class IsBusinessOwnedResource(permissions.IsAuthenticated):
     - Expense
     - Inventory Stock
     - Customer Order
+    - Notifications
     """
 
     def has_object_permission(self, request, view, obj):

@@ -13,6 +13,7 @@ from expenses.models import Expense
 from inventory.models import Stock, Sold
 from orders.models import Order, OrderItem
 from payments.models import Payment
+from notifications.models import Notification
 
 from .models import BusinessType, BusinessAccount
 
@@ -367,3 +368,26 @@ class SalesSerializer(serializers.ModelSerializer):
         Returns the total payment amount.
         """
         return obj.amount
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for current business account notifications.
+    """
+
+    class Meta:
+        model = Notification
+        fields = (
+            'id', 'notification_type', 'action_message', 'action_url',
+            'action_date', 'action_date_label', 'is_seen', 'created_at',
+            'updated_at'
+        )
+        read_only_fields = (
+            'notification_type',
+            'action_message',
+            'action_url',
+            'action_date',
+            'action_date_label',
+            'created_at',
+            'updated_at'
+        )
