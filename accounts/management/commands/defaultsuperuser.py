@@ -23,8 +23,17 @@ class Command(BaseCommand):
         phone_number = settings.DEFAULT_ADMIN_PHONE_NUMBER
 
         try:
-            if self.UserModel.objects.filter(email=email).exists():
-                self.stderr.write('Superuser already exists.')
+            if self.UserModel.objects.filter(phone_number=phone_number).exists():
+                user = self.UserModel.objects.get(phone_number=phone_number)
+                user.email = email
+                user.is_superuser = True
+                user.set_password(password)
+                user.save()
+
+                user.profile.first_name = first_name
+                user.profile.last_name = last_name
+                user.profile.save()
+                self.stdout.write('Existing user is updated.')
             else:
                 user = self.UserModel.objects.create_superuser(
                     email=email,
