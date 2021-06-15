@@ -14,6 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from business.models import BusinessAccount, BusinessType
 from business.serializers import BusinessTypeSerializer
 from shared.utils.otp import generate_otp
+from shared.sms.twiliolib import send_sms
 
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
@@ -327,10 +328,13 @@ class PasswordResetSerializer(serializers.ModelSerializer):
 
         # Send OTP SMS
         # TODO: Move to a celery task
-        sms = OTPSMS()
-        sms.recipients = str(phone_number)
-        sms.message = reset_otp.otp
-        sms.send()
+        # sms = OTPSMS()
+        # sms.recipients = str(phone_number)
+        # sms.message = reset_otp.otp
+        # sms.send()
+
+        # Via Twilio
+        send_sms(str(phone_number), reset_otp.otp)
 
         return reset_otp
 
