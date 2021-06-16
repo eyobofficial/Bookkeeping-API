@@ -14,7 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from business.models import BusinessAccount, BusinessType
 from business.serializers import BusinessTypeSerializer
 from shared.utils.otp import generate_otp
-from shared.sms.twiliolib import send_sms
+from shared.sms.twiliolib import send_twilio_sms
 
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
@@ -325,16 +325,19 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         reset_otp, _ = PasswordResetCode.objects.filter(
             expire_at__gt=now
         ).get_or_create(user=user)
+        message = f'Your Dukka code is: {reset_otp.otp}'
 
         # Send OTP SMS
         # TODO: Move to a celery task
+
+        # Via AfricasTalking
         # sms = OTPSMS()
         # sms.recipients = str(phone_number)
-        # sms.message = reset_otp.otp
+        # sms.message = message
         # sms.send()
 
         # Via Twilio
-        send_sms(str(phone_number), reset_otp.otp)
+        send_twilio_sms(str(phone_number), message)
 
         return reset_otp
 

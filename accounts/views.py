@@ -19,7 +19,7 @@ from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from accounts import schema as account_schema
 from business.models import BusinessAccount
 from shared import schema as shared_schema
-from shared.sms.twiliolib import send_sms
+from shared.sms.twiliolib import send_twilio_sms
 from shared.parsers import PhotoUploadParser
 from shared.utils.filetypes import get_mime_type, build_filename_ext
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
@@ -214,13 +214,16 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
             # Send OTP SMS
             phone_number = serializer.validated_data['phone_number']
             otp = serializer.data['otp']
+            message = f'Your Dukka code is: {otp}'
 
             # # Africas Talking
             # sms = OTPSMS()
             # sms.recipients = str(phone_number)
-            # sms.message = otp
+            # sms.message = message
             # sms.send()
-            send_sms(str(phone_number), otp)
+
+            # Via Twilio
+            send_twilio_sms(str(phone_number), message)
             return Response(serializer.data)
 
         error = {'phoneNumber': [_('Enter a valid phone number.')]}

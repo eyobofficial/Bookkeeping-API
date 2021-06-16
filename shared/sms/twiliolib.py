@@ -7,7 +7,10 @@ from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
 
-def send_sms(to, message):
+def send_twilio_sms(to, message):
+    """
+    Send an SMS to single recipient via Twilio
+    """
     twilio_sid = settings.TWILIO_ACCOUNT_SID
     twilio_auth = settings.TWILIO_AUTH_TOKEN
     twilio_phone_number = settings.TWILIO_PHONE_NUMBER
