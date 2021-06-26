@@ -11,6 +11,3 @@ class PhotoUploadParser(FileUploadParser):
     to ensure an image file is sent by the client.
     """
     media_type = 'image/*'
-
-    def get_filename(self, stream, media_type, parser_context):
-        return '_'

@@ -23,3 +23,25 @@ not_found_404_response = openapi.Response(
         }
     }
 )
+
+
+# Example HTTP response with 400 status for photo upload view
+photo_upload_400_response = openapi.Response(
+    description=_('Validation Error'),
+    examples={
+        'application/json': {
+            'detail': _('No image file included.')
+        }
+    }
+)
+
+
+# Example HTTP response with 415 status for photo upload view
+photo_upload_415_response = openapi.Response(
+    description=_('Unsupported Media Type'),
+    examples={
+        'application/json': {
+            'detail': _('Unsupported file type.')
+        }
+    }
+)
