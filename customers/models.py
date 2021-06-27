@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
 from business.models import BusinessAccount
+from shared.models import PhotoUpload
 
 
 class Customer(models.Model):
@@ -21,8 +22,10 @@ class Customer(models.Model):
     name = models.CharField(_('customer name'), max_length=100)
     phone_number = PhoneNumberField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    photo = models.ImageField(
-        upload_to='customers',
+    photo = models.OneToOneField(
+        PhotoUpload,
+        on_delete=models.CASCADE,
+        related_name='customer_photo',
         null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)

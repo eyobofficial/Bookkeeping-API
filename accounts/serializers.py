@@ -96,15 +96,14 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
             'first_name', 'last_name', 'date_of_birth', 'address', 'city',
             'country', 'postal_code', 'profile_photo', 'updated_at'
         )
-        read_only_fields = ('photo', 'updated_at')
         ref_name = 'Profile'
 
     def update(self, instance, valiated_data):
-        profile_photo = valiated_data.pop('profile_photo')
-        self._update_profile_photo(instance, profile_photo)
+        profile_photo_data = valiated_data.pop('profile_photo')
+        instance.profile_photo = self._get_profile_photo(instance, profile_photo_data)
         return super().update(instance, valiated_data)
 
-    def _update_profile_photo(self, instance, profile_photo):
+    def _get_profile_photo(self, instance, profile_photo_data):
         """
         Save profile photo from unploaded photo instance.
 
@@ -113,9 +112,8 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
           profile_photo (dict): The serialized dictonary of the PhotoUploaded
           instance.
         """
-        profile_photo_id = profile_photo['id']
-        photo = PhotoUpload.objects.get(pk=profile_photo_id)
-        instance.profile_photo = photo
+        profile_photo_id = profile_photo_data['id']
+        return PhotoUpload.objects.get(pk=profile_photo_id)
 
 
 class SettingSerializer(serializers.ModelSerializer):

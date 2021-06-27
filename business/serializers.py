@@ -14,6 +14,8 @@ from inventory.models import Stock, Sold
 from orders.models import Order, OrderItem
 from payments.models import Payment
 from notifications.models import Notification
+from shared.fields import PhotoUploadField
+from shared.models import PhotoUpload
 
 from .models import BusinessType, BusinessAccount
 
@@ -32,6 +34,7 @@ class BusinessAccountSerializer(CountryFieldMixin, serializers.ModelSerializer):
 
 
 class BusinessCustomerSerializer(serializers.ModelSerializer):
+    photo = PhotoUploadField(required=False)
 
     class Meta:
         model = Customer
@@ -39,7 +42,27 @@ class BusinessCustomerSerializer(serializers.ModelSerializer):
             'id', 'name', 'phone_number', 'email',
             'photo', 'created_at', 'updated_at'
         )
-        read_only_fields = ('photo', 'created_at', 'updated_at')
+
+    def update(self, instance, valiated_data):
+        photo_data = valiated_data.pop('photo')
+        instance.photo = self._get_photo(photo_data)
+        return super().update(instance, valiated_data)
+
+    def create(self, validated_data):
+        photo_data = validated_data.pop('photo')
+        validated_data['photo'] = self._get_photo(photo_data)
+        return super().create(validated_data)
+
+    def _get_photo(self, photo_data):
+        """
+        Get customer photo from unploaded photo instance.
+
+        params:
+          photo_data (dict): The serialized dictonary of the PhotoUploaded
+          instance.
+        """
+        photo_id = photo_data['id']
+        return PhotoUpload.objects.get(pk=photo_id)
 
 
 class BusinessExpenseSerializer(serializers.ModelSerializer):
