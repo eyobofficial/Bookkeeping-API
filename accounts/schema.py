@@ -229,50 +229,6 @@ user_profile_update_400_response = openapi.Response(
 )
 
 
-# Example HTTP response with 200 status for profile photo upload view
-profile_photo_upload_200_response = openapi.Response(
-    description=_('Success'),
-    examples={
-        'application/json': {
-            'detail': _('Profile photo uploaded.')
-        }
-    }
-)
-
-
-# Example HTTP response with 400 status for profile photo upload view
-profile_photo_upload_400_response = openapi.Response(
-    description=_('Validation Error'),
-    examples={
-        'application/json': {
-            'detail': _('No image file included.')
-        }
-    }
-)
-
-
-# Example HTTP response with 415 status for profile photo upload view
-profile_photo_upload_415_response = openapi.Response(
-    description=_('Unsupported Media Type'),
-    examples={
-        'application/json': {
-            'detail': _('Unsupported file type.')
-        }
-    }
-)
-
-
-# Example HTTP response with 204 status for profile photo remove view
-profile_photo_remove_204_response = openapi.Response(
-    description=_('No Content'),
-    examples={
-        'application/json': {
-            'detail': _('Profile photo deleted.')
-        }
-    }
-)
-
-
 # Example HTTP response with 400 status for user proflie update view
 user_business_account_create_400_response = openapi.Response(
     description=_('Validation Error'),

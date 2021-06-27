@@ -14,12 +14,23 @@ unauthorized_401_response = openapi.Response(
 )
 
 
-# Sample HTTP response with 404 Unauthorized statuses
+# Sample HTTP response with 404 Not Found statuses
 not_found_404_response = openapi.Response(
     description=_('Not Found'),
     examples={
         'application/json': {
             'detail': _('Not found.')
+        }
+    }
+)
+
+
+# Sample HTTP response with 404 Not Found statuses for photos
+photo_not_found_404_response = openapi.Response(
+    description=_('Not Found'),
+    examples={
+        'application/json': {
+            'detail': _('Uploaded Photo Not found.')
         }
     }
 )

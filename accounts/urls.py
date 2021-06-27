@@ -6,8 +6,7 @@ from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
     CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
     PasswordResetAPIView, PasswordResetConfirmAPIView, \
-    UserProfileDetailAPIView, UserSettingsAPIView, ProfilePhotoUploadView, \
-    BusinessAccountViewSet
+    UserProfileDetailAPIView, UserSettingsAPIView, BusinessAccountViewSet
 
 
 app_name = 'accounts'
@@ -52,11 +51,6 @@ urlpatterns = [
         'user/profile/',
         UserProfileDetailAPIView.as_view(),
         name='user-profile-detail'
-    ),
-    path(
-        'user/profile/photo/',
-        ProfilePhotoUploadView.as_view(),
-        name='profile-photo-upload'
     ),
     path(
         'user/settings/',

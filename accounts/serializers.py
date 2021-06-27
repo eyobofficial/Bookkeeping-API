@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -8,13 +7,13 @@ from django.utils.translation import gettext_lazy as _
 from allauth.account.adapter import get_adapter
 from django_countries.serializers import CountryFieldMixin
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
-from business.models import BusinessAccount, BusinessType
-from business.serializers import BusinessTypeSerializer
+from business.models import BusinessAccount
 from shared.utils.otp import generate_otp
 from shared.sms.twiliolib import send_twilio_sms
+from shared.fields import PhotoUploadField
+from shared.models import PhotoUpload
 
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
@@ -89,6 +88,7 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
     """
     Serializer for the user profile model.
     """
+    profile_photo = PhotoUploadField(required=False)
 
     class Meta:
         model = Profile
@@ -96,8 +96,26 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
             'first_name', 'last_name', 'date_of_birth', 'address', 'city',
             'country', 'postal_code', 'profile_photo', 'updated_at'
         )
-        read_only_fields = ('profile_photo', 'updated_at')
+        read_only_fields = ('photo', 'updated_at')
         ref_name = 'Profile'
+
+    def update(self, instance, valiated_data):
+        profile_photo = valiated_data.pop('profile_photo')
+        self._update_profile_photo(instance, profile_photo)
+        return super().update(instance, valiated_data)
+
+    def _update_profile_photo(self, instance, profile_photo):
+        """
+        Save profile photo from unploaded photo instance.
+
+        params:
+          instance (object): The user profile instance.
+          profile_photo (dict): The serialized dictonary of the PhotoUploaded
+          instance.
+        """
+        profile_photo_id = profile_photo['id']
+        photo = PhotoUpload.objects.get(pk=profile_photo_id)
+        instance.profile_photo = photo
 
 
 class SettingSerializer(serializers.ModelSerializer):

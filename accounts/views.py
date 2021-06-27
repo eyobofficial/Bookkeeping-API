@@ -1,5 +1,4 @@
-from django.contrib.auth import get_user_model, authenticate
-from django.utils import timezone
+from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
@@ -449,7 +448,8 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
-            401: shared_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.photo_not_found_404_response
         }
     )
 )
@@ -479,6 +479,7 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     - First Name
     - Last Name
     - Date of Birth
+    - Photo Object
     - City
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
     - Address
@@ -498,6 +499,7 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     - First Name
     - Last Name
     - Date of Birth
+    - Photo ID
     - City
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
     - Address
@@ -507,6 +509,7 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     - First Name
     - Last Name
     - Date of Birth
+    - Photo Object
     - City
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
     - Address
@@ -526,6 +529,7 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     - First Name
     - Last Name
     - Date of Birth
+    - Photo ID
     - City
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
     - Address
@@ -535,6 +539,7 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     - First Name
     - Last Name
     - Date of Birth
+    - Photo Object
     - City
     - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
     - Address
@@ -548,75 +553,6 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile
-
-
-class ProfilePhotoUploadView(APIView):
-    """
-    put:
-    Profile Photo Upload
-
-    Upload a new profile photo for an authenticated user. Files are uploaded
-    as a form data. Only image files are accepted by the endpoint.
-
-    **HTTP Request** <br />
-    `PUT /accounts/user/profile/photo/`
-
-    delete:
-    Profile Photo Remove
-
-    Remove the profile photo of an authenticated user.
-
-    **HTTP Request** <br />
-    `DELETE /accounts/user/profile/photo/`
-    """
-    parser_classes = [PhotoUploadParser]
-    permission_classes = [IsProfileOwner]
-
-    @swagger_auto_schema(
-        operation_id='profile-photo-upload',
-        responses={
-            200: account_schema.profile_photo_upload_200_response,
-            400: account_schema.profile_photo_upload_400_response,
-            401: shared_schema.unauthorized_401_response,
-            415: account_schema.profile_photo_upload_415_response
-        },
-        tags=['User Profile']
-    )
-    def put(self, request, format=None):
-        file_obj = request.data.get('file')
-
-        if file_obj is None:
-            raise ParseError(_('No image file included.'))
-
-        # Media/Mime Type
-        media_type = get_mime_type(file_obj)
-
-        try:
-            img = Image.open(file_obj)
-            img.verify()
-        except:
-            err_message = _(f'Unsupported file type.')
-            raise UnsupportedMediaType(media_type, detail=err_message)
-
-        profile = request.user.profile
-        filename = f'{profile.first_name}-{profile.last_name}'
-        filename = build_filename_ext(filename, media_type)
-        profile.profile_photo.save(filename, file_obj, save=True)
-        message = {'detail': _('Profile photo uploaded.')}
-        return Response(message, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_id='profile-photo-remove',
-        responses={
-            204: account_schema.profile_photo_remove_204_response,
-            401: shared_schema.unauthorized_401_response,
-        },
-        tags=['User Profile']
-    )
-    def delete(self, request, format=None):
-        request.user.profile.profile_photo.delete(save=True)
-        message = {'detail': _('Profile photo deleted.')}
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @method_decorator(

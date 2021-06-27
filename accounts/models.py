@@ -12,6 +12,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from business.models import BusinessType
 from shared.utils.otp import generate_otp
+from shared.models import PhotoUpload
 from .managers import CustomUserManager
 
 
@@ -57,9 +58,11 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, blank=True)
     country = CountryField(blank=True)
     postal_code = models.CharField(max_length=10, blank=True)
-    profile_photo = models.ImageField(
-        upload_to='profiles',
-        null=True, blank=True
+    profile_photo = models.OneToOneField(
+        PhotoUpload,
+        null=True, blank=True,
+        related_name='profile',
+        on_delete=models.CASCADE
     )
     updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 

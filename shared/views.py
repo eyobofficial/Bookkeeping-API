@@ -79,7 +79,7 @@ class PhotoUploadCreateView(APIView):
 
         upload = PhotoUpload.objects.create(owner=request.user)
         upload.photo.save(file_obj.name, file_obj, save=True)
-        serializer = PhotoUploadSerializer(upload)
+        serializer = PhotoUploadSerializer(upload, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

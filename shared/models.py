@@ -12,9 +12,9 @@ class PhotoUpload(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     photo = models.ImageField(upload_to='profiles', null=True, blank=True)
     owner = models.ForeignKey(
-        get_user_model(),
+        'accounts.CustomUser',
         on_delete=models.CASCADE,
-        related_name='uploaded_photos'
+        related_name='photo_uploads'
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
