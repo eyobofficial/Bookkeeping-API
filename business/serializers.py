@@ -77,9 +77,30 @@ class BusinessStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
         fields = (
-            'id', 'product', 'unit', 'quantity',
-            'price', 'created_at', 'updated_at'
+            'id', 'product', 'unit', 'quantity', 'price',
+            'photo', 'created_at', 'updated_at'
         )
+
+    def update(self, instance, valiated_data):
+        photo_data = valiated_data.pop('photo')
+        instance.photo = self._get_photo(photo_data)
+        return super().update(instance, valiated_data)
+
+    def create(self, validated_data):
+        photo_data = validated_data.pop('photo')
+        validated_data['photo'] = self._get_photo(photo_data)
+        return super().create(validated_data)
+
+    def _get_photo(self, photo_data):
+        """
+        Get inventory stock photo from unploaded photo instance.
+
+        params:
+          photo_data (dict): The serialized dictonary of the PhotoUploaded
+          instance.
+        """
+        photo_id = photo_data['id']
+        return PhotoUpload.objects.get(pk=photo_id)
 
 
 class BusinessSoldSerializer(serializers.ModelSerializer):

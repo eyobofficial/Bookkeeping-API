@@ -4,6 +4,7 @@ from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
 from business.models import BusinessAccount
+from shared.models import PhotoUpload
 
 
 class Stock(models.Model):
@@ -35,6 +36,12 @@ class Stock(models.Model):
     )
     quantity = models.PositiveIntegerField(help_text=_('Quantity left.'))
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    photo = models.OneToOneField(
+        PhotoUpload,
+        on_delete=models.CASCADE,
+        related_name='stock_photo',
+        null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
