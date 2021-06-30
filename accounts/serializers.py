@@ -88,7 +88,7 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
     """
     Serializer for the user profile model.
     """
-    photo = PhotoUploadField(required=False)
+    profile_photo = PhotoUploadField(required=False)
 
     class Meta:
         model = Profile
