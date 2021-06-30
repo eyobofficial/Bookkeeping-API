@@ -77,7 +77,7 @@ class PhotoUploadCreateView(APIView):
             err_message = _(f'Unsupported file type.')
             raise UnsupportedMediaType(media_type, detail=err_message)
 
-        upload = PhotoUpload.objects.create(owner=request.user)
+        upload = PhotoUpload.objects.create()
         upload.photo.save(file_obj.name, file_obj, save=True)
         serializer = PhotoUploadSerializer(upload, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -117,7 +117,3 @@ class PhotoUploadRetrieveView(RetrieveAPIView):
     queryset = PhotoUpload.objects.all()
     serializer_class = PhotoUploadSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(owner=self.request.user)

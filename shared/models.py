@@ -1,6 +1,5 @@
 from uuid import uuid4
 
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -11,11 +10,6 @@ class PhotoUpload(models.Model):
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     photo = models.ImageField(upload_to='profiles', null=True, blank=True)
-    owner = models.ForeignKey(
-        'accounts.CustomUser',
-        on_delete=models.CASCADE,
-        related_name='photo_uploads'
-    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -88,7 +88,7 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
     """
     Serializer for the user profile model.
     """
-    profile_photo = PhotoUploadField(required=False)
+    photo = PhotoUploadField(required=False)
 
     class Meta:
         model = Profile
@@ -99,21 +99,21 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
         ref_name = 'Profile'
 
     def update(self, instance, valiated_data):
-        profile_photo_data = valiated_data.pop('profile_photo')
-        instance.profile_photo = self._get_profile_photo(instance, profile_photo_data)
+        photo_data = valiated_data.pop('profile_photo')
+        instance.profile_photo = self._get_photo(instance, photo_data)
         return super().update(instance, valiated_data)
 
-    def _get_profile_photo(self, instance, profile_photo_data):
+    def _get_photo(self, instance, photo_data):
         """
         Save profile photo from unploaded photo instance.
 
         params:
-          instance (object): The user profile instance.
-          profile_photo (dict): The serialized dictonary of the PhotoUploaded
+          instance(object): The user profile instance.
+          photo_data(dict): The serialized dictonary of the PhotoUploaded
           instance.
         """
-        profile_photo_id = profile_photo_data['id']
-        return PhotoUpload.objects.get(pk=profile_photo_id)
+        photo_id = photo_data['id']
+        return PhotoUpload.objects.get(pk=photo_id)
 
 
 class SettingSerializer(serializers.ModelSerializer):
