@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
@@ -51,6 +52,12 @@ cls_args = (
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 description=_('Filter result by ID of an order object.')
+            ),
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by customer name or phone number.')
             )
         ],
         responses={
@@ -129,6 +136,8 @@ class BusinessPaymentViewSet(*cls_args):
       and `CREDIT`.
     - `status`: Filter payments of a business account by their status. The
       possible values are `PENDING`, `COMPLETED`, and `FAILED`.
+    - `search`: Filter payments of a business account by the customer name
+      or phone number.
 
     **Response Body** <br />
     An array of a payment object which includes:
@@ -310,6 +319,14 @@ class BusinessPaymentViewSet(*cls_args):
         status_query = self.request.query_params.get('status')
         if status_query is not None:
             qs = qs.filter(status=status_query)
+
+        # Search by customer name or phone number
+        search_query = self.request.query_params.get('search')
+        if search_query is not None:
+            qs = qs.filter(
+                Q(order__customer__name__icontains=search_query) |
+                Q(order__customer__phone_number__icontains=search_query)
+            )
         return qs
 
     @swagger_auto_schema(
