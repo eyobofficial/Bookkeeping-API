@@ -77,6 +77,7 @@ class BusinessExpenseSerializer(serializers.ModelSerializer):
 
 
 class BusinessStockSerializer(serializers.ModelSerializer):
+    photo = PhotoUploadField(required=False, allow_null=True)
 
     class Meta:
         model = Stock
@@ -86,13 +87,17 @@ class BusinessStockSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, valiated_data):
-        photo_data = valiated_data.pop('photo')
-        instance.photo = self._get_photo(photo_data)
+        photo_data = valiated_data.pop('photo', None)
+        if photo_data is None:  # i.e. either photo is `null` or missing
+            instance.photo = None
+        else:
+            instance.photo = self._get_photo(photo_data)
         return super().update(instance, valiated_data)
 
     def create(self, validated_data):
-        photo_data = validated_data.pop('photo')
-        validated_data['photo'] = self._get_photo(photo_data)
+        photo_data = validated_data.pop('photo', None)
+        if photo_data is not None:
+            validated_data['photo'] = self._get_photo(photo_data)
         return super().create(validated_data)
 
     def _get_photo(self, photo_data):
