@@ -34,7 +34,7 @@ class BusinessAccountSerializer(CountryFieldMixin, serializers.ModelSerializer):
 
 
 class BusinessCustomerSerializer(serializers.ModelSerializer):
-    photo = PhotoUploadField(required=False)
+    photo = PhotoUploadField(required=False, allow_null=True)
 
     class Meta:
         model = Customer
@@ -44,13 +44,17 @@ class BusinessCustomerSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, valiated_data):
-        photo_data = valiated_data.pop('photo')
-        instance.photo = self._get_photo(photo_data)
+        photo_data = valiated_data.pop('photo', None)
+        if photo_data is None:
+            instance.photo = None
+        else:
+            instance.photo = self._get_photo(photo_data)
         return super().update(instance, valiated_data)
 
     def create(self, validated_data):
-        photo_data = validated_data.pop('photo')
-        validated_data['photo'] = self._get_photo(photo_data)
+        photo_data = validated_data.pop('photo', None)
+        if photo_data is not None:
+            validated_data['photo'] = self._get_photo(photo_data)
         return super().create(validated_data)
 
     def _get_photo(self, photo_data):
@@ -394,6 +398,7 @@ class SalesSerializer(serializers.ModelSerializer):
     amount = serializers.SerializerMethodField(
         help_text=_('Total payment amount (including TAX and order cost).')
     )
+    payment = PaymentSerializer(read_only=True)
     date = serializers.DateTimeField(read_only=True, source='updated_at')
 
     class Meta:
@@ -404,6 +409,7 @@ class SalesSerializer(serializers.ModelSerializer):
             'description',
             'amount',
             'mode_of_payment',
+            'payment',
             'date'
         )
 
