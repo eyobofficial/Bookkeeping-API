@@ -2,14 +2,11 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from twilio.base.exceptions import TwilioRestException
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, permissions
-from rest_framework.exceptions import ParseError, UnsupportedMediaType
 from rest_framework.generics import GenericAPIView, CreateAPIView, \
     RetrieveUpdateAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
@@ -17,18 +14,15 @@ from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from accounts import schema as account_schema
 from business.models import BusinessAccount
 from shared import schema as shared_schema
-from shared.sms.twiliolib import send_twilio_sms
 from shared.sms.twilio_tokens import TwilioTokenService
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, ValidPhoneNumberConfirmSerialzier,\
     PasswordChangeSerializer,TokenVerifySerializer, UserResponseSerializer, \
     UserDetailSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, \
     ProfileSerializer, SettingSerializer, UserBusinessAccountSerializer
-from .sms.otp import OTPSMS
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
     IsSettingOwner, IsBusinessOwner
-from .models import Profile, Setting, PasswordResetCode
-from accounts import serializers
+from .models import Profile, Setting
 
 
 User = get_user_model()
@@ -676,26 +670,12 @@ class UserSettingsAPIView(RetrieveUpdateAPIView):
         return self.request.user.settings
 
 
-@method_decorator(
-    name='post',
-    decorator=swagger_auto_schema(
-        operation_id='password-reset',
-        tags=['User Account'],
-        responses={
-            200: PasswordResetSerializer(),
-            400: account_schema.password_reset_400_response,
-            404: account_schema.password_reset_404_response
-        }
-    )
-)
-class PasswordResetAPIView(CreateAPIView):
+class PasswordResetAPIView(GenericAPIView):
     """
     post:
     Password Reset
 
-    Returns a one-time password (OTP) code to let users reset their
-    forgotten password. It also sends the OTP code to the user mobile
-    phone via SMS.
+    It sends an OTP (One-time Password) code to the user mobile phone via SMS.
 
     **HTTP Request** <br />
     `POST /accounts/password/reset/`
@@ -705,17 +685,28 @@ class PasswordResetAPIView(CreateAPIView):
 
     **Response Body** <br />
     - Phone Number
-    - OTP code (A 6-digit numeric code)
-    - Expiration timestamp in milliseconds
     """
-    queryset = PasswordResetCode.objects.all()
     serializer_class = PasswordResetSerializer
     permission_classes = [permissions.AllowAny]
 
-    def create(self, request, *args, **kwargs):
+
+    @swagger_auto_schema(
+        operation_id='password-reset',
+        tags=['User Account'],
+        responses={
+            200: PasswordResetSerializer(),
+            400: account_schema.password_reset_400_response,
+            404: account_schema.password_reset_404_response
+        }
+    )
+    def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            self.perform_create(serializer)
+            # Send OTP SMS
+            phone_number = str(serializer.validated_data['phone_number'])
+            client = TwilioTokenService(to=str(phone_number))
+            client.send_verification()
+            request.session[phone_number] = {'twilio_service_id': client.service_id}
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -725,7 +716,8 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     post:
     Password Reset Confirm
 
-    Resets a forgotten password using a one-time passowrds (OTP).
+    Resets a forgotten password using the one-time passowrds (OTP) which
+    the user received via SMS.
 
     **HTTP Request** <br />
     `POST /accounts/password/reset/confirm/`
@@ -739,7 +731,6 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     - Password should be at least 8 characters long.
     - Password should not be similar to the user phone number or email address.
     """
-    queryset = PasswordResetCode.objects.all()
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -753,9 +744,16 @@ class PasswordResetConfirmAPIView(GenericAPIView):
         tags=['User Account']
     )
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request}
+        )
         if serializer.is_valid():
-            serializer.save()
+            phone_number = serializer.validated_data['phone_number']
+            new_password = serializer.validated_data['new_password']
+            user = User.objects.get(phone_number=phone_number)
+            user.set_password(new_password)
+            user.save()
             message = {'detail': _('New password is set successfully.')}
             return Response(message)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

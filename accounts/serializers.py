@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account.adapter import get_adapter
@@ -11,17 +10,15 @@ from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from twilio.base.exceptions import TwilioRestException
 
 from business.models import BusinessAccount
-from shared.sms.twiliolib import send_twilio_sms
 from shared.fields import PhotoUploadField
 from shared.models import PhotoUpload
 from shared.sms.twilio_tokens import TwilioTokenService
 
-from .fields import CustomPhoneNumberField, TimestampField
+from .fields import CustomPhoneNumberField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
-    AccountNotRegisteredException, InvalidCodeException, WrongOTPException, \
+    AccountNotRegisteredException, WrongOTPException, \
     InvalidCredentialsException, AccountDisabledException
 from .models import Profile, Setting, PasswordResetCode
-from .sms.otp import OTPSMS
 
 
 User = get_user_model()
@@ -335,20 +332,12 @@ class TokenVerifySerializer(serializers.Serializer):
         return {'detail': _('Token is valid')}
 
 
-class PasswordResetSerializer(serializers.ModelSerializer):
+class PasswordResetSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
-    expire_at = TimestampField(
-        read_only=True,
-        help_text='Timestamp in milliseconds (JS-style).'
-    )
 
     class Meta:
         model = PasswordResetCode
-        fields = ('phone_number', 'otp', 'expire_at')
-        read_only_fields = ('otp', 'expire_at')
-        extra_kwargs = {
-            'otp': {'help_text': 'A 6-digit numeric only one-time password.'}
-        }
+        fields = ('phone_number', 'otp')
 
     def validate_phone_number(self, value):
         # Make sure account exists
@@ -356,30 +345,11 @@ class PasswordResetSerializer(serializers.ModelSerializer):
             raise AccountNotRegisteredException()
         return value
 
-    def create(self, validated_data):
-        phone_number = validated_data['phone_number']
-        user = User.objects.get(phone_number=phone_number)
-        now = timezone.now()
-        reset_otp, _ = PasswordResetCode.objects.filter(
-            expire_at__gt=now
-        ).get_or_create(user=user)
-        message = f'Your Dukka code is: {reset_otp.otp}'
 
-        # Send OTP SMS
-        # TODO: Move to a celery task
-
-        # Via Twilio
-        send_twilio_sms(str(phone_number), message)
-
-        return reset_otp
-
-
-class PasswordResetConfirmSerializer(serializers.ModelSerializer):
+class PasswordResetConfirmSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
-    new_password = serializers.CharField(
-        write_only=True,
-        style={'input_type': 'password'}
-    )
+    otp = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(max_length=100)
 
     class Meta:
         model = PasswordResetCode
@@ -396,27 +366,18 @@ class PasswordResetConfirmSerializer(serializers.ModelSerializer):
             raise
 
     def validate(self, validated_data):
-        now = timezone.now()
-        phone_number = validated_data['phone_number']
+        phone_number = str(validated_data['phone_number'])
         otp = validated_data['otp']
+        request = self.context['request']
 
         try:
-            query_params = {
-                'user__phone_number': phone_number,
-                'otp': otp,
-                'expire_at__gt': now
-            }
-            reset_code = PasswordResetCode.objects.get(**query_params)
-            validated_data['instance'] = reset_code
-            return validated_data
-        except PasswordResetCode.DoesNotExist:
-            raise InvalidCodeException()
-
-    def save(self):
-        instance = self.validated_data['instance']
-        instance.user.set_password(self.validated_data['new_password'])
-        instance.user.save()
-        instance.delete()
+            twilio_service_id = request.session[phone_number]['twilio_service_id']
+            client = TwilioTokenService(to=phone_number, service_id=twilio_service_id)
+            if client.check_verification(code=otp):
+                return validated_data
+            raise WrongOTPException()
+        except (TwilioRestException, KeyError) as e:
+            raise WrongOTPException()
 
 
 class UserBusinessAccountSerializer(serializers.ModelSerializer):
