@@ -404,6 +404,7 @@ class SalesSerializer(serializers.ModelSerializer):
         help_text=_('Total payment amount (including TAX and order cost).')
     )
     payment = PaymentSerializer(read_only=True)
+    order = BusinessAllOrdersSerialize(read_only=True)
     date = serializers.DateTimeField(read_only=True, source='updated_at')
 
     class Meta:
@@ -415,6 +416,7 @@ class SalesSerializer(serializers.ModelSerializer):
             'amount',
             'mode_of_payment',
             'payment',
+            'order',
             'date'
         )
 

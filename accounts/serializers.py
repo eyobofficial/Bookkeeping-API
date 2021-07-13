@@ -8,16 +8,17 @@ from allauth.account.adapter import get_adapter
 from django_countries.serializers import CountryFieldMixin
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
+from twilio.base.exceptions import TwilioRestException
 
 from business.models import BusinessAccount
-from shared.utils.otp import generate_otp
 from shared.sms.twiliolib import send_twilio_sms
 from shared.fields import PhotoUploadField
 from shared.models import PhotoUpload
+from shared.sms.twilio_tokens import TwilioTokenService
 
 from .fields import CustomPhoneNumberField, TimestampField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
-    AccountNotRegisteredException, InvalidCodeException, \
+    AccountNotRegisteredException, InvalidCodeException, WrongOTPException, \
     InvalidCredentialsException, AccountDisabledException
 from .models import Profile, Setting, PasswordResetCode
 from .sms.otp import OTPSMS
@@ -69,7 +70,6 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
     Check phone number for valid phone number format and non-duplication.
     """
     phone_number = CustomPhoneNumberField()
-    otp = serializers.SerializerMethodField()
 
     def validate_phone_number(self, value):
         queryset = User.objects.filter(phone_number=value)
@@ -77,11 +77,33 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
             raise NonUniquePhoneNumberException()
         return value
 
-    def get_otp(self, obj):
-        """
-        Returns an 6-digit OTP (One-Time Password) code.
-        """
-        return generate_otp()
+
+class ValidPhoneNumberConfirmSerialzier(serializers.Serializer):
+    """
+    Check phone number for valid phone number format and non-duplication.
+    """
+    phone_number = CustomPhoneNumberField()
+    otp = serializers.CharField(max_length=6)
+
+    def validate_phone_number(self, value):
+        queryset = User.objects.filter(phone_number=value)
+        if queryset.exists():
+            raise NonUniquePhoneNumberException()
+        return value
+
+    def validate(self, validated_data):
+        phone_number = str(validated_data['phone_number'])
+        otp = validated_data['otp']
+        request = self.context['request']
+
+        try:
+            twilio_service_id = request.session[phone_number]['twilio_service_id']
+            client = TwilioTokenService(to=phone_number, service_id=twilio_service_id)
+            if client.check_verification(code=otp):
+                return validated_data
+            raise WrongOTPException()
+        except (TwilioRestException, KeyError) as e:
+            raise WrongOTPException()
 
 
 class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
@@ -345,12 +367,6 @@ class PasswordResetSerializer(serializers.ModelSerializer):
 
         # Send OTP SMS
         # TODO: Move to a celery task
-
-        # Via AfricasTalking
-        # sms = OTPSMS()
-        # sms.recipients = str(phone_number)
-        # sms.message = message
-        # sms.send()
 
         # Via Twilio
         send_twilio_sms(str(phone_number), message)

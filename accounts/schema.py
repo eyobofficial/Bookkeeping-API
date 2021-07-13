@@ -85,6 +85,28 @@ phone_validation_409_response = openapi.Response(
 )
 
 
+# Example HTTP response with 404 status when OTP (One-Time Password)
+# is not found.
+otp_not_found_404_response = openapi.Response(
+    description=_('OTP Not Found'),
+    examples={
+        'application/json': {
+            'detail': _('Wrong or expired OTP (One-time Password).')
+        }
+    }
+)
+
+# Example HTTP response with 200 status for phone number confirm view
+phone_number_confirm_200_response = openapi.Response(
+    description=_('Success'),
+    examples={
+        'application/json': {
+            'detail': _('Phone number successfully validated.')
+        }
+    }
+)
+
+
 # Example HTTP response with 200 status for password change view
 password_change_200_response = openapi.Response(
     description=_('Success'),

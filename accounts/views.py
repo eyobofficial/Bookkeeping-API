@@ -2,8 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from PIL import Image
-
+from twilio.base.exceptions import TwilioRestException
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, permissions
 from rest_framework.exceptions import ParseError, UnsupportedMediaType
@@ -19,17 +18,17 @@ from accounts import schema as account_schema
 from business.models import BusinessAccount
 from shared import schema as shared_schema
 from shared.sms.twiliolib import send_twilio_sms
-from shared.parsers import PhotoUploadParser
-from shared.utils.filetypes import get_mime_type, build_filename_ext
+from shared.sms.twilio_tokens import TwilioTokenService
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
-    ValidEmailSerialzier, ValidPhoneNumberSerialzier, PasswordChangeSerializer,\
-    TokenVerifySerializer, UserResponseSerializer, UserDetailSerializer, \
-    PasswordResetSerializer, PasswordResetConfirmSerializer, ProfileSerializer,\
-    SettingSerializer, UserBusinessAccountSerializer
+    ValidEmailSerialzier, ValidPhoneNumberSerialzier, ValidPhoneNumberConfirmSerialzier,\
+    PasswordChangeSerializer,TokenVerifySerializer, UserResponseSerializer, \
+    UserDetailSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, \
+    ProfileSerializer, SettingSerializer, UserBusinessAccountSerializer
 from .sms.otp import OTPSMS
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
     IsSettingOwner, IsBusinessOwner
 from .models import Profile, Setting, PasswordResetCode
+from accounts import serializers
 
 
 User = get_user_model()
@@ -195,6 +194,8 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
     **Response Body** <br />
     - Phone Number
     - One-Time Password (OTP)
+
+    *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
     serializer_class = ValidPhoneNumberSerialzier
 
@@ -211,22 +212,50 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             # Send OTP SMS
-            phone_number = serializer.validated_data['phone_number']
-            otp = serializer.data['otp']
-            message = f'Your Dukka code is: {otp}'
-
-            # # Africas Talking
-            # sms = OTPSMS()
-            # sms.recipients = str(phone_number)
-            # sms.message = message
-            # sms.send()
-
-            # Via Twilio
-            send_twilio_sms(str(phone_number), message)
+            phone_number = str(serializer.validated_data['phone_number'])
+            client = TwilioTokenService(to=str(phone_number))
+            client.send_verification()
+            request.session[phone_number] = {'twilio_service_id': client.service_id}
             return Response(serializer.data)
 
         error = {'phoneNumber': [_('Enter a valid phone number.')]}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PhoneNumberConfirmAPIView(GenericAPIView):
+    """
+    post:
+    Phone Number Confirmation
+
+    Check if submitted phone number and OTP matches to confirm the submitted
+    phone number is owned by the user.
+
+    **HTTP Request** <br />
+    `POST /accounts/phone/confirm/`
+
+    **Request Body Parameters** <br />
+    - Phone Number
+    - OTP (One-Time Password)
+
+    *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
+    """
+    serializer_class = ValidPhoneNumberConfirmSerialzier
+
+    @swagger_auto_schema(
+        operation_id='phone-number-confirmation',
+        tags=['User Account'],
+        responses={
+            200: account_schema.phone_number_confirm_200_response,
+            400: account_schema.phone_validation_400_response,
+            404: account_schema.otp_not_found_404_response
+        }
+    )
+    def post(self, request, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            message = {'detail': _('Phone number successfully validated.')}
+            return Response(message)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordChangeView(GenericAPIView):

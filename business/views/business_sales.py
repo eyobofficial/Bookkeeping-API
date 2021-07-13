@@ -73,7 +73,8 @@ class SalesViewSet(ReadOnlyModelViewSet):
     An array of a sales object which includes:
     - Sales ID
     - Customer Name
-    - Orders Description
+    - Orders Object
+    - Payment Object
     - Amount
     - Mode of Payment
     - Sales Date & Time
@@ -95,7 +96,8 @@ class SalesViewSet(ReadOnlyModelViewSet):
     **Response Body** <br />
     - Sales ID
     - Customer Name
-    - Orders Description
+    - Orders Object
+    - Payment Object
     - Amount
     - Mode of Payment
     - Sales Date & Time

@@ -37,3 +37,9 @@ class InvalidCredentialsException(APIException):
     status_code = 401
     default_detail = _('Wrong username or password.')
     default_code = 'invalid-credentials'
+
+
+class WrongOTPException(APIException):
+    status_code = 404
+    default_detail = _('Wrong or expired OTP (One-time Password).')
+    default_code = 'otp-not-found'

@@ -26,3 +26,4 @@ def send_twilio_sms(to, message):
         )
     except TwilioRestException as e:
         print(e)
+        raise

@@ -6,7 +6,8 @@ from .views import UserLoginAPIView, UserRegistrationAPIView, \
     EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
     CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
     PasswordResetAPIView, PasswordResetConfirmAPIView, \
-    UserProfileDetailAPIView, UserSettingsAPIView, BusinessAccountViewSet
+    UserProfileDetailAPIView, UserSettingsAPIView, BusinessAccountViewSet, \
+    PhoneNumberConfirmAPIView
 
 
 app_name = 'accounts'
@@ -28,6 +29,11 @@ urlpatterns = [
         'phone/validate/',
         PhoneNumberValidatorAPIView.as_view(),
         name='validate-phone-number'
+    ),
+    path(
+        'phone/confirm/',
+        PhoneNumberConfirmAPIView.as_view(),
+        name='confirm-phone-number'
     ),
     path(
         'password/change/',
