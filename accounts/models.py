@@ -113,34 +113,3 @@ def get_otp_expiration():
     EXPIRATION_DURATION = 30  # 30 minutes
     delta = timedelta(minutes=EXPIRATION_DURATION)
     return timezone.now() + delta
-
-
-class PasswordResetCode(models.Model):
-    """
-    A one-time code to reset passwords.
-    """
-    id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    user = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='password_reset_codes'
-    )
-    otp = models.CharField(
-        max_length=6,
-        default=generate_otp,
-        help_text='A one-time password code.'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    expire_at = models.DateTimeField(default=get_otp_expiration)
-
-    class Meta:
-        verbose_name = 'Password Reset Code'
-        verbose_name_plural = 'Password Reset Codes'
-        ordering = ('-expire_at', )
-
-    def __str__(self):
-        return self.otp
-
-    @property
-    def phone_number(self):
-        return self.user.phone_number

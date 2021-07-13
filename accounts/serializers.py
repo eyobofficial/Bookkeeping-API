@@ -18,7 +18,7 @@ from .fields import CustomPhoneNumberField
 from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
     AccountNotRegisteredException, WrongOTPException, \
     InvalidCredentialsException, AccountDisabledException
-from .models import Profile, Setting, PasswordResetCode
+from .models import Profile, Setting
 
 
 User = get_user_model()
@@ -335,10 +335,6 @@ class TokenVerifySerializer(serializers.Serializer):
 class PasswordResetSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
 
-    class Meta:
-        model = PasswordResetCode
-        fields = ('phone_number', 'otp')
-
     def validate_phone_number(self, value):
         # Make sure account exists
         if not User.objects.filter(phone_number=value).exists():
@@ -350,13 +346,6 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
     otp = serializers.CharField(max_length=6)
     new_password = serializers.CharField(max_length=100)
-
-    class Meta:
-        model = PasswordResetCode
-        fields = ('otp', 'phone_number', 'new_password')
-        extra_kwargs = {
-            'otp': {'required': True}
-        }
 
     def validate_new_password(self, value, *args, **kwargs):
         try:

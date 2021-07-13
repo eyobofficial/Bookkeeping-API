@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from business.models import BusinessAccount
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import CustomUser, Profile, Setting, PasswordResetCode
+from .models import CustomUser, Profile, Setting
 
 
 class ProfileInline(admin.StackedInline):
@@ -57,9 +57,3 @@ class CustomUserAdmin(UserAdmin):
     )
     ordering = ('email',)
     inlines = [ProfileInline, SettingInline, BusinessAccountInline]
-
-
-@admin.register(PasswordResetCode)
-class PasswordResetCodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'otp', 'created_at', 'expire_at')
-    search_fields = ('otp', )
