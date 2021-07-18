@@ -275,7 +275,7 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
             'created_at',
             'updated_at'
         )
-        read_only_fields = ('order_type', )
+        read_only_fields = ('order_type', 'status')
 
     def create(self, validated_data):
         # Set the cost to the `custom_cost` field instead

@@ -1,4 +1,9 @@
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import permissions
+
+from orders.models import Order
+from payments.models import Payment
 
 
 class IsAdminOrBusinessOwner(permissions.IsAuthenticated):
@@ -49,3 +54,25 @@ class IsBusinessOwnedPayment(permissions.IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         business_accounts = request.user.business_accounts.all()
         return obj.order.business_account in business_accounts
+
+
+class IsOrderOpen(permissions.BasePermission):
+    """
+    Check if an `Order` instance has a status of `OPEN` before
+    allowing updating and deleting the instance.
+    """
+    message = _('Updating or Deleting closed order is not allowed.')
+
+    def has_object_permission(self, request, view, obj):
+        return obj.status == Order.OPEN
+
+
+class IsPaymentNotCompleted(permissions.BasePermission):
+    """
+    Check if a payment instane isn't completed yet before allowing
+    updating and deleting.
+    """
+    message = _('Updating completed payment is not allowed.')
+
+    def has_object_permission(self, request, view, obj):
+        return obj.status != Payment.COMPLETED

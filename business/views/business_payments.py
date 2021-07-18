@@ -12,8 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from payments.models import Payment
 from business.serializers import PaymentSerializer
-from business.permissions import IsBusinessOwnedPayment
-from notifications.models import Notification
+from business.permissions import IsBusinessOwnedPayment, IsPaymentNotCompleted
 from notifications.helpers.payment_notifications import pay_later_reminder
 
 
@@ -99,6 +98,7 @@ cls_args = (
             200: PaymentSerializer(),
             400: 'Validation Errors',
             401: 'Unauthorized',
+            403: 'Updating completed payment is not allowed.',
             404: 'Not Found'
         }
     )
@@ -112,6 +112,7 @@ cls_args = (
             200: PaymentSerializer(),
             400: 'Validation Errors',
             401: 'Unauthorized',
+            403: 'Updating completed payment is not allowed.',
             404: 'Not Found'
         }
     )
@@ -404,3 +405,8 @@ class BusinessPaymentViewSet(*cls_args):
             and payment.status == Payment.COMPLETED):
             business_id = self.kwargs.get('business_id')
             pay_later_reminder(payment, business_id, self.request)
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            self.permission_classes += [IsPaymentNotCompleted]
+        return [permission() for permission in self.permission_classes]

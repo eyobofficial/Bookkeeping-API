@@ -12,7 +12,7 @@ from orders.models import Order
 from business.serializers import BusinessAllOrdersSerialize, \
     BusinessInventoryOrdersSerializer, BusinessCustomOrderSerializer, \
     OrderDetailSerializer
-from business.permissions import IsBusinessOwnedResource
+from business.permissions import IsBusinessOwnedResource, IsOrderOpen
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -255,6 +255,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessInventoryOrdersSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
+            403: 'Updating or Deleting closed order is not allowed.',
             404: 'Not Found',
         }
     )
@@ -268,11 +269,17 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessInventoryOrdersSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
+            403: 'Updating or Deleting closed order is not allowed.',
             404: 'Not Found',
         }
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            self.permission_classes += [IsOrderOpen]
+        return [permission() for permission in self.permission_classes]
 
 
 class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
@@ -403,6 +410,7 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessCustomOrderSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
+            403: 'Updating or Deleting closed order is not allowed.',
             404: 'Not Found',
         }
     )
@@ -416,8 +424,14 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
             200: BusinessCustomOrderSerializer(),
             400: 'Validation Error',
             401: 'Unauthorized',
+            403: 'Updating or Deleting closed order is not allowed.',
             404: 'Not Found',
         }
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            self.permission_classes += [IsOrderOpen]
+        return [permission() for permission in self.permission_classes]
