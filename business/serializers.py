@@ -396,6 +396,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     def create(self, *args, **kwargs):
         payment = super().create(*args, **kwargs)
 
+        # Add sold items record
         if payment.order.order_type == Order.CUSTOM:
             kwargs = {
                 'payment': payment,
@@ -410,9 +411,23 @@ class PaymentSerializer(serializers.ModelSerializer):
                     'payment': payment,
                     'product': order_item.item.product,
                     'unit': order_item.item.unit,
+                    'quantity': order_item.quantity,
                     'price': order_item.item.price
                 }
                 SoldItem.objects.create(**kwargs)
+        return payment
+
+    def save(self, *args, **kwargs):
+        payment = super().save(*args, **kwargs)
+        if payment.status == Payment.COMPLETED:
+            # Deduct inventory and Sold
+            order_items = payment.order.order_items.all()
+            for order_item in order_items:
+                order_item.item.sell(order_item.quantity)
+
+            # Close order
+            payment.order.status = Order.CLOSED
+            payment.order.save()
 
         return payment
 
