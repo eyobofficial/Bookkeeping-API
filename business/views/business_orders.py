@@ -2,8 +2,8 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import permissions
-from rest_framework.generics import RetrieveAPIView, ListAPIView, \
-    CreateAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView,\
+    RetrieveDestroyAPIView
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -93,7 +93,20 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
         }
     )
 )
-class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
+@method_decorator(
+    name='delete',
+    decorator=swagger_auto_schema(
+        operation_id='business-order-delete',
+        tags=['Orders'],
+        responses={
+            204: 'No Content',
+            401: 'Unauthorized',
+            403: 'Updating or deleting closed order is not allowed.',
+            404: 'Not Found',
+        }
+    )
+)
+class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveDestroyAPIView):
     """
     get:
     Customer Order Detail
@@ -118,10 +131,27 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveAPIView):
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
+
+    delete:
+    Custom Order Delete
+
+    Delete a customer order for a business account.
+
+    **HTTP Request** <br />
+    `DELETE /business/{business_id}/orders/{order_id}/`
+
+    **URL Parameters** <br />
+    - `business_id`: The ID of the business account.
+    - `order_id`: The ID of the customer order.
     """
     queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
     permission_classes = [IsBusinessOwnedResource]
+
+    def get_permissions(self):
+        if self.request.method == 'DELETE':
+            self.permission_classes += [IsOrderOpen]
+        return [permission() for permission in self.permission_classes]
 
 
 class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
@@ -246,7 +276,7 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     """
     queryset = Order.objects.all()
     serializer_class = BusinessInventoryOrdersSerializer
-    permission_classes = [IsBusinessOwnedResource]
+    permission_classes = [IsBusinessOwnedResource, IsOrderOpen]
 
     @swagger_auto_schema(
         operation_id='business-inventory-order-update',
@@ -275,11 +305,6 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            self.permission_classes += [IsOrderOpen]
-        return [permission() for permission in self.permission_classes]
 
 
 class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
@@ -401,7 +426,7 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     """
     queryset = Order.objects.all()
     serializer_class = BusinessCustomOrderSerializer
-    permission_classes = [IsBusinessOwnedResource]
+    permission_classes = [IsBusinessOwnedResource, IsOrderOpen]
 
     @swagger_auto_schema(
         operation_id='business-custom-order-update',
@@ -430,8 +455,3 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            self.permission_classes += [IsOrderOpen]
-        return [permission() for permission in self.permission_classes]

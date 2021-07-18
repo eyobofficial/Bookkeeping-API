@@ -61,7 +61,7 @@ class IsOrderOpen(permissions.BasePermission):
     Check if an `Order` instance has a status of `OPEN` before
     allowing updating and deleting the instance.
     """
-    message = _('Updating or Deleting closed order is not allowed.')
+    message = _('Updating or deleting closed order is not allowed.')
 
     def has_object_permission(self, request, view, obj):
         return obj.status == Order.OPEN
