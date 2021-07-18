@@ -143,14 +143,21 @@ class BusinessPaymentViewSet(*cls_args):
     An array of a payment object which includes:
     - Payment ID
     - Order ID
-    - Orders Description
-    - Customer Name
-    - Order Cost
-    - VAT Percent
-    - VAT Amount
-    - Amount
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
     - Create Date & Time
     - Last Updated Date & Time
 
@@ -169,14 +176,21 @@ class BusinessPaymentViewSet(*cls_args):
     **Response Body** <br />
     - Payment ID
     - Order ID
-    - Orders Description
-    - Customer Name
-    - Order Cost
-    - VAT Percent
-    - VAT Amount
-    - Amount
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
     - Create Date & Time
     - Last Updated Date & Time
 
@@ -200,14 +214,21 @@ class BusinessPaymentViewSet(*cls_args):
     **Response Body** <br />
     - Payment ID
     - Order ID
-    - Orders Description
-    - Customer Name
-    - Order Cost
-    - VAT Percent
-    - VAT Amount
-    - Amount
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
     - Create Date & Time
     - Last Updated Date & Time
 
@@ -238,14 +259,21 @@ class BusinessPaymentViewSet(*cls_args):
     **Response Body** <br />
     - Payment ID
     - Order ID
-    - Orders Description
-    - Customer Name
-    - Order Cost
-    - VAT Percent
-    - VAT Amount
-    - Amount
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
     - Create Date & Time
     - Last Updated Date & Time
 
@@ -277,14 +305,21 @@ class BusinessPaymentViewSet(*cls_args):
     **Response Body** <br />
     - Payment ID
     - Order ID
-    - Orders Description
-    - Customer Name
-    - Order Cost
-    - VAT Percent
-    - VAT Amount
-    - Amount
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Pay Later Date (*Null for orders with mode of payment other than `CREDIT`*)
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
     - Create Date & Time
     - Last Updated Date & Time
 

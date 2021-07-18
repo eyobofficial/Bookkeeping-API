@@ -52,7 +52,6 @@ INSTALLED_APPS += [
     'orders.apps.OrdersConfig',
     'payments.apps.PaymentsConfig',
     'notifications.apps.NotificationsConfig',
-    'sales.apps.SalesConfig',
 ]
 
 MIDDLEWARE = [
@@ -158,7 +157,7 @@ PHONENUMBER_DB_FORMAT = 'E164'
 
 
 # Start-up fixtures
-FIXTURES = []
+FIXTURES = ['business_types']
 
 
 # Email backend
@@ -234,14 +233,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
-
-
-# Africa's Talking
-
-AFRICASTALKING_USERNAME = config('AFRICASTALKING_USERNAME')
-AFRICASTALKING_API_KEY = config('AFRICASTALKING_API_KEY')
-AFRICASTALKING_SENDER_ID = config('AFRICASTALKING_SENDER_ID')
-
 
 # Twilio
 TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')

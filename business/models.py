@@ -15,7 +15,7 @@ class BusinessType(models.Model):
     Business categories.
     """
     title = models.CharField(max_length=100)
-    icon = models.ImageField(upload_to='business/icons/', null=True, blank=True)
+    icon = models.URLField(null=True, blank=True)
 
     class Meta:
         verbose_name = _('Business Type')

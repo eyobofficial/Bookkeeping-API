@@ -6,7 +6,6 @@ from django.conf import settings
 def send_termii_token():
     pass
 
-
 class TermiiToken:
     ENDPOINT = 'https://termii.com/api/sms/otp/send'
     HEADERS = {'Content-Type': 'application/json'}

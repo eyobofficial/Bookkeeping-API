@@ -7,12 +7,13 @@ from django.utils import timezone
 
 from rest_framework import serializers
 from django_countries.serializers import CountryFieldMixin
+from drf_yasg.utils import swagger_serializer_method
 
 from customers.models import Customer
 from expenses.models import Expense
 from inventory.models import Stock, Sold
 from orders.models import Order, OrderItem
-from payments.models import Payment
+from payments.models import Payment, SoldItem
 from notifications.models import Notification
 from shared.fields import PhotoUploadField
 from shared.models import PhotoUpload
@@ -317,56 +318,65 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         return obj.cost
 
 
+class SoldItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SoldItem
+        fields = ('product', 'unit', 'quantity', 'price', 'amount')
+
+
 class PaymentSerializer(serializers.ModelSerializer):
-    customer = serializers.ReadOnlyField(source='order.customer.name')
+    customer = serializers.SerializerMethodField()
     description = serializers.ReadOnlyField(source='order.description')
-    cost = serializers.SerializerMethodField(
-        help_text=_('Total cost of the orders')
+    order_amount = serializers.SerializerMethodField(
+        help_text=_('Total amount of the order (i.e. before TAX).')
     )
-    vat_percentage = serializers.SerializerMethodField(
-        help_text=_('VAT Percentage in decimals.')
+    tax_percentage = serializers.SerializerMethodField(
+        help_text=_('TAX Percentage in decimals.')
     )
-    vat_amount = serializers.SerializerMethodField(
-        help_text=_('VAT Tax amount in current currency.')
+    tax_amount = serializers.SerializerMethodField(
+        help_text=_('TAX amount to be added.')
     )
-    amount = serializers.SerializerMethodField(
-        help_text=_('Total payment amount (including TAX and order cost).')
+    total_amount = serializers.SerializerMethodField(
+        help_text=_('Total amount of the payment (i.e. after TAX).')
     )
+    sold_items = SoldItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Payment
         fields = (
-            'id', 'order', 'customer', 'description', 'cost',
-            'vat_percentage', 'vat_amount', 'amount', 'status',
+            'id', 'order', 'customer', 'description', 'order_amount', 'sold_items',
+            'tax_percentage', 'tax_amount', 'total_amount', 'status',
             'mode_of_payment', 'pay_later_date', 'created_at', 'updated_at'
         )
-        read_only_fields = (
-            'customer', 'description', 'amount', 'created_at', 'updated_at'
-        )
 
-    def get_cost(self, obj) -> Decimal:
-        """
-        Returns a `cost` of order.
-        """
-        return obj.order.cost
+    @swagger_serializer_method(serializer_or_field=CustomerSerializer)
+    def get_customer(self, obj):
+        return CustomerSerializer(instance=obj.order.customer).data
 
-    def get_vat_percentage(self, obj) -> Decimal:
+    def get_tax_percentage(self, obj) -> Decimal:
         """
-        Returns the VAT percentage.
+        Returns the tax percentage.
         """
         return settings.VAT
 
-    def get_vat_amount(self, obj) -> Decimal:
+    def get_tax_amount(self, obj) -> Decimal:
         """
         Returns the VAT amount.
         """
-        return obj.vat_amount
+        return obj.tax_amount
 
-    def get_amount(self, obj) -> Decimal:
+    def get_order_amount(self, obj) -> Decimal:
         """
-        Returns the total payment amount.
+        Returns the total order amount (i.e. before tax).
         """
-        return obj.amount
+        return obj.order_amount
+
+    def get_total_amount(self, obj) -> Decimal:
+        """
+        Returns the total payment amount (i.e. after tax).
+        """
+        return obj.total_amount
 
     def validate_pay_later_date(self, value):
         # Do not allow past dates
@@ -374,16 +384,6 @@ class PaymentSerializer(serializers.ModelSerializer):
         if value < now.date():
             raise serializers.ValidationError(_('Date cannot be in the past.'))
         return value
-
-    def validate(self, validated_data):
-        mode_of_payment = validated_data['mode_of_payment']
-        pay_later_date = validated_data.get('pay_later_date')
-
-        # Make `pay_later_date` required if mode of payment is `CREDIT`
-        if mode_of_payment == Payment.CREDIT and not pay_later_date:
-            error = {'pay_later_field': _('This field is required.')}
-            raise serializers.ValidationError(error)
-        return validated_data
 
     def to_internal_value(self, data):
         fields = super().to_internal_value(data)
@@ -393,38 +393,28 @@ class PaymentSerializer(serializers.ModelSerializer):
             fields.pop('pay_later_date', None)
         return fields
 
+    def create(self, *args, **kwargs):
+        payment = super().create(*args, **kwargs)
 
-class SalesSerializer(serializers.ModelSerializer):
-    """
-    Read-only serializer for completed sales.
-    """
-    customer = serializers.ReadOnlyField(source='order.customer.name')
-    description = serializers.ReadOnlyField(source='order.description')
-    amount = serializers.SerializerMethodField(
-        help_text=_('Total payment amount (including TAX and order cost).')
-    )
-    payment = PaymentSerializer(read_only=True)
-    order = BusinessAllOrdersSerialize(read_only=True)
-    date = serializers.DateTimeField(read_only=True, source='updated_at')
+        if payment.order.order_type == Order.CUSTOM:
+            kwargs = {
+                'payment': payment,
+                'product': payment.order.description,
+                'quantity': 1,
+                'price': payment.order.custom_cost,
+            }
+            SoldItem.objects.create(**kwargs)
+        else:
+            for order_item in payment.order.order_items.all():
+                kwargs = {
+                    'payment': payment,
+                    'product': order_item.item.product,
+                    'unit': order_item.item.unit,
+                    'price': order_item.item.price
+                }
+                SoldItem.objects.create(**kwargs)
 
-    class Meta:
-        model = Payment
-        fields = (
-            'id',
-            'customer',
-            'description',
-            'amount',
-            'mode_of_payment',
-            'payment',
-            'order',
-            'date'
-        )
-
-    def get_amount(self, obj) -> Decimal:
-        """
-        Returns the total payment amount.
-        """
-        return obj.amount
+        return payment
 
 
 class NotificationSerializer(serializers.ModelSerializer):

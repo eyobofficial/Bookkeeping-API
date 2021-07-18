@@ -1,8 +1,6 @@
 import inflect
 from uuid import uuid4
-from django.core.files.base import ContentFile
 from django.db import models
-from django.template.loader import get_template
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
@@ -161,7 +159,7 @@ class OrderItem(models.Model):
         Overwrite `save` method to modify some fields.
 
         The following modifications are implemented:
-        Consolidate the quantities of order item of the same order.
+        1. Consolidate the quantities of order item of the same order.
         2. Conditionally set the `description` field.
         """
 

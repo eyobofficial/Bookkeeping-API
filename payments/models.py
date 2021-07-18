@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import models
 from django.template.loader import get_template
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from weasyprint import HTML
@@ -77,19 +78,27 @@ class Payment(models.Model):
     def __str__(self):
         return self.order.customer.name
 
-    @property
-    def vat_amount(self) -> float:
+    @cached_property
+    def tax_amount(self) -> float:
         """
         Returns the VAT Tax amount based order's cost.
         """
-        return round(self.order.cost * settings.VAT, 2)
+        return round(self.order_amount * settings.VAT, 2)
 
-    @property
-    def amount(self):
+    @cached_property
+    def order_amount(self):
         """
-        Returns a total amount for the payment.
+        Returns a total order amount for the payment *before* tax.
         """
-        return round(self.order.cost + self.vat_amount, 2)
+        total = sum(item.amount for item in self.sold_items.all())
+        return round(total, 2)
+
+    @cached_property
+    def total_amount(self):
+        """
+        Returns a total order amount for the payment *after* tax.
+        """
+        return round(self.order_amount + self.tax_amount, 2)
 
     def generate_pdf(self, request):
         """Generate a PDF file of the order."""
@@ -101,3 +110,49 @@ class Payment(models.Model):
             base_url=request.build_absolute_uri()
         ).write_pdf()
         self.pdf_file.save('receipt.pdf', ContentFile(pdf_file), save=True)
+
+
+class SoldItem(models.Model):
+
+    # Measurement units
+    PCS = 'pc'
+    KILOGRAMS = 'kg'
+    LITERS = 'lt'
+    METERS = 'mt'
+
+    UNIT_CHOICES = (
+        (PCS, _('pcs')),
+        (KILOGRAMS, _('kilograms')),
+        (LITERS, _('lt')),
+        (METERS, _('mt')),
+    )
+
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.CASCADE,
+        related_name='sold_items'
+    )
+    product = models.TextField()
+    unit = models.CharField(
+        max_length=2,
+        choices=UNIT_CHOICES,
+        default=PCS,
+        help_text=_('Measurement unit.')
+    )
+    quantity = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        verbose_name = _('Sold Item')
+        verbose_name_plural = _('Sold Items')
+
+    def __str__(self):
+        return self.product
+
+    @cached_property
+    def amount(self) -> float:
+        """
+        Sub-total amount of the order item.
+        """
+        return round(self.quantity * self.price, 2)

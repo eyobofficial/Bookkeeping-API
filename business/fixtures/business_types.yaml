@@ -2,39 +2,49 @@
   pk: 1
   fields:
     title: Online Store
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/1.png
 - model: business.businesstype
   pk: 2
   fields:
     title: Fashion, Healthy & Beauty
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/2.png
 - model: business.businesstype
   pk: 3
   fields:
     title: Cafe & Restaurants
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/3.png
 - model: business.businesstype
   pk: 4
   fields:
     title: Food & Drink
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/4.png
 - model: business.businesstype
   pk: 5
   fields:
     title: Gifts & Toys
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/5.png
 - model: business.businesstype
   pk: 6
   fields:
     title: Home & Lifestyle
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/6.png
 - model: business.businesstype
   pk: 7
   fields:
     title: Service & Consulting
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/7.png
 - model: business.businesstype
   pk: 8
   fields:
     title: Autoshop & Repairs
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/8.png
 - model: business.businesstype
   pk: 9
   fields:
     title: Supermarket & Convenience store
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/9.png
 - model: business.businesstype
   pk: 10
   fields:
     title: Others
+    icon: https://dukka-icons.s3.amazonaws.com/business_types/10.png

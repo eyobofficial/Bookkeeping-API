@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from payments.models import Payment
-from business.serializers import SalesSerializer
+from business.serializers import PaymentSerializer
 from business.permissions import IsBusinessOwnedPayment
 
 
@@ -31,7 +31,7 @@ from business.permissions import IsBusinessOwnedPayment
             )
         ],
         responses={
-            200: SalesSerializer(many=True),
+            200: PaymentSerializer(many=True),
             401: 'Unauthorized'
         }
     )
@@ -42,7 +42,7 @@ from business.permissions import IsBusinessOwnedPayment
         operation_id='business-sales-detail',
         tags=['Sales'],
         responses={
-            200: SalesSerializer(),
+            200: PaymentSerializer(),
             401: 'Unauthorized',
             404: 'Not Found'
         }
@@ -71,13 +71,25 @@ class SalesViewSet(ReadOnlyModelViewSet):
 
     **Response Body** <br />
     An array of a sales object which includes:
-    - Sales ID
-    - Customer Name
-    - Orders Object
-    - Payment Object
-    - Amount
+    - Payment/Sales ID
+    - Order ID
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Sales Date & Time
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
+    - Create Date & Time
+    - Last Updated Date & Time
 
     retrieve:
     Sales Detail
@@ -94,16 +106,28 @@ class SalesViewSet(ReadOnlyModelViewSet):
     - `sales_id`: The ID of the sales object.
 
     **Response Body** <br />
-    - Sales ID
-    - Customer Name
-    - Orders Object
-    - Payment Object
-    - Amount
+    - Payment/Sales ID
+    - Order ID
+    - Orders Description (i.e. Summary of sold items)
+    - Customer Object
+    - Order Amount (Before TAX)
+    - Tax Percentage (example: `0.15` for 15%)
+    - Tax Amount
+    - Total Amount (After Tax)
     - Mode of Payment
-    - Sales Date & Time
+    - Pay Later Date (*Optional*)
+    - An array of Sold Items Object. Object fields are:
+        * Product
+        * Unit
+        * Quantity
+        * Price
+        * Amount
+    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
+    - Create Date & Time
+    - Last Updated Date & Time
     """
     queryset = Payment.objects.filter(status=Payment.COMPLETED)
-    serializer_class = SalesSerializer
+    serializer_class = PaymentSerializer
     permission_classes = [IsBusinessOwnedPayment]
 
     def get_queryset(self):
