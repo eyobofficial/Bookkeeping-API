@@ -10,10 +10,7 @@ INSTALLED_APPS += [
     'django_extensions',
 ]
 
-# Static & media files
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
+
 USE_S3 = config('USE_S3', default=False, cast=bool)
 
 if USE_S3:

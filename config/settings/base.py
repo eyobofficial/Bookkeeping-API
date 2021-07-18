@@ -242,3 +242,9 @@ TWILIO_PHONE_NUMBER = config('TWILIO_PHONE_NUMBER')
 
 # TAX Constants
 VAT = Decimal('0.075')  # 7.5%
+
+
+# Static & media files
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
