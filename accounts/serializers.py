@@ -11,7 +11,7 @@ from twilio.base.exceptions import TwilioRestException
 
 from business.models import BusinessAccount
 from shared.fields import PhotoUploadField
-from shared.models import PhotoUpload
+from shared.models import PhotoUpload, TwilioService
 from shared.sms.twilio_tokens import TwilioTokenService
 
 from .fields import CustomPhoneNumberField
@@ -91,15 +91,17 @@ class ValidPhoneNumberConfirmSerialzier(serializers.Serializer):
     def validate(self, validated_data):
         phone_number = str(validated_data['phone_number'])
         otp = validated_data['otp']
-        request = self.context['request']
 
         try:
-            twilio_service_id = request.session[phone_number]['twilio_service_id']
-            client = TwilioTokenService(to=phone_number, service_id=twilio_service_id)
+            twilio_service = TwilioService.objects.get(phone_number=phone_number)
+            client = TwilioTokenService(
+                to=phone_number,
+                service_id=twilio_service.service_id
+            )
             if client.check_verification(code=otp):
                 return validated_data
             raise WrongOTPException()
-        except (TwilioRestException, KeyError) as e:
+        except (TwilioRestException, TwilioService.DoesNotExist) as e:
             raise WrongOTPException()
 
 
@@ -357,15 +359,17 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     def validate(self, validated_data):
         phone_number = str(validated_data['phone_number'])
         otp = validated_data['otp']
-        request = self.context['request']
 
         try:
-            twilio_service_id = request.session[phone_number]['twilio_service_id']
-            client = TwilioTokenService(to=phone_number, service_id=twilio_service_id)
+            twilio_service = TwilioService.objects.get(phone_number=phone_number)
+            client = TwilioTokenService(
+                to=phone_number,
+                service_id=twilio_service.service_id
+            )
             if client.check_verification(code=otp):
                 return validated_data
             raise WrongOTPException()
-        except (TwilioRestException, KeyError) as e:
+        except (TwilioRestException, TwilioService.DoesNotExist) as e:
             raise WrongOTPException()
 
 

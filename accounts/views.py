@@ -15,6 +15,7 @@ from accounts import schema as account_schema
 from business.models import BusinessAccount
 from shared import schema as shared_schema
 from shared.sms.twilio_tokens import TwilioTokenService
+from shared.models import TwilioService
 from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ValidEmailSerialzier, ValidPhoneNumberSerialzier, ValidPhoneNumberConfirmSerialzier,\
     PasswordChangeSerializer,TokenVerifySerializer, UserResponseSerializer, \
@@ -209,7 +210,10 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
             phone_number = str(serializer.validated_data['phone_number'])
             client = TwilioTokenService(to=str(phone_number))
             client.send_verification()
-            request.session[phone_number] = {'twilio_service_id': client.service_id}
+            TwilioService.objects.update_or_create(
+                phone_number=phone_number,
+                defaults={'service_id': client.service_id}
+            )
             return Response(serializer.data)
 
         error = {'phoneNumber': [_('Enter a valid phone number.')]}
@@ -245,7 +249,7 @@ class PhoneNumberConfirmAPIView(GenericAPIView):
         }
     )
     def post(self, request, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             message = {'detail': _('Phone number successfully validated.')}
             return Response(message)
@@ -706,7 +710,10 @@ class PasswordResetAPIView(GenericAPIView):
             phone_number = str(serializer.validated_data['phone_number'])
             client = TwilioTokenService(to=str(phone_number))
             client.send_verification()
-            request.session[phone_number] = {'twilio_service_id': client.service_id}
+            TwilioService.objects.update_or_create(
+                phone_number=phone_number,
+                defaults={'service_id': client.service_id}
+            )
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -744,10 +751,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
         tags=['User Account']
     )
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data,
-            context={'request': request}
-        )
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
             new_password = serializer.validated_data['new_password']

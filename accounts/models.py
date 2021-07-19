@@ -1,7 +1,6 @@
 from uuid import uuid4
-from datetime import timedelta, datetime
+from datetime import timedelta
 
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -10,8 +9,6 @@ from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from business.models import BusinessType
-from shared.utils.otp import generate_otp
 from shared.models import PhotoUpload
 from .managers import CustomUserManager
 
