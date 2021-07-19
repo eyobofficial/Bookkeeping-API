@@ -10,7 +10,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
 from expenses.models import Expense
-from inventory.models import Stock
 
 from business.serializers import BusinessExpenseSerializer, BusinessStockSerializer
 from business.permissions import IsBusinessOwnedResource

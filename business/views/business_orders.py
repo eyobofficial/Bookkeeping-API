@@ -8,6 +8,7 @@ from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView,\
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from business import schema as business_schema
 from orders.models import Order
 from business.serializers import BusinessAllOrdersSerialize, \
     BusinessInventoryOrdersSerializer, BusinessCustomOrderSerializer, \
@@ -86,7 +87,7 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
         operation_id='business-order-detail',
         tags=['Orders'],
         responses={
-            200: OrderDetailSerializer(),
+            200: business_schema.order_detail_200_response,
             400: 'Validation Error',
             401: 'Unauthorized',
             404: 'Not Found',
