@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
@@ -74,7 +76,29 @@ cls_args = (
             201: PaymentSerializer(),
             401: 'Unauthorized',
             400: 'Validation Errors'
-        }
+        },
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'order': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    default=str(uuid4()),
+                ),
+                'modeOfPayment': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['CASH', 'CARD', 'CREDIT', 'BANK']
+                ),
+                'status': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['PENDING', 'COMPLETED', 'FAILED'],
+                    default='PENDING'
+                ),
+                'payLaterDate': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    default='2019-08-24T14:15:22Z'
+                )
+            }
+        )
     )
 )
 @method_decorator(
@@ -209,7 +233,7 @@ class BusinessPaymentViewSet(*cls_args):
     **Request Body Paramters** <br />
     - Order ID
     - Mode of Payment (*Possible values are `CASH`, `BANK`, `CARD`, or `CREDIT`*)
-    - Pay Later Date (*Required if mode of payment is `CREDIT`*)
+    - Pay Later Date (*Optional reminder for `CREDIT` payment type*)
     - Status (*Possible values are `PENDING` (default), `COMPLETED`, or `FAILED`*)
 
     **Response Body** <br />
