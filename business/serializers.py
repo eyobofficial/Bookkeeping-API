@@ -168,10 +168,12 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+    cost = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
-        fields = ('id', 'item', 'quantity')
+        fields = ('id', 'item', 'quantity', 'price', 'cost')
         validators = []
 
     def validate(self, validated_data):
@@ -188,8 +190,22 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'product': instance.item.product,
             'quantity': instance.quantity,
             'unit': instance.item.unit,
+            'price': instance.item.price,
+            'cost': instance.cost,
             'updated_at': instance.updated_at
         }
+
+    def get_price(self, obj) -> float:
+        """
+        Returns the item price per unit.
+        """
+        return obj.item.price
+
+    def get_cost(self, obj) -> float:
+        """
+        Returns the subtotal cost of the item.
+        """
+        return obj.cost
 
 
 class BaseOrderModelSerializer(serializers.ModelSerializer):

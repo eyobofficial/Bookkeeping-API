@@ -69,6 +69,8 @@ order_detail_200_response = openapi.Response(
                     'product': 'string',
                     'quantity': 0,
                     'unit': 'pc',
+                    'price': 0,
+                    'cost': 0,
                     'updatedAt': '2019-08-24T14:15:22Z'
                 }
             ],
