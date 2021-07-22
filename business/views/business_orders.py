@@ -61,7 +61,10 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     - Order ID
     - Order Type
     - Customer Object
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total (*i.e. Amount after TAX.*)
     - Description
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
@@ -128,7 +131,10 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveDestroyAPIView):
     - Customer Object
     - Description
     - Order Item Objects (*Empty for orders with `CUSTOM` order types.*)
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
@@ -178,7 +184,10 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Order ID
     - Order Type (*Always `FROM_LIST`*)
     - Customer Object
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Order Item Objects
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
@@ -231,7 +240,10 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Order ID
     - Order Type (*Always `FROM_LIST`*)
     - Customer Object
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Order Item Objects
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
@@ -264,7 +276,10 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Order ID
     - Order Type (*Always `FROM_LIST`*)
     - Customer Object
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Order Item Objects
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
@@ -333,7 +348,10 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     - Order Type (*Always `CUSTOM`*)
     - Customer Object
     - Description
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
@@ -385,7 +403,10 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Order Type (*Always `CUSTOM`*)
     - Customer Object
     - Description
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time
@@ -417,7 +438,10 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     - Order Type (*Always `CUSTOM`*)
     - Customer Object
     - Description
-    - Cost
+    - Cost (*i.e. Amount before TAX.*)
+    - Tax Percentage
+    - Tax Amount
+    - Total Amount (*i.e. Amount after Tax.*)
     - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
     - Create Date & Time
     - Last Updated Date & Time

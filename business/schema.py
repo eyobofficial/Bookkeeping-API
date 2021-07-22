@@ -75,6 +75,9 @@ order_detail_200_response = openapi.Response(
                 }
             ],
             'cost': 0,
+            'taxPercentage': 0.15,
+            'taxAmount': 0,
+            'totalAmount': 0,
             'createdAt': '2019-08-24T14:15:22Z',
             'updatedAt': '2019-08-24T14:15:22Z'
         }

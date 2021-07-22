@@ -148,6 +148,9 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
     """
     customer = CustomerSerializer(read_only=True)
     cost = serializers.SerializerMethodField()
+    tax_percentage = serializers.SerializerMethodField()
+    tax_amount = serializers.SerializerMethodField()
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -156,6 +159,9 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
             'order_type',
             'customer',
             'cost',
+            'tax_percentage',
+            'tax_amount',
+            'total_amount',
             'description',
             'status',
             'created_at',
@@ -165,6 +171,26 @@ class BusinessAllOrdersSerialize(serializers.ModelSerializer):
 
     def get_cost(self, obj) -> float:
         return obj.cost
+
+    def get_tax_percentage(self, obj) -> float:
+        """
+        Returns the TAX percentage in decimals.
+        """
+        return settings.VAT
+
+    def get_tax_amount(self, obj) -> float:
+        """
+        Returns the TAX amount to be deducted.
+        """
+        tax_percentage = self.get_tax_percentage(obj)
+        return round(obj.cost * tax_percentage, 2)
+
+    def get_total_amount(self, obj) -> float:
+        """
+        Returns total amount to be after TAX.
+        """
+        tax_amount = self.get_tax_amount(obj)
+        return round(tax_amount + obj.cost, 2)
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -231,6 +257,9 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
     """
     order_items = OrderItemSerializer(many=True)
     cost = serializers.SerializerMethodField()
+    tax_percentage = serializers.SerializerMethodField()
+    tax_amount = serializers.SerializerMethodField()
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -239,6 +268,9 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
             'order_type',
             'customer',
             'cost',
+            'tax_percentage',
+            'tax_amount',
+            'total_amount',
             'description',
             'status',
             'order_items',
@@ -250,6 +282,26 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
     def get_cost(self, obj) -> float:
         # Necessary for `drf-yasg` to figure out the type.
         return obj.cost
+
+    def get_tax_percentage(self, obj) -> float:
+        """
+        Returns the TAX percentage in decimals.
+        """
+        return settings.VAT
+
+    def get_tax_amount(self, obj) -> float:
+        """
+        Returns the TAX amount to be deducted.
+        """
+        tax_percentage = self.get_tax_percentage(obj)
+        return round(obj.cost * tax_percentage, 2)
+
+    def get_total_amount(self, obj) -> float:
+        """
+        Returns total amount to be after TAX.
+        """
+        tax_amount = self.get_tax_amount(obj)
+        return round(tax_amount + obj.cost, 2)
 
     def create(self, validated_data):
         item_data = validated_data.pop('order_items')
@@ -278,6 +330,9 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
         decimal_places=2,
         min_value=0
     )
+    tax_percentage = serializers.SerializerMethodField()
+    tax_amount = serializers.SerializerMethodField()
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -288,10 +343,33 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
             'description',
             'status',
             'cost',
+            'tax_percentage',
+            'tax_amount',
+            'total_amount',
             'created_at',
             'updated_at'
         )
         read_only_fields = ('order_type', 'status')
+
+    def get_tax_percentage(self, obj) -> float:
+        """
+        Returns the TAX percentage in decimals.
+        """
+        return settings.VAT
+
+    def get_tax_amount(self, obj) -> float:
+        """
+        Returns the TAX amount to be deducted.
+        """
+        tax_percentage = self.get_tax_percentage(obj)
+        return round(obj.cost * tax_percentage, 2)
+
+    def get_total_amount(self, obj) -> float:
+        """
+        Returns total amount to be after TAX.
+        """
+        tax_amount = self.get_tax_amount(obj)
+        return round(tax_amount + obj.cost, 2)
 
     def create(self, validated_data):
         # Set the cost to the `custom_cost` field instead
@@ -321,17 +399,41 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer()
     order_items = OrderItemSerializer(many=True)
     cost = serializers.SerializerMethodField()
+    tax_percentage = serializers.SerializerMethodField()
+    tax_amount = serializers.SerializerMethodField()
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = (
             'id', 'order_type', 'customer', 'description', 'status',
-            'order_items', 'cost', 'created_at', 'updated_at'
+            'order_items', 'cost', 'tax_percentage', 'tax_amount',
+            'total_amount', 'created_at', 'updated_at'
         )
 
-    def get_cost(self, obj) -> float:
+    def cost(self, obj) -> float:
         # Required for `drf-yasg` to return the right type
         return obj.cost
+
+    def get_tax_percentage(self, obj) -> float:
+        """
+        Returns the TAX percentage in decimals.
+        """
+        return settings.VAT
+
+    def get_tax_amount(self, obj) -> float:
+        """
+        Returns the TAX amount to be deducted.
+        """
+        tax_percentage = self.get_tax_percentage(obj)
+        return round(obj.cost * tax_percentage, 2)
+
+    def get_total_amount(self, obj) -> float:
+        """
+        Returns total amount to be after TAX.
+        """
+        tax_amount = self.get_tax_amount(obj)
+        return round(tax_amount + obj.cost, 2)
 
 
 class SoldItemSerializer(serializers.ModelSerializer):
@@ -388,7 +490,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         """
         return obj.order_amount
 
-    def get_total_amount(self, obj) -> Decimal:
+    def get_total_amount(self, obj) -> float:
         """
         Returns the total payment amount (i.e. after tax).
         """
