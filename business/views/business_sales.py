@@ -145,5 +145,5 @@ class SalesViewSet(ReadOnlyModelViewSet):
         # Filter by customer name
         customer_query = self.request.query_params.get('customer')
         if customer_query is not None:
-            qs = qs.filter(order__customer__name=customer_query)
+            qs = qs.filter(order__customer__name__icontains=customer_query)
         return qs
