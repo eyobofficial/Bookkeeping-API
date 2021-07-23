@@ -499,7 +499,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     def validate_pay_later_date(self, value):
         # Do not allow past dates
         now = timezone.now()
-        if value < now.date():
+        if value and value < now.date():
             raise serializers.ValidationError(_('Date cannot be in the past.'))
         return value
 
