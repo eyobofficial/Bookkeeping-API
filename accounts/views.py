@@ -65,7 +65,8 @@ class UserLoginAPIView(GenericAPIView):
             403: account_schema.login_403_response
         },
         operation_id='user-login',
-        tags=['User Account']
+        tags=['User Account'],
+        security=[]
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -91,7 +92,8 @@ class UserLoginAPIView(GenericAPIView):
             400: account_schema.registration_400_response
         },
         operation_id='user-registration',
-        tags=['User Account']
+        tags=['User Account'],
+        security=[]
     )
 )
 class UserRegistrationAPIView(CreateAPIView):
@@ -158,6 +160,7 @@ class EmailValidatorAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='email-validation',
         tags=['User Account'],
+        security=[],
         responses={
             200: ValidEmailSerialzier(),
             400: account_schema.email_validation_400_response,
@@ -197,6 +200,7 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='phone-number-validation',
         tags=['User Account'],
+        security=[],
         responses={
             200: ValidPhoneNumberSerialzier(),
             400: account_schema.phone_validation_400_response,
@@ -242,6 +246,7 @@ class PhoneNumberConfirmAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='phone-number-confirmation',
         tags=['User Account'],
+        security=[],
         responses={
             200: account_schema.phone_number_confirm_200_response,
             400: account_schema.phone_validation_400_response,
@@ -318,7 +323,8 @@ class CustomTokenVerifyView(TokenVerifyView):
             200: account_schema.token_validation_200_response,
             401: account_schema.token_validation_401_response
         },
-        tags=['User Account']
+        tags=['User Account'],
+        security=[]
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -679,7 +685,8 @@ class PasswordResetAPIView(GenericAPIView):
     post:
     Password Reset
 
-    It sends an OTP (One-time Password) code to the user mobile phone via SMS.
+    If a user account with this phone number exists, it sends an OTP (One-time Password)
+    code to the user mobile phone via SMS.
 
     **HTTP Request** <br />
     `POST /accounts/password/reset/`
@@ -697,6 +704,7 @@ class PasswordResetAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='password-reset',
         tags=['User Account'],
+        security=[],
         responses={
             200: PasswordResetSerializer(),
             400: account_schema.password_reset_400_response,
@@ -748,7 +756,8 @@ class PasswordResetConfirmAPIView(GenericAPIView):
             400: account_schema.password_reset_confirm_400_response,
             404: account_schema.password_reset_confirm_404_response
         },
-        tags=['User Account']
+        tags=['User Account'],
+        security=[]
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

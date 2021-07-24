@@ -248,3 +248,21 @@ VAT = Decimal('0.075')  # 7.5%
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+
+# Authentication Schemes
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Basic': {
+            'type': 'basic'
+      },
+      'JWT': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   },
+   'SECURITY_REQUIREMENTS': [
+       {'JWT': []}
+   ]
+}
