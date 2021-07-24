@@ -63,11 +63,11 @@ class BusinessAccount(models.Model):
         choices=CURRENCY_CHOICES,
         default=NGN
     )
-    address = models.TextField(blank=True)
-    city = models.CharField(max_length=100, blank=True)
+    address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
     country = CountryField()
-    postal_code = models.CharField(max_length=10, blank=True)
-    email = models.EmailField(blank=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

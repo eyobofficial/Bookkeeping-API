@@ -51,10 +51,10 @@ class Profile(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField(blank=True, null=True)
-    address = models.TextField(blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    country = CountryField(blank=True)
-    postal_code = models.CharField(max_length=10, blank=True)
+    address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    country = CountryField(blank=True, null=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
     profile_photo = models.OneToOneField(
         PhotoUpload,
         null=True, blank=True,
