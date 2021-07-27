@@ -57,7 +57,7 @@ class ValidEmailSerialzier(serializers.Serializer):
 
     def validate_email(self, value):
         queryset = User.objects.filter(email=value)
-        if queryset.exists():
+        if value and queryset.exists():
             raise NonUniqueEmailException()
         return value
 
@@ -280,7 +280,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         Check if email is unique or raise `409 Conflict` error.
         """
         queryset = User.objects.filter(email=value)
-        if queryset.exists():
+        if value and queryset.exists():
             raise NonUniqueEmailException()
         return value
 
