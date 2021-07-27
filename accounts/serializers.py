@@ -187,7 +187,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """
         Convert blank values to None values.
         """
-        if value.strip() == '':
+        if value and value.strip() == '':
             return None
         return value
 
