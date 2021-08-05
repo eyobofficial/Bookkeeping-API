@@ -243,6 +243,8 @@ class SoldInventoryViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        business_id = self.kwargs.get('business_id')
+        qs = qs.filter(stock__business_account__id=business_id)
         if self.action == 'list':
             search_query = self.request.query_params.get('search')
             if search_query is not None:

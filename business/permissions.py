@@ -45,6 +45,12 @@ class IsBusinessOwnedSoldItem(permissions.IsAuthenticated):
         business_accounts = request.user.business_accounts.all()
         return obj.stock.business_account in business_accounts
 
+    def has_permission(self, request, view):
+        business_accounts = request.user.business_accounts.all()
+        business_accounts_ids = [str(business_account.pk) for business_account in business_accounts]
+        business_id = view.kwargs.get('business_id')
+        return business_id in business_accounts_ids
+
 
 class IsBusinessOwnedPayment(permissions.IsAuthenticated):
     """

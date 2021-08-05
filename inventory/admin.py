@@ -20,7 +20,14 @@ class StockAdmin(admin.ModelAdmin):
 @admin.register(Sold)
 class SoldAdmin(admin.ModelAdmin):
     list_display = (
+        'get_business_account',
         'stock',
         'quantity',
         'sales_date'
     )
+    list_display_links = ('get_business_account', 'stock')
+
+    def get_business_account(self, obj):
+        return obj.stock.business_account
+
+    get_business_account.short_description = 'Business Account'
