@@ -79,7 +79,8 @@ class Order(models.Model):
         """
         if self.order_type == Order.FROM_LIST:
             items = self.order_items.all()
-            return sum([item.cost for item in items], 2)
+            total = sum([item.cost for item in items])
+            return round(total, 2)
         return self.custom_cost
 
     def save_order_items_description(self):
