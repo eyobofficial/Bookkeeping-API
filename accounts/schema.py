@@ -1,6 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 
 from drf_yasg import openapi
+from django_countries import countries
 
 
 # Example HTTP response with 401 status for user login view
@@ -263,5 +264,28 @@ user_business_account_create_400_response = openapi.Response(
             ],
             'country': [_('"EX" is not a valid choice')]
         }
+    }
+)
+
+
+# Sample Request body for User Profile Edit Endpoints
+profile_edit_request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['firstName', 'lastName'],
+    properties={
+        'firstName': openapi.Schema(type=openapi.TYPE_STRING, max_length=100),
+        'lastName': openapi.Schema(type=openapi.TYPE_STRING, max_length=100),
+        'address': openapi.Schema(type=openapi.TYPE_STRING),
+        'city': openapi.Schema(type=openapi.TYPE_STRING, max_length=100),
+        'postalCode': openapi.Schema(type=openapi.TYPE_STRING, max_length=10),
+        'country': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            enum=[country[0] for country in countries]
+        ),
+        'profilePhoto': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_UUID,
+            description=_('The ID of the photo instance to be uploaded.')
+        ),
     }
 )

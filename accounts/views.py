@@ -2,7 +2,9 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+
 from rest_framework import status, permissions
 from rest_framework.generics import GenericAPIView, CreateAPIView, \
     RetrieveUpdateAPIView
@@ -478,6 +480,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     decorator=swagger_auto_schema(
         operation_id='user-profile-update',
         tags=['User Profile'],
+        request_body=account_schema.profile_edit_request_body,
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
@@ -491,6 +494,7 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
     decorator=swagger_auto_schema(
         operation_id='partial-user-profile-update',
         tags=['User Profile'],
+        request_body=account_schema.profile_edit_request_body,
         responses={
             200: ProfileSerializer(),
             400: account_schema.user_profile_update_400_response,
@@ -528,28 +532,6 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
     **HTTP Request** <br />
     `PUT /accounts/user/profile/`
 
-    **Request Body Parameters** <br />
-    - First Name
-    - Last Name
-    - Date of Birth
-    - Photo ID
-    - City
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - Address
-    - Postal Code
-
-    **Response Body** <br />
-    - First Name
-    - Last Name
-    - Date of Birth
-    - Photo Object
-    - City
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - Address
-    - Postal Code
-    - Profile Photo
-    - Last Update Date and Time
-
     patch:
     Partial User Profile Update
 
@@ -557,28 +539,6 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
 
     **HTTP Request** <br />
     `PATCH /accounts/user/profile/`
-
-    **Request Body Parameters** <br />
-    - First Name
-    - Last Name
-    - Date of Birth
-    - Photo ID
-    - City
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - Address
-    - Postal Code
-
-    **Response Body** <br />
-    - First Name
-    - Last Name
-    - Date of Birth
-    - Photo Object
-    - City
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - Address
-    - Postal Code
-    - Profile Photo
-    - Last Update Date and Time
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer

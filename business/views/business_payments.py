@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
@@ -82,7 +80,7 @@ cls_args = (
             properties={
                 'order': openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    default=str(uuid4()),
+                    format=openapi.FORMAT_UUID
                 ),
                 'modeOfPayment': openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -95,7 +93,7 @@ cls_args = (
                 ),
                 'payLaterDate': openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    default='2019-08-24T14:15:22Z'
+                    format=openapi.FORMAT_DATE
                 )
             }
         )

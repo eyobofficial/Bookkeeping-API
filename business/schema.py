@@ -83,3 +83,35 @@ order_detail_200_response = openapi.Response(
         }
     }
 )
+
+# Sample Request Body for Stock Objects
+stock_request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['product', 'unit', 'quantity', 'price'],
+    properties={
+        'product': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            max_length=100,
+            description=_('Name of the product.')
+        ),
+        'unit': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            enum=['pc', 'kg', 'lt', 'mt'],
+            description=_('Unit of measurement.')
+        ),
+        'quantity': openapi.Schema(
+            type=openapi.TYPE_INTEGER,
+            description=_('The amount of quantity left in the stock.')
+        ),
+        'price': openapi.Schema(
+            type=openapi.TYPE_NUMBER,
+            format=openapi.FORMAT_DECIMAL,
+            description=_('The price of the stock item per unit.')
+        ),
+        'photo': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_UUID,
+            description=_('The ID of the photo instance to be uploaded.')
+        ),
+    }
+)

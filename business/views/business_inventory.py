@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
@@ -10,6 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from shared import schema as shared_schema
 from inventory.models import Stock, Sold
 
+from business import schema as business_schema
 from business.serializers import BusinessStockSerializer, BusinessSoldSerializer
 from business.permissions import IsBusinessOwnedResource, \
     IsBusinessOwnedSoldItem
@@ -49,35 +48,7 @@ from .base import BaseBusinessAccountDetailViewSet
     name='create',
     decorator=swagger_auto_schema(
         tags=['Inventory'],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=['product', 'unit', 'quantity', 'price'],
-            properties={
-                'product': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description=_('Name of the product.')
-                ),
-                'unit': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    enum=['pc', 'kg', 'lt', 'mt'],
-                    description=_('Unit of measurement.')
-                ),
-                'quantity': openapi.Schema(
-                    type=openapi.TYPE_INTEGER,
-                    description=_('The amount of quantity left in the stock.')
-                ),
-                'price': openapi.Schema(
-                    type=openapi.TYPE_NUMBER,
-                    format=openapi.FORMAT_DOUBLE,
-                    description=_('The price of the stock item per unit.')
-                ),
-                'photo': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    default=str(uuid4()),
-                    description=_('The ID of the photo instance to be uploaded.')
-                ),
-            }
-        ),
+        request_body=business_schema.stock_request_body,
         responses={
             201: BusinessStockSerializer(),
             401: shared_schema.unauthorized_401_response
@@ -88,6 +59,7 @@ from .base import BaseBusinessAccountDetailViewSet
     name='update',
     decorator=swagger_auto_schema(
         tags=['Inventory'],
+        request_body=business_schema.stock_request_body,
         responses={
             200: BusinessStockSerializer(),
             401: shared_schema.unauthorized_401_response,
@@ -100,6 +72,7 @@ from .base import BaseBusinessAccountDetailViewSet
     name='partial_update',
     decorator=swagger_auto_schema(
         tags=['Inventory'],
+        request_body=business_schema.stock_request_body,
         responses={
             200: BusinessStockSerializer(),
             401: shared_schema.unauthorized_401_response,
