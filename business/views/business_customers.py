@@ -56,6 +56,7 @@ from .base import BaseBusinessAccountDetailViewSet
     name='create',
     decorator=swagger_auto_schema(
         tags=['Customers'],
+        request_body=business_schema.customer_edit_request_body,
         responses={
             201: BusinessCustomerSerializer(),
             401: shared_schema.unauthorized_401_response
@@ -66,6 +67,7 @@ from .base import BaseBusinessAccountDetailViewSet
     name='update',
     decorator=swagger_auto_schema(
         tags=['Customers'],
+        request_body=business_schema.customer_edit_request_body,
         responses={
             200: BusinessCustomerSerializer(),
             401: shared_schema.unauthorized_401_response,
@@ -77,6 +79,7 @@ from .base import BaseBusinessAccountDetailViewSet
     name='partial_update',
     decorator=swagger_auto_schema(
         tags=['Customers'],
+        request_body=business_schema.customer_edit_request_body,
         responses={
             200: BusinessCustomerSerializer(),
             401: shared_schema.unauthorized_401_response,
@@ -181,81 +184,3 @@ class BusinessCustomerViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
         if search_query is not None:
             qs = qs.filter(name__icontains=search_query)
         return qs
-
-    @swagger_auto_schema(
-        operation_id='customer-photo-upload',
-        responses={
-            200: business_schema.customer_photo_upload_200_response,
-            400: business_schema.customer_photo_upload_400_response,
-            401: shared_schema.unauthorized_401_response,
-            404: shared_schema.not_found_404_response,
-            415: business_schema.customer_photo_upload_415_response
-        },
-        tags=['Customers']
-    )
-    @action(
-        detail=True, methods=['put'],
-        parser_classes=[FormParser, MultiPartParser],
-        serializer_class=None
-    )
-    def photo(self, request, business_id=None, pk=None, format=None):
-        """
-        Customers Photo Upload
-
-        Upload a new photo for a customer of a business account. Files are uploaded
-        as a form data. Only image files are accepted by the endpoint.
-
-        **HTTP Request** <br />
-        `PUT /business/{business_id}/customers/{customer_id}/photo/`
-
-        **URL Parameters** <br />
-        - `business_id`: The ID of the business account.
-        - `customer_id`: The ID of the customer.
-        """
-        customer = self.get_object()
-        file_obj = request.data.get('file')
-
-        if file_obj is None:
-            raise ParseError(_('No image file included.'))
-
-        # Media/Mime Type
-        media_type = get_mime_type(file_obj)
-
-        try:
-            img = Image.open(file_obj)
-            img.verify()
-        except:
-            err_message = _(f'Unsupported file type.')
-            raise UnsupportedMediaType(media_type, detail=err_message)
-        filename = build_filename_ext(customer.name, media_type)
-        customer.photo.save(filename, file_obj, save=True)
-        message = {'detail': _('Customer photo is uploaded.')}
-        return Response(message, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_id='customer-photo-remove',
-        responses={
-            204: business_schema.customer_photo_remove_204_response,
-            401: shared_schema.unauthorized_401_response,
-            404: shared_schema.not_found_404_response
-        },
-        tags=['Customers']
-    )
-    @photo.mapping.delete
-    def delete_photo(self, request, business_id=None, pk=None, format=None):
-        """
-        Customers Photo Remove
-
-        Remove the customer photo of a business account.
-
-        **HTTP Request** <br />
-        `DELETE /business/{business_id}/customers/{customer_id}/photo/`
-
-        **URL Parameters** <br />
-        - `business_id`: The ID of the business account.
-        - `customer_id`: The ID of the customer.
-        """
-        customer = self.get_object()
-        customer.photo.delete(save=True)
-        message = {'detail': _('Customer photo is deleted.')}
-        return Response(message, status=status.HTTP_204_NO_CONTENT)

@@ -1,48 +1,41 @@
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from drf_yasg import openapi
+from django_countries import countries
 
 
-# Example HTTP response with 200 status for customer photo upload view
-customer_photo_upload_200_response = openapi.Response(
-    description=_('Success'),
-    examples={
-        'application/json': {
-            'detail': _('Customer photo is uploaded.')
-        }
-    }
-)
+PHONENUMBER_COUNTRY = countries.name(settings.PHONENUMBER_DEFAULT_REGION)
 
 
-# Example HTTP response with 400 status for customer photo upload view
-customer_photo_upload_400_response = openapi.Response(
-    description=_('Validation Error'),
-    examples={
-        'application/json': {
-            'detail': _('No image file included.')
-        }
-    }
-)
-
-
-# Example HTTP response with 415 status for customer photo upload view
-customer_photo_upload_415_response = openapi.Response(
-    description=_('Unsupported Media Type'),
-    examples={
-        'application/json': {
-            'detail': _('Unsupported file type.')
-        }
-    }
-)
-
-
-# Example HTTP response with 204 status for customer photo remove view
-customer_photo_remove_204_response = openapi.Response(
-    description=_('No Content'),
-    examples={
-        'application/json': {
-            'detail': _('Customer photo is deleted.')
-        }
+# Sample request body for customer create/update endpoints
+customer_edit_request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['name'],
+    properties={
+        'name': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            max_length=100,
+            description=_('Name of the customer.')
+        ),
+        'phoneNumber': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            description=_(
+                'The customer phone number in any recognizable format. '
+                f'If the phone number is a *{PHONENUMBER_COUNTRY}* number, '
+                'country code is not required. Otherwise, include the country code prefix.'
+            )
+        ),
+        'email': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_EMAIL,
+            max_length=255
+        ),
+        'photo': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_UUID,
+            description=_('The ID of the photo instance to be uploaded.')
+        ),
     }
 )
 
