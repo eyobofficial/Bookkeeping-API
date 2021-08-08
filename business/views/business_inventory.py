@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
@@ -47,6 +49,35 @@ from .base import BaseBusinessAccountDetailViewSet
     name='create',
     decorator=swagger_auto_schema(
         tags=['Inventory'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['product', 'unit', 'quantity', 'price'],
+            properties={
+                'product': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description=_('Name of the product.')
+                ),
+                'unit': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['pc', 'kg', 'lt', 'mt'],
+                    description=_('Unit of measurement.')
+                ),
+                'quantity': openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description=_('The amount of quantity left in the stock.')
+                ),
+                'price': openapi.Schema(
+                    type=openapi.TYPE_NUMBER,
+                    format=openapi.FORMAT_DOUBLE,
+                    description=_('The price of the stock item per unit.')
+                ),
+                'photo': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    default=str(uuid4()),
+                    description=_('The ID of the photo instance to be uploaded.')
+                ),
+            }
+        ),
         responses={
             201: BusinessStockSerializer(),
             401: shared_schema.unauthorized_401_response
