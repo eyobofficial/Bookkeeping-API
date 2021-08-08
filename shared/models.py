@@ -13,7 +13,7 @@ class PhotoUpload(models.Model):
     User uploaded profile photo.
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    photo = models.ImageField(upload_to='profiles', null=True, blank=True)
+    photo = models.ImageField(upload_to='shared', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -8,13 +8,13 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError, UnsupportedMediaType
+from rest_framework.parsers import FormParser, MultiPartParser
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
 from business import schema as business_schema
-from shared.parsers import PhotoUploadParser
 from shared.utils.filetypes import get_mime_type, build_filename_ext
 from customers.models import Customer
 
@@ -195,7 +195,7 @@ class BusinessCustomerViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     )
     @action(
         detail=True, methods=['put'],
-        parser_classes=[PhotoUploadParser],
+        parser_classes=[FormParser, MultiPartParser],
         serializer_class=None
     )
     def photo(self, request, business_id=None, pk=None, format=None):

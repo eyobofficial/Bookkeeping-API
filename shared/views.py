@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, status
 from rest_framework.exceptions import ParseError, UnsupportedMediaType
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,13 +17,12 @@ from shared import schema as shared_schema
 
 from .models import PhotoUpload
 from .serializers import PhotoUploadSerializer
-from .parsers import PhotoUploadParser
 from .utils.filetypes import get_mime_type
 
 
 class PhotoUploadCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [PhotoUploadParser]
+    parser_classes = [FormParser, MultiPartParser]
 
     @swagger_auto_schema(
         operation_id='photo-upload-create',
@@ -33,29 +32,22 @@ class PhotoUploadCreateView(APIView):
             401: shared_schema.unauthorized_401_response,
             415: shared_schema.photo_upload_415_response
         },
-        manual_parameters=[
-            openapi.Parameter(
-                'filename',
-                in_=openapi.IN_PATH,
-                type=openapi.TYPE_STRING,
-                description=_('The filename including the extension.')
-            )
-        ],
         tags=['Photos']
     )
-    def post(self, request, filename, format=None):
+    def post(self, request, format=None):
         """
         Photo Upload Create
 
         Upload a new photo for an authenticated user. Files are uploaded
-        as a form data. Only image files are accepted by the endpoint.
-        The filename *must* be included at the end of the endpoint.
+        as a form data. In the form fields, use a file input field with a
+        `file` name to send the image. Make sure the form has the
+        `enctype='multipart/form-data` attribute in order to send the uploaded
+        image file in the form data.
+
+        **Note**: Only image files are accepted by the endpoint.
 
         **HTTP Request** <br />
-        `POST /photos/uploads/<filename>`
-
-        **URL Parameters** <br />
-        - `filename`: The filename of the uploaded (including the extension)
+        `POST /photos/uploads/`
 
         **Response Body** <br />
         - Photo ID

@@ -1,4 +1,3 @@
-from django.conf.urls import url
 from django.urls import path
 
 
@@ -8,8 +7,8 @@ from .views import PhotoUploadCreateView, PhotoUploadRetrieveView
 app_name = 'shared'
 
 urlpatterns = [
-    url(
-        r'^photos/uploads/(?P<filename>[^/]+)$',
+    path(
+        'photos/uploads/',
         PhotoUploadCreateView.as_view(),
         name='photo-upload-create'
     ),
