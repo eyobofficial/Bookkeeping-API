@@ -26,6 +26,14 @@ class PhotoUploadCreateView(APIView):
 
     @swagger_auto_schema(
         operation_id='photo-upload-create',
+        manual_parameters=[
+            openapi.Parameter(
+                'file',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_FILE,
+                description=_('An image file to be uploaded.')
+            ),
+        ],
         responses={
             201: PhotoUploadSerializer(),
             400: shared_schema.photo_upload_400_response,
