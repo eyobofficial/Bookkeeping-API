@@ -507,7 +507,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = super().to_internal_value(data)
 
         # If mode of payment is not credit, don't set `pay_later_date`
-        if data['mode_of_payment'] != Payment.CREDIT:
+        mode_of_payment = data.get('mode_of_payment')
+        if mode_of_payment != Payment.CREDIT:
             fields.pop('pay_later_date', None)
         return fields
 
