@@ -93,7 +93,8 @@ stock_request_body=openapi.Schema(
             description=_('Unit of measurement.')
         ),
         'quantity': openapi.Schema(
-            type=openapi.TYPE_INTEGER,
+            type=openapi.TYPE_NUMBER,
+            format=openapi.FORMAT_DECIMAL,
             description=_('The amount of quantity left in the stock.')
         ),
         'price': openapi.Schema(

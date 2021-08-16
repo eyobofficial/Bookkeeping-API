@@ -34,7 +34,10 @@ class Stock(models.Model):
         choices=UNIT_CHOICES,
         help_text=_('Measurement unit.')
     )
-    quantity = models.PositiveIntegerField(help_text=_('Quantity left.'))
+    quantity = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        help_text=_('Quantity left.')
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     photo = models.OneToOneField(
         PhotoUpload,
@@ -75,7 +78,9 @@ class Sold(models.Model):
         on_delete=models.CASCADE,
         related_name='sold'
     )
-    quantity = models.PositiveIntegerField(_('quantity sold'), default=0)
+    quantity = models.DecimalField(_('quantity sold'),
+        max_digits=10, decimal_places=2, default=0
+    )
     sales_date = models.DateField(
         auto_now=True,
         help_text=_('last sales date')
