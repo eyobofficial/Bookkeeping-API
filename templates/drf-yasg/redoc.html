@@ -1,11 +1,31 @@
-{% extends 'drf-yasg/redoc.html' %}
 {% load static %}
-
-{% block extra_head %}
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-{% endblock %}
-
-{% block extra_styles %}
-  <link rel="stylesheet" type="text/css" href="{% static 'redoc.css' %}"/>
-{% endblock %}
+<!doctype html> 
+<html>
+  <head>
+    <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 charecters -->
+    <title>Dukka Inc. | API</title>
+    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <style>
+        [slot=nav-logo] {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+  </head>
+  <body>
+    <rapi-doc
+      spec-url="{% url 'schema-json' %}"
+      render-style="focused"
+      show-header="false"
+      show-info="true"
+      schema-style="table"
+      schema-expand-level="1"
+      schema-description-expanded="true">
+      <div slot="nav-logo">
+        <img height="50" color="#ffffff" src="{% static 'img/logo-dark.svg' %}"/>
+        <span style="font-size: 20px; color: #cccccc;">Dukka Inc.</span>
+      </div>
+    </rapi-doc>
+  </body>
+</html>

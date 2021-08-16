@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
@@ -24,6 +25,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from shared.schema import CustomOpenAPISchemaGenerator
+
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -33,13 +36,15 @@ schema_view = get_schema_view(
       contact=openapi.Contact(email="hello@dukka.com")
    ),
    public=True,
-   permission_classes=[permissions.AllowAny]
+   permission_classes=[permissions.AllowAny],
+   generator_class=CustomOpenAPISchemaGenerator
 )
 
 
 # Schema URLS
 urlpatterns = [
     path('', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    url(r'^swagger.json/$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]
 
 

@@ -36,9 +36,9 @@ class PhotoUploadCreateView(APIView):
         ],
         responses={
             201: PhotoUploadSerializer(),
-            400: shared_schema.photo_upload_400_response,
-            401: shared_schema.unauthorized_401_response,
-            415: shared_schema.photo_upload_415_response
+            400: 'Bad Request',
+            401: 'Unauthorized',
+            415: 'Unsupported Media Type'
         },
         tags=['Photos']
     )

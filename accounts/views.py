@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework import status, permissions
@@ -38,21 +37,10 @@ class UserLoginAPIView(GenericAPIView):
 
     Authenticate existing users using phone number or email and password.
     On successful authentication, a JSON Web Token (JWT) is returned in the
-    response body.
-
-
-    **HTTP Request** <br />
-    `POST /accounts/login/`
-
-    **Request Body Parameters**
-      - username (*phone number or email*)
-      - password
-
-    **Response Body** <br />
-    The response body returns the user data with *access* and *refresh* JWT
-    tokens. The access token is used to perform HTTP operations on restricted
-    resource. The refersh token is used to retrieve new access tokens when the
-    existing token expires.
+    response body. The response body returns the user data with *access* and
+    *refresh* JWT tokens. The access token is used to perform HTTP operations
+    on restricted resource. The refersh token is used to retrieve new access
+    tokens when the existing token expires.
 
     **Token Expirations** <br />
     - Access Token: 60 minutes
@@ -103,19 +91,6 @@ class UserRegistrationAPIView(CreateAPIView):
     post:
     User Registration
 
-    Register new users and create new user accounts for them.
-
-    **HTTP Request** <br />
-    `POST /accounts/register/`
-
-    **Request Body Parameters** <br />
-    - First Name
-    - Last Name
-    - Phone Number
-    - Email Address
-    - Password
-
-    **Response Body** <br />
     The response body returns the new user data with *access* and *refresh* JWT
     tokens. The access token is used to perform HTTP operations on restricted
     resource. The refersh token is used to retrieve new access tokens when the
@@ -145,17 +120,8 @@ class EmailValidatorAPIView(GenericAPIView):
     post:
     Email Validation
 
-    Check submitted email is a valid email address and not registered
+    Check if submitted email is a valid email address and not registered
     in the system.
-
-    **HTTP Request** <br />
-    `POST /accounts/email/validate/`
-
-    **Request Body Parameters** <br />
-    - Email
-
-    **Response Body** <br />
-    - Email
     """
     serializer_class = ValidEmailSerialzier
 
@@ -182,18 +148,8 @@ class PhoneNumberValidatorAPIView(GenericAPIView):
     post:
     Phone Number Validation
 
-    Check submitted phone number is a valid phone number and not registered
-    in the system.
-
-    **HTTP Request** <br />
-    `POST /accounts/phone/validate/`
-
-    **Request Body Parameters** <br />
-    - Phone Number
-
-    **Response Body** <br />
-    - Phone Number
-    - One-Time Password (OTP)
+    Check if submitted phone number is a valid phone number and not registered
+    in the system. The phone number should be in an `E164` format.
 
     *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
@@ -232,14 +188,7 @@ class PhoneNumberConfirmAPIView(GenericAPIView):
     Phone Number Confirmation
 
     Check if submitted phone number and OTP matches to confirm the submitted
-    phone number is owned by the user.
-
-    **HTTP Request** <br />
-    `POST /accounts/phone/confirm/`
-
-    **Request Body Parameters** <br />
-    - Phone Number
-    - OTP (One-Time Password)
+    phone number is owned by the user. The phone number should be in an `E164` format.
 
     *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
@@ -269,13 +218,6 @@ class PasswordChangeView(GenericAPIView):
     Change Password
 
     Change password for authenticated users.
-
-    **HTTP Request** <br />
-    `POST /accounts/password/change/`
-
-    **Request Body Parameters** <br />
-    - Current Password
-    - New Password
 
     **Password Requirements**
     - Password should be at least 8 characters long.
@@ -313,9 +255,6 @@ class CustomTokenVerifyView(TokenVerifyView):
     Token Validation
 
     Verify access token is a valid JWT token and is not yet expired.
-
-    **HTTP Request** <br />
-    `POST /accounts/token/verify/`
     """
     serializer_class = TokenVerifySerializer
 
@@ -338,15 +277,6 @@ class CustomTokenRefreshView(TokenRefreshView):
     Token Referesh
 
     Returns new access token to replace an expired token.
-
-    **HTTP Request** <br />
-    `POST /accounts/token/refresh/`
-
-    **Request Body Parameters** <br />
-    - Refresh Token
-
-    **Response Body** <br />
-    - New Access Token
     """
 
     @swagger_auto_schema(
@@ -405,56 +335,15 @@ class UserDetailAPIView(RetrieveUpdateAPIView):
 
     Returns the user details for an authenticated account.
 
-    **HTTP Request** <br />
-    `GET /accounts/user/`
-
-    **Response Body** <br />
-    - User ID
-    - Phone Number
-    - Email Address
-    - Active Boolean Flag
-    - Profile Object
-    - Settings Object
-
     put:
     User Update
 
     Updates the user details for an authenticated account.
 
-    **Request Body Parameters** <br />
-    - Email Address
-    - Active Boolean Flag
-
-    **HTTP Request** <br />
-    `PUT /accounts/user/`
-
-    **Response Body** <br />
-    - User ID
-    - Phone Number
-    - Email Address
-    - Active Boolean Flag
-    - Profile Object
-    - Settings Object
-
     patch:
     Partial User Update
 
     Partially updates the user details for an authenticated account.
-
-    **Request Body Parameters** <br />
-    - Email Address
-    - Active Boolean Flag
-
-    **HTTP Request** <br />
-    `PATCH /accounts/user/`
-
-    **Response Body** <br />
-    - User ID
-    - Phone Number
-    - Email Address
-    - Active Boolean Flag
-    - Profile Object
-    - Settings Object
     """
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserDetailSerializer
@@ -509,36 +398,15 @@ class UserProfileDetailAPIView(RetrieveUpdateAPIView):
 
     Returns the profile details of the current authenticated user.
 
-    **HTTP Request** <br />
-    `GET /accounts/user/profile/`
-
-    **Response Body** <br />
-    - First Name
-    - Last Name
-    - Date of Birth
-    - Photo Object
-    - City
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - Address
-    - Postal Code
-    - Profile Photo
-    - Last Update Date and Time
-
     put:
     User Profile Update
 
     Updates the profile details of the currently authenticated user.
 
-    **HTTP Request** <br />
-    `PUT /accounts/user/profile/`
-
     patch:
     Partial User Profile Update
 
     Partially updates the profile details of the currently authenticated user.
-
-    **HTTP Request** <br />
-    `PATCH /accounts/user/profile/`
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
@@ -590,47 +458,15 @@ class UserSettingsAPIView(RetrieveUpdateAPIView):
 
     Returns the settings of the current authenticated user.
 
-    **HTTP Request** <br />
-    `GET /accounts/user/settings/`
-
-    **Response Body** <br />
-    - Font Size
-    - Terms and condition
-    - Last Update Date and Time
-
     put:
     User Settings Update
 
     Updates the settings of the currently authenticated user.
 
-    **HTTP Request** <br />
-    `PUT /accounts/user/settings/`
-
-    **Request Body Parameters** <br />
-    - Font Size
-    - Terms and condition
-
-    **Response Body** <br />
-    - Font Size
-    - Terms and condition
-    - Last Updated Date and Time
-
     patch:
     Partial User Settings Update
 
     Partially updates the settings of the currently authenticated user.
-
-    **HTTP Request** <br />
-    `PATCH /accounts/user/settings/`
-
-    **Request Body Parameters** <br />
-    - Font Size
-    - Terms and condition
-
-    **Response Body** <br />
-    - Font Size
-    - Terms and condition
-    - Last Updated Date and Time
     """
     queryset = Setting.objects.all()
     serializer_class = SettingSerializer
@@ -648,14 +484,7 @@ class PasswordResetAPIView(GenericAPIView):
     If a user account with this phone number exists, it sends an OTP (One-time Password)
     code to the user mobile phone via SMS.
 
-    **HTTP Request** <br />
-    `POST /accounts/password/reset/`
-
-    **Request Body Parameters** <br />
-    - Phone Number
-
-    **Response Body** <br />
-    - Phone Number
+    *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
     serializer_class = PasswordResetSerializer
     permission_classes = [permissions.AllowAny]
@@ -694,17 +523,11 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     Resets a forgotten password using the one-time passowrds (OTP) which
     the user received via SMS.
 
-    **HTTP Request** <br />
-    `POST /accounts/password/reset/confirm/`
-
-    **Request Body Parameters** <br />
-    - Phone Number
-    - One-time Password (OTP)
-    - New Password
-
     **Password Requirements**
     - Password should be at least 8 characters long.
     - Password should not be similar to the user phone number or email address.
+
+    *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [permissions.AllowAny]
@@ -807,45 +630,8 @@ class BusinessAccountViewSet(ModelViewSet):
     Returns a list of all business accounts for the current authenticated
     user.
 
-    **HTTP Request** <br />
-    `GET /accounts/user/business/`
-
-    **Response Body** <br />
-    The response body includes a list (array) of a business account objects. The
-    business account object includes:
-    - Business ID
-    - Business Type Object
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
-
     retrieve:
     User Business Account Detail
-
-    **HTTP Request** <br />
-    `GET /accounts/user/business/{id}/`
-
-    **URL Parameters** <br />
-    - `id`: The ID of the business account.
-
-    **Response Body** <br />
-    - Business ID
-    - Business Type Object
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
 
     Returns the details of a business account of the current authenticated user.
 
@@ -855,66 +641,10 @@ class BusinessAccountViewSet(ModelViewSet):
     Creates a new business account that is tied with the current authenticated
     user.
 
-    **HTTP Request** <br />
-    `POST /accounts/user/business/`
-
-    **Request Body Parameters** <br />
-    - Business Type ID (*required*)
-    - Business Name (*required*)
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-
-    **Response Body** <br />
-    - Business ID
-    - Business Type ID
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
-
     update:
     User Business Account Update
 
     Update the details of a business account of the current authenticted user.
-
-    **HTTP Request** <br />
-    `PUT /accounts/user/business/{id}/`
-
-    **URL Parameters** <br />
-    - `id`: The ID of the business account.
-
-    **Request Body Parameters** <br />
-    - Business Type ID (*required*)
-    - Business Name (*required*)
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-
-    **Response Body** <br />
-    - Business ID
-    - Business Type ID
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
-
 
     partial_update:
     User Business Account Partial Update
@@ -922,45 +652,10 @@ class BusinessAccountViewSet(ModelViewSet):
     Partially update the details of a business account of the current authenticted
     user.
 
-    **HTTP Request** <br />
-    `PATCH /accounts/user/business/{id}/`
-
-    **URL Parameters** <br />
-    - `id`: The ID of the business account.
-
-    **Request Body Parameters** <br />
-    - Business Type ID (*required*)
-    - Business Name (*required*)
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-
-    **Response Body** <br />
-    - Business ID
-    - Business Type ID
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
-
     destroy:
     User Business Account Delete
 
     Delete a business account of the current authenticated user.
-
-    **HTTP Request** <br />
-    `DELETE /accounts/user/business/{id}/`
-
-    **URL Parameters** <br />
-    - `id`: The ID of the business account.
     """
     queryset = BusinessAccount.objects.all()
     serializer_class = UserBusinessAccountSerializer
