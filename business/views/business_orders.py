@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView,\
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django_filters import rest_framework as filters
 
 from business import schema as business_schema
 from orders.models import Order
@@ -14,6 +15,7 @@ from business.serializers import BusinessAllOrdersSerialize, \
     BusinessInventoryOrdersSerializer, BusinessCustomOrderSerializer, \
     OrderDetailSerializer
 from business.permissions import IsBusinessOwnedResource, IsOrderOpen
+from business.filters import OrderFilter
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -24,11 +26,38 @@ from .base import BaseBusinessAccountDetailViewSet
         tags=['Orders'],
         manual_parameters=[
             openapi.Parameter(
+                'customer',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by all or part of the customer name.'),
+            ),
+            openapi.Parameter(
+                'description',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by all or part of the order description.'),
+            ),
+            openapi.Parameter(
+                'type',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by the type of the order.'),
+                enum=('from_list', 'custom')
+            ),
+            openapi.Parameter(
                 'status',
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 description=_('Filter result by the status of an order.'),
-                enum=('OPEN', 'CLOSED')
+                enum=('open', 'closed')
+            ),
+            openapi.Parameter(
+                'date',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_(
+                    'Filter result by the date of the order. Date format: `yy-mm-dd`.'
+                )
             )
         ],
         responses={
@@ -52,36 +81,12 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
 
     **URL Parameters** <br />
     - `business_id`: The ID of the business account.
-
-    **Query Parameters** <br />
-    - `status`: Filter the customer orders of a business account by
-      the their status. The possible value are: `OPEN` and `CLOSED`.
-
-    **Response Body** <br />
-    - Order ID
-    - Order Type
-    - Customer Object
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total (*i.e. Amount after TAX.*)
-    - Description
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
     """
     queryset = Order.objects.all()
     serializer_class = BusinessAllOrdersSerialize
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-
-        # Filter by by payment status
-        status_query = self.request.query_params.get('status')
-        if status_query is not None:
-            qs = qs.filter(status=status_query)
-        return qs
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = OrderFilter
 
 
 @method_decorator(
@@ -124,20 +129,6 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveDestroyAPIView):
     **URL Parameters** <br />
     - `business_id`: The ID of the business account.
     - `order_id`: The ID of a customer order.
-
-    **Response Body** <br />
-    - Order ID
-    - Order Type
-    - Customer Object
-    - Description
-    - Order Item Objects (*Empty for orders with `CUSTOM` order types.*)
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     delete:
     Custom Order Delete
