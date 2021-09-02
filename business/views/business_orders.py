@@ -29,13 +29,8 @@ from .base import BaseBusinessAccountDetailViewSet
                 'customer',
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
-                description=_('Filter result by all or part of the customer name.'),
-            ),
-            openapi.Parameter(
-                'description',
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
-                description=_('Filter result by all or part of the order description.'),
+                description=_(('Filter result by all or part of the '
+                               'customer name or phone number.')),
             ),
             openapi.Parameter(
                 'type',
@@ -58,7 +53,15 @@ from .base import BaseBusinessAccountDetailViewSet
                 description=_(
                     'Filter result by the date of the order. Date format: `yy-mm-dd`.'
                 )
-            )
+            ),
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_(('Filter result by customer name, customer phone number, '
+                               'order description, or order created date. For searching'
+                               'by date, use the format `yyyy-mm-dd`.')),
+            ),
         ],
         responses={
             200: BusinessAllOrdersSerialize(many=True),
@@ -87,13 +90,6 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = OrderFilter
-
-    def get_queryset(self):
-        qs = self.get_queryset()
-        search_query = self.request.query_params.get('search')
-        if search_query:
-            search_query = qs.filter('')
-        return qs
 
 
 @method_decorator(
