@@ -3,21 +3,14 @@ from PIL import Image
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.response import Response
-from rest_framework.exceptions import ParseError, UnsupportedMediaType
-from rest_framework.parsers import FormParser, MultiPartParser
-
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
 from business import schema as business_schema
-from shared.utils.filetypes import get_mime_type, build_filename_ext
 from customers.models import Customer
-
 from business.serializers import BusinessCustomerSerializer
 from business.permissions import IsBusinessOwnedResource
 from .base import BaseBusinessAccountDetailViewSet
@@ -59,7 +52,8 @@ from .base import BaseBusinessAccountDetailViewSet
         request_body=business_schema.customer_edit_request_body,
         responses={
             201: BusinessCustomerSerializer(),
-            401: shared_schema.unauthorized_401_response
+            401: shared_schema.unauthorized_401_response,
+            409: business_schema.duplicate_409_response
         }
     )
 )
@@ -71,7 +65,8 @@ from .base import BaseBusinessAccountDetailViewSet
         responses={
             200: BusinessCustomerSerializer(),
             401: shared_schema.unauthorized_401_response,
-            404: shared_schema.not_found_404_response
+            404: shared_schema.not_found_404_response,
+            409: business_schema.duplicate_409_response
         }
     )
 )
@@ -184,3 +179,4 @@ class BusinessCustomerViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
         if search_query is not None:
             qs = qs.filter(name__icontains=search_query)
         return qs
+

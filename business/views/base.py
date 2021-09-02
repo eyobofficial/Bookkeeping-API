@@ -19,6 +19,11 @@ class BaseBusinessAccountDetailViewSet:
         user_business_accounts = self.request.user.business_accounts.all()
         return get_object_or_404(user_business_accounts, pk=business_id)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['business_account'] = self.get_business_account()
+        return context
+
     def perform_create(self, serializer):
         """
         Attach the current business account to created resource.

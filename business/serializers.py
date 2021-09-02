@@ -44,6 +44,35 @@ class BusinessCustomerSerializer(serializers.ModelSerializer):
             'photo', 'created_at', 'updated_at'
         )
 
+    def validate(self, data):
+        business_account = self.context['business_account']
+        phone_number = data.get('phone_number')
+        email = data.get('email')
+
+        # Check if customer phone number is duplicate
+        # Note: We cannot use  `UniqueTogetherValidator` since phone number is optional.
+        if phone_number is not None:
+            kwargs = {
+                'business_account__id': business_account.id,
+                'phone_number': phone_number
+            }
+            if Customer.objects.filter(**kwargs).exists():
+                error = _('A customer with this phone number is registered.')
+                raise serializers.ValidationError(error)
+
+        # Check if customer email is duplicate
+        # Note: We cannot use  `UniqueTogetherValidator` since email is optional.
+        if email is not None:
+            kwargs = {
+                'business_account__id': business_account.id,
+                'email': email
+            }
+            if Customer.objects.filter(**kwargs).exists():
+                error = _('A customer with this email address is registered.')
+                raise serializers.ValidationError(error)
+
+        return super().validate(data)
+
     def update(self, instance, valiated_data):
         photo_data = valiated_data.pop('photo', None)
         if photo_data is None:

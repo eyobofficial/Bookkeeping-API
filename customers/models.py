@@ -35,6 +35,10 @@ class Customer(models.Model):
         verbose_name = _('Customer')
         verbose_name_plural = _('Customers')
         ordering = ('-created_at', )
+        unique_together = [
+            ('business_account', 'phone_number'),
+            ('business_account', 'email')
+        ]
 
     def __str__(self):
         return self.name

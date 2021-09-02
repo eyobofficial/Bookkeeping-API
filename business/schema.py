@@ -40,6 +40,19 @@ customer_edit_request_body=openapi.Schema(
 )
 
 
+# Example HTTP response with 415 status for photo upload view
+duplicate_409_response = openapi.Response(
+    description=_('Duplicate Customer'),
+    examples={
+        'application/json': {
+            'nonFieldErrors': [
+                _('A customer with this phone numuber (email address) is registered.')
+            ]
+        }
+    }
+)
+
+
 # Example HTTP response with 200 status for order detail view
 order_detail_200_response = openapi.Response(
     description=_('Success'),
