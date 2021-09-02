@@ -1,6 +1,20 @@
 from django.utils.translation import gettext_lazy as _
 
 from drf_yasg import openapi
+from drf_yasg.generators import OpenAPISchemaGenerator
+
+
+class CustomOpenAPISchemaGenerator(OpenAPISchemaGenerator):
+
+    def get_schema(self, request=None, public=False):
+        swagger = super().get_schema(request, public)
+        swagger.tags = [
+            {
+                'name': 'Customers',
+                'description': 'API endpoints for managing business account customers.'
+            },
+        ]
+        return swagger
 
 
 # Sample HTTP response with 401 Unauthorized statuses
