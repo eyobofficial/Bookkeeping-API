@@ -121,7 +121,7 @@ class BusinessSoldSerializer(serializers.ModelSerializer):
     unit = serializers.ReadOnlyField(source='stock.unit')
     price = serializers.DecimalField(
         read_only=True, source='stock.price',
-        max_digits=10, decimal_places=2
+        max_digits=12, decimal_places=2
     )
 
     class Meta:
@@ -326,7 +326,7 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
     Serializer class for creating orders with `custom` order_type value.
     """
     cost = serializers.DecimalField(
-        max_digits=10,
+        max_digits=12,
         decimal_places=2,
         min_value=0
     )

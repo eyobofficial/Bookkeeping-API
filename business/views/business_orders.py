@@ -88,6 +88,13 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = OrderFilter
 
+    def get_queryset(self):
+        qs = self.get_queryset()
+        search_query = self.request.query_params.get('search')
+        if search_query:
+            search_query = qs.filter('')
+        return qs
+
 
 @method_decorator(
     name='get',

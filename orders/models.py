@@ -47,7 +47,7 @@ class Order(models.Model):
         help_text='Required for `CUSTOM` order types to describe the sold items.'
     )
     custom_cost = models.DecimalField(
-        max_digits=10, decimal_places=2,
+        max_digits=12, decimal_places=2,
         null=True, blank=True,
         help_text=_('A total price offer for custom order.')
     )
@@ -136,7 +136,7 @@ class OrderItem(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     item = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.DecimalField(max_digits=12, decimal_places=2)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
