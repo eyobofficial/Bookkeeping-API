@@ -126,24 +126,10 @@ class OrderDetailView(BaseBusinessAccountDetailViewSet, RetrieveDestroyAPIView):
     Returns a detail of an outstanding customer orders for a
     business account.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/orders/{order_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of a customer order.
-
     delete:
     Custom Order Delete
 
     Delete a customer order for a business account.
-
-    **HTTP Request** <br />
-    `DELETE /business/{business_id}/orders/{order_id}/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of the customer order.
     """
     queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
@@ -162,30 +148,6 @@ class InventoryOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
 
     Creates a customer order for a business account using a
     list of items from the inventory.
-
-    **HTTP Request** <br />
-    `POST /business/{business_id}/orders/from-list/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Request Body Parameters** <br />
-    - Customer ID
-    - Order Item Objects
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-
-    **Response Body** <br />
-    - Order ID
-    - Order Type (*Always `FROM_LIST`*)
-    - Customer Object
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Order Item Objects
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `customerId` and `orderItems` are all required.
@@ -215,33 +177,8 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     put:
     Inventory Customer Order Update
 
-    Updates a customer order for a business account that that an order type
+    Updates a customer order for a business account that has an order type
     of `FROM_LIST`.
-
-    **HTTP Request** <br />
-    `PUT /business/{business_id}/orders/{order_id}/from-list/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of the customer order.
-
-    **Request Body Parameters** <br />
-    - Customer ID
-    - Order Item Objects
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-
-    **Response Body** <br />
-    - Order ID
-    - Order Type (*Always `FROM_LIST`*)
-    - Customer Object
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Order Item Objects
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `customerId` and `orderItems` are all required.
@@ -253,31 +190,6 @@ class InventoryOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
 
     Partially updates a customer order for a business account that that an
     order type of `FROM_LIST`.
-
-    **HTTP Request** <br />
-    `PATCH /business/{business_id}/orders/{order_id}/from-list/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of the customer order.
-
-    **Request Body Parameters** <br />
-    - Customer ID
-    - Order Item Objects
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-
-    **Response Body** <br />
-    - Order ID
-    - Order Type (*Always `FROM_LIST`*)
-    - Customer Object
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Order Item Objects
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `customerId` and `orderItems` are all required.
@@ -325,31 +237,6 @@ class CustomOrderCreateView(BaseBusinessAccountDetailViewSet, CreateAPIView):
     Creates a customer order for a business account using a custom
     user described order description.
 
-    **HTTP Request** <br />
-    `POST /business/{business_id}/orders/custom/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Request Body Parameters** <br />
-    - Customer ID
-    - Description
-    - Cost
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-
-    **Response Body** <br />
-    - Order Object
-    - Order Type (*Always `CUSTOM`*)
-    - Customer Object
-    - Description
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
-
     **Validation Error Events** <br />
     - `customerId`, `description`, and `cost` are all required.
     """
@@ -376,34 +263,8 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
     put:
     Custom Order Update
 
-    Updates a customer order for a business account that that an order type
+    Updates a customer order for a business account that has an order type
     of `CUSTOM`.
-
-    **HTTP Request** <br />
-    `PUT /business/{business_id}/orders/{order_id}/custom/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of the customer order.
-
-    **Request Body Parameters** <br />
-    - Customer ID
-    - Description
-    - Cost
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-
-    **Response Body** <br />
-    - Order Object
-    - Order Type (*Always `CUSTOM`*)
-    - Customer Object
-    - Description
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `customerId`, `description`, and `cost` are all required.
@@ -413,32 +274,6 @@ class CustomOrderUpdateView(BaseBusinessAccountDetailViewSet, UpdateAPIView):
 
     Partial updates a customer order for a business account that
     that an order type of `CUSTOM`.
-
-    **HTTP Request** <br />
-    `PATCH /business/{business_id}/orders/{order_id}/custom/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `order_id`: The ID of the customer order.
-
-    **Request Body Parameters** <br />
-    - Customer ID
-    - Description
-    - Cost
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-
-    **Response Body** <br />
-    - Order Object
-    - Order Type (*Always `CUSTOM`*)
-    - Customer Object
-    - Description
-    - Cost (*i.e. Amount before TAX.*)
-    - Tax Percentage
-    - Tax Amount
-    - Total Amount (*i.e. Amount after Tax.*)
-    - Status (*Possible values are `OPEN` (default) or `CLOSED`.*)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `customerId`, `description`, and `cost` are all required.

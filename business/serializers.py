@@ -163,7 +163,7 @@ class BusinessSoldSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     """
-    Customer serializer to include include in order serializer
+    Customer serializer to be included in order serializer
     """
 
     class Meta:

@@ -22,6 +22,7 @@ class BaseBusinessAccountDetailViewSet:
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['business_account'] = self.get_business_account()
+        context['request'] = self.request
         return context
 
     def perform_create(self, serializer):
