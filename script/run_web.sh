@@ -10,7 +10,6 @@ echo 'Database is ready.'
 
 # Prepare app
 echo 'Run migrations...'
-python manage.py makemigrations   # TODO: Remove in production code
 python manage.py migrate --no-input
 
 # Create a default superuser account
