@@ -3,7 +3,7 @@ services:
   web:
     build: .
     command: bash script/run_web.sh
-    restart: always
+    restart: on-failure
     env_file:
       - ./.env
     expose:
@@ -15,7 +15,7 @@ services:
       - db
   db:
     image: postgres:12.0-alpine
-    restart: always
+    restart: on-failure
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
@@ -30,7 +30,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    restart: always
+    restart: on-failure
     env_file:
       - ./.env
     ports:

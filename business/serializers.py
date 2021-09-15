@@ -1,5 +1,6 @@
 from decimal import Decimal
 from functools import reduce
+from shared.serializers import PhotoUploadSerializer
 
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
@@ -165,6 +166,7 @@ class CustomerSerializer(serializers.ModelSerializer):
     """
     Customer serializer to be included in order serializer
     """
+    photo = PhotoUploadSerializer(read_only=True)
 
     class Meta:
         model = Customer
@@ -273,9 +275,8 @@ class BaseOrderModelSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         fields = super().to_representation(instance)
-
         # Include customer object serializered data
-        customer_serializer = CustomerSerializer(instance.customer)
+        customer_serializer = CustomerSerializer(instance.customer, context=self.context)
         fields['customer'] = customer_serializer.data
         return fields
 
@@ -499,7 +500,8 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     @swagger_serializer_method(serializer_or_field=CustomerSerializer)
     def get_customer(self, obj):
-        return CustomerSerializer(instance=obj.order.customer).data
+        serializer = CustomerSerializer(instance=obj.order.customer, context=self.context)
+        return serializer.data
 
     def get_tax_percentage(self, obj) -> Decimal:
         """

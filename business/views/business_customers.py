@@ -51,7 +51,14 @@ from .base import BaseBusinessAccountDetailViewSet
         tags=['Customers'],
         request_body=business_schema.customer_edit_request_body,
         responses={
-            201: BusinessCustomerSerializer(),
+            # 201: BusinessCustomerSerializer(),
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description='Testing sample....',
+                properties={
+                    'product': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            ),
             401: shared_schema.unauthorized_401_response,
             409: business_schema.duplicate_409_response
         }
