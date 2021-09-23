@@ -1,7 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, \
     RetrieveModelMixin
 

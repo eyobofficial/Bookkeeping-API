@@ -3,6 +3,7 @@ from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
+from shared import schema as shared_schema
 from .models import OrderItem
 from .serializers import InventoryOrderItemSerializer
 
@@ -13,6 +14,10 @@ from .serializers import InventoryOrderItemSerializer
     decorator=swagger_auto_schema(
         operation_id='order-item-create',
         tags=['Order Items'],
+        responses={
+            201: InventoryOrderItemSerializer,
+            401: shared_schema.unauthorized_401_response
+        }
     )
 )
 @method_decorator(
@@ -20,6 +25,10 @@ from .serializers import InventoryOrderItemSerializer
     decorator=swagger_auto_schema(
         operation_id='order-item-list',
         tags=['Order Items'],
+        responses={
+            200: InventoryOrderItemSerializer(many=True),
+            401: shared_schema.unauthorized_401_response
+        }
     )
 )
 @method_decorator(
@@ -27,6 +36,10 @@ from .serializers import InventoryOrderItemSerializer
     decorator=swagger_auto_schema(
         operation_id='order-item-detail',
         tags=['Order Items'],
+        responses={
+            200: InventoryOrderItemSerializer,
+            401: shared_schema.unauthorized_401_response
+        }
     )
 )
 @method_decorator(
@@ -34,6 +47,10 @@ from .serializers import InventoryOrderItemSerializer
     decorator=swagger_auto_schema(
         operation_id='order-item-update',
         tags=['Order Items'],
+        responses={
+            200: InventoryOrderItemSerializer,
+            401: shared_schema.unauthorized_401_response
+        }
     )
 )
 @method_decorator(
@@ -41,6 +58,10 @@ from .serializers import InventoryOrderItemSerializer
     decorator=swagger_auto_schema(
         operation_id='order-item-partial-update',
         tags=['Order Items'],
+        responses={
+            200: InventoryOrderItemSerializer,
+            401: shared_schema.unauthorized_401_response
+        }
     )
 )
 @method_decorator(
@@ -48,6 +69,10 @@ from .serializers import InventoryOrderItemSerializer
     decorator=swagger_auto_schema(
         operation_id='order-item-delete',
         tags=['Order Items'],
+        responses={
+            204: 'No Content',
+            401: shared_schema.unauthorized_401_response
+        }
     )
 )
 class OrderItemViewSet(viewsets.ModelViewSet):
