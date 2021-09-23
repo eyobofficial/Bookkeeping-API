@@ -53,6 +53,7 @@ urlpatterns += [
     path('api-auth/', include('rest_framework.urls')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('business/', include('business.urls', namespace='business')),
+    path('orders/', include('orders.urls', namespace='orders')),
     path('', include('shared.urls', namespace='shared')),
 ]
 
