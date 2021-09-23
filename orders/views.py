@@ -9,6 +9,13 @@ from .serializers import InventoryOrderItemSerializer
 
 
 @method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        operation_id='order-item-create',
+        tags=['Order Items'],
+    )
+)
+@method_decorator(
     name='list',
     decorator=swagger_auto_schema(
         operation_id='order-item-list',
@@ -45,6 +52,11 @@ from .serializers import InventoryOrderItemSerializer
 )
 class OrderItemViewSet(viewsets.ModelViewSet):
     """
+    create:
+    Order Item Create
+
+    Create a new order items that is associated with the current order id.
+
     list:
     Order Item List
 

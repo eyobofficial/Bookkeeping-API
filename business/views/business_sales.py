@@ -2,12 +2,14 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from payments.models import Payment
 from business.serializers import PaymentSerializer
 from business.permissions import IsBusinessOwnedPayment
+from payments.filters import SalesFilter
 
 
 @method_decorator(
@@ -17,18 +19,35 @@ from business.permissions import IsBusinessOwnedPayment
         tags=['Sales'],
         manual_parameters=[
             openapi.Parameter(
-                'modeOfPayment',
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
-                description=_('Filter result by the mode of payment.'),
-                enum=('CASH', 'BANK', 'CARD', 'CREDIT')
-            ),
-            openapi.Parameter(
                 'customer',
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
-                description=_('Filter result by customer name.')
-            )
+                description=_(('Filter result by all or part of the '
+                               'customer name, phone number, or email.')),
+            ),
+            openapi.Parameter(
+                'modeOfPayment',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_('Filter result by the mode of payment used.'),
+                enum=('cash', 'bank', 'card', 'credit')
+            ),
+            openapi.Parameter(
+                'date',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_(
+                    'Filter result by the date of the sales. Date format: `yyyy-mm-dd`.'
+                )
+            ),
+            openapi.Parameter(
+                'search',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description=_(('Filter result by customer name, customer phone number, '
+                               'customer email, sales description, or sales created date. '
+                               'For searching by date, use the format `yyyy-mm-dd`.')),
+            ),
         ],
         responses={
             200: PaymentSerializer(many=True),
@@ -57,93 +76,15 @@ class SalesViewSet(ReadOnlyModelViewSet):
     account. Completed sales are the same as payments objects with a status
     of `COMPLETED`.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/sales/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Query Parameters** <br />
-    - `modeOfPayment`: Filter sales of a business account by their
-      mode of payments. The possible value are: `CASH`, `BANK`, `CARD`,
-      and `CREDIT`.
-    - `customer`: Filter sales of a business account by the customer name.
-
-    **Response Body** <br />
-    An array of a sales object which includes:
-    - Payment/Sales ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
-
     retrieve:
     Sales Detail
 
     Returns a detail of completed sales instance for the current business
     account. Completed sales are the same as payments objects with a status
     of `COMPLETED`.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}/sales/{sales_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `sales_id`: The ID of the sales object.
-
-    **Response Body** <br />
-    - Payment/Sales ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
     """
     queryset = Payment.objects.filter(status=Payment.COMPLETED)
     serializer_class = PaymentSerializer
     permission_classes = [IsBusinessOwnedPayment]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-
-        # Filter by the current business account
-        business_id = self.kwargs.get('business_id')
-        qs = qs.filter(order__business_account__id=business_id)
-
-        # Filter by mode of payment
-        mode_of_payment_query = self.request.query_params.get('modeOfPayment')
-        if mode_of_payment_query is not None:
-            qs = qs.filter(mode_of_payment=mode_of_payment_query)
-
-        # Filter by customer name
-        customer_query = self.request.query_params.get('customer')
-        if customer_query is not None:
-            qs = qs.filter(order__customer__name__icontains=customer_query)
-        return qs
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = SalesFilter

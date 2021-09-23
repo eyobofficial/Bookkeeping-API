@@ -10,12 +10,12 @@ from drf_yasg.utils import swagger_auto_schema
 from django_filters import rest_framework as filters
 
 from business import schema as business_schema
-from orders.models import Order, OrderItem
+from orders.models import Order
 from business.serializers import BusinessAllOrdersSerialize, \
     BusinessInventoryOrdersSerializer, BusinessCustomOrderSerializer, \
     OrderDetailSerializer
 from business.permissions import IsBusinessOwnedResource, IsOrderOpen
-from business.filters import OrderFilter
+from orders.filters import OrderFilter
 from .base import BaseBusinessAccountDetailViewSet
 
 
@@ -30,7 +30,7 @@ from .base import BaseBusinessAccountDetailViewSet
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 description=_(('Filter result by all or part of the '
-                               'customer name or phone number.')),
+                               'customer name, phone number, or email.')),
             ),
             openapi.Parameter(
                 'type',
@@ -51,7 +51,7 @@ from .base import BaseBusinessAccountDetailViewSet
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 description=_(
-                    'Filter result by the date of the order. Date format: `yy-mm-dd`.'
+                    'Filter result by the date of the order. Date format: `yyyy-mm-dd`.'
                 )
             ),
             openapi.Parameter(
@@ -59,8 +59,8 @@ from .base import BaseBusinessAccountDetailViewSet
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 description=_(('Filter result by customer name, customer phone number, '
-                               'order description, or order created date. For searching'
-                               'by date, use the format `yyyy-mm-dd`.')),
+                               'customer email, order description, or order created date. '
+                               'For searching by date, use the format `yyyy-mm-dd`.')),
             ),
         ],
         responses={
