@@ -40,29 +40,10 @@ class BusinessTypeViewSet(ReadOnlyModelViewSet):
     Returns a list of all business types. Examples: *Online Store*, *Fashion,
     Health, & Beauty*, *Cafe & Restaurants*, *Food & Drink*, *etc*.
 
-    **HTTP Request** <br />
-    `GET /business/types/`
-
-    **Response Body** <br />
-    The response body includes a list (array) of a business type objects. The
-    business type object includes:
-    - Business Type ID
-    - Title
-
     retrieve:
     Business Type Detail
 
     Returns the details of a business type.
-
-    **HTTP Request** <br />
-    `GET /business/types/{business_id}/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business type.
-
-    **Response Body** <br />
-    - Business Type ID
-    - Title
     """
     queryset = BusinessType.objects.all()
     serializer_class = BusinessTypeSerializer
@@ -102,49 +83,10 @@ class BusinessAccountViewSet(ReadOnlyModelViewSet):
       - An authenticted non-admin user, return only the business accounts
       of the current authenticated user.
 
-    **HTTP Request** <br />
-    `GET /business/`
-
-    **Response Body** <br />
-    The response body includes a list (array) of a business account objects. The
-    business account object includes:
-    - Business ID
-    - User ID
-    - Business Type Object
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*, *required*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
-
     retrieve:
     Business Account Detail
 
     Returns the details of a business account.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Response Body** <br />
-    - Business ID
-    - User ID
-    - Business Type Object
-    - Business Name
-    - Currency
-    - Country (*using [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format*)
-    - City
-    - Address
-    - Postal Code
-    - Email Address
-    - Created Date and Time
-    - Last Updated Date and Time
     """
     queryset = BusinessAccount.objects.all()
     serializer_class = BusinessAccountSerializer

@@ -1,8 +1,6 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import serializers
-from rest_framework.decorators import permission_classes
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, \
     UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -91,50 +89,10 @@ class NotificationViewSet(*cls_mixins):
     Returns a list (array) of all notifications for the current business
     account.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/notifications/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Query Parameters** <br />
-    - `search`: All or part of the notification type (case-insensitive) you are
-    searching for.
-
-    **Response Body** <br />
-    An array of a notification object which includes:
-    - Notification ID
-    - Notification Type
-    - Action Message
-    - Action Date and Time
-    - Action Date Label
-    - Action URL
-    - Seen
-    - Create Date & Time
-    - Last Updated Date & Time
-
     retrieve:
     Notification Detail
 
     Returns a detail of a notification owned by the current business account.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}/notifications/{notification_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `notification_id`: The ID of the notification object.
-
-    **Response Body** <br />
-    - Notification ID
-    - Notification Type
-    - Action Message
-    - Action Date and Time
-    - Action Date Label
-    - Action URL
-    - Seen
-    - Create Date & Time
-    - Last Updated Date & Time
 
     update:
     Notification Update
@@ -142,53 +100,11 @@ class NotificationViewSet(*cls_mixins):
     Mark an existing notification object for the current business account
     as seeen.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/notifications/{notification_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `notification_id`: The ID of the notification object.
-
-    **Request Body Parameters**
-    - isSeen (*boolean**)
-
-    **Response Body** <br />
-    - Notification ID
-    - Notification Type
-    - Action Message
-    - Action Date and Time
-    - Action Date Label
-    - Action URL
-    - Seen
-    - Create Date & Time
-    - Last Updated Date & Time
-
     partial_update:
     Notification Update Partial
 
     Mark an existing notification object for the current business account
     as seeen.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}/notifications/{notification_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `notification_id`: The ID of the notification object.
-
-    **Request Body Parameters**
-    - isSeen (*boolean**)
-
-    **Response Body** <br />
-    - Notification ID
-    - Notification Type
-    - Action Message
-    - Action Date and Time
-    - Action Date Label
-    - Action URL
-    - Seen
-    - Create Date & Time
-    - Last Updated Date & Time
     """
     queryset = Notification.objects.filter(is_seen=False)
     serializer_class = NotificationSerializer

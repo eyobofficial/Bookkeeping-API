@@ -146,114 +146,15 @@ class BusinessPaymentViewSet(*cls_args):
 
     Returns a list (array) of all payments for the current business account.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/payments/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Query Parameters** <br />
-    - `orderId`: Filter payments of a business account by ID of an order.
-    - `modeOfPayment`: Filter payments of a business account by their
-      mode of payments. The possible value are: `CASH`, `BANK`, `CARD`,
-      and `CREDIT`.
-    - `status`: Filter payments of a business account by their status. The
-      possible values are `PENDING`, `COMPLETED`, and `FAILED`.
-    - `search`: Filter payments of a business account by the customer name
-      or phone number.
-
-    **Response Body** <br />
-    An array of a payment object which includes:
-    - Payment ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
-
     retrieve:
     Payment Detail
 
     Returns a detail of a payment owned by the current business account.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/payments/{payment_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `payment_id`: The ID of the payment object.
-
-    **Response Body** <br />
-    - Payment ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
-
     create:
     Payment Create
 
     Creates a new payment object for the current business account.
-
-    **HTTP Request** <br />
-    `POST /business/{business_id}/payments/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Request Body Paramters** <br />
-    - Order ID
-    - Mode of Payment (*Possible values are `CASH`, `BANK`, `CARD`, or `CREDIT`*)
-    - Pay Later Date (*Optional reminder for `CREDIT` payment type*)
-    - Status (*Possible values are `PENDING` (default), `COMPLETED`, or `FAILED`*)
-
-    **Response Body** <br />
-    - Payment ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `orderId` and `modeOfPayments` are all required.
@@ -266,40 +167,6 @@ class BusinessPaymentViewSet(*cls_args):
 
     Updates an existing payment object for the current business account.
 
-    **HTTP Request** <br />
-    `PUT /business/{business_id}/payments/{payment_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `payment_id`: The ID of the payment object.
-
-    **Request Body Paramters** <br />
-    - Order ID
-    - Mode of Payment (*Possible values are `CASH`, `BANK`, `CARD`, or `CREDIT`*)
-    - Pay Later Date (*Required if mode of payment is `CREDIT`*)
-    - Status (*Possible values are `PENDING` (default), `COMPLETED`, or `FAILED`*)
-
-    **Response Body** <br />
-    - Payment ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
-
     **Validation Error Events** <br />
     - `orderId` and `modeOfPayments` are all required.
     - `payLaterDate` field is required if `modeOfPayment` has a value `CREDIT`.
@@ -311,40 +178,6 @@ class BusinessPaymentViewSet(*cls_args):
 
     Partially updates attributes of an existing payment object for the
     current business account.
-
-    **HTTP Request** <br />
-    `PATCH /business/{business_id}/payments/{payment_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `payment_id`: The ID of the payment object.
-
-    **Request Body Paramters** <br />
-    - Order ID
-    - Mode of Payment (*Possible values are `CASH`, `BANK`, `CARD`, or `CREDIT`*)
-    - Pay Later Date (*Required if mode of payment is `CREDIT`*)
-    - Status (*Possible values are `PENDING` (default), `COMPLETED`, or `FAILED`*)
-
-    **Response Body** <br />
-    - Payment ID
-    - Order ID
-    - Orders Description (i.e. Summary of sold items)
-    - Customer Object
-    - Order Amount (Before TAX)
-    - Tax Percentage (example: `0.15` for 15%)
-    - Tax Amount
-    - Total Amount (After Tax)
-    - Mode of Payment
-    - Pay Later Date (*Optional*)
-    - An array of Sold Items Object. Object fields are:
-        * Product
-        * Unit
-        * Quantity
-        * Price
-        * Amount
-    - Status (Available values are `PENDING`, `COMPLETED`, and `FAILED`)
-    - Create Date & Time
-    - Last Updated Date & Time
 
     **Validation Error Events** <br />
     - `orderId` and `modeOfPayments` are all required.
@@ -402,16 +235,6 @@ class BusinessPaymentViewSet(*cls_args):
         Payment Receipt
 
         Returns a URL to PDF receipt file for the current payment object.
-
-        **HTTP Request** <br />
-        `GET /business/{business_id}/payments/{payment_id}/receipt/`
-
-        **URL Parameters** <br />
-        - `business_id`: The ID of the business account.
-        - `payment_id`: The ID of the customer order.
-
-        **Response Body** <br />
-        A URL to the PDF receipt download link.
         """
         payment = self.get_object()
         payment.generate_pdf(request)

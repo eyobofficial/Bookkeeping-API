@@ -267,3 +267,7 @@ SWAGGER_SETTINGS = {
        {'JWT': []}
    ]
 }
+
+
+# Django AutoField
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'  # New in Django 3.2

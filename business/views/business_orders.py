@@ -1,7 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import permissions, viewsets
+from rest_framework import permissions
 from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView,\
     RetrieveDestroyAPIView
 
@@ -78,12 +78,6 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
 
     Returns a list of all (both open and closed) customer orders for a
     business account.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}/orders/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
     """
     queryset = Order.objects.all()
     serializer_class = BusinessAllOrdersSerialize

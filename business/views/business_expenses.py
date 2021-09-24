@@ -11,7 +11,7 @@ from drf_yasg.utils import swagger_auto_schema
 from shared import schema as shared_schema
 from expenses.models import Expense
 
-from business.serializers import BusinessExpenseSerializer, BusinessStockSerializer
+from business.serializers import BusinessExpenseSerializer
 from business.permissions import IsBusinessOwnedResource
 from .base import BaseBusinessAccountDetailViewSet
 
@@ -73,38 +73,15 @@ class BusinessExpenseViewSet(*expense_mixins):
 
     Returns a list (array) of expense objects for the current business account.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/expenses/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Query Parameters** <br />
-    - `search`: All or part of the expense's title (case-insensitive) you are
-    searching for.
-
     retrieve:
     Expense Detail
 
     Returns the details of an expense record.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/expenses/{id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `id`: The ID of the expense.
-
     create:
     Expense Create
 
     Creates a new expense record for the current business account.
-
-    **HTTP Request** <br />
-    `POST /business/{business_id}/expenses/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
     """
     queryset = Expense.objects.all()
     serializer_class = BusinessExpenseSerializer

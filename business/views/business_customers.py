@@ -3,7 +3,6 @@ from PIL import Image
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -51,14 +50,7 @@ from .base import BaseBusinessAccountDetailViewSet
         tags=['Customers'],
         request_body=business_schema.customer_edit_request_body,
         responses={
-            # 201: BusinessCustomerSerializer(),
-            200: openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                description='Testing sample....',
-                properties={
-                    'product': openapi.Schema(type=openapi.TYPE_STRING)
-                }
-            ),
+            201: BusinessCustomerSerializer(),
             401: shared_schema.unauthorized_401_response,
             409: business_schema.duplicate_409_response
         }
@@ -107,74 +99,30 @@ class BusinessCustomerViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
 
     Returns a list of customers for the current business account.
 
-    **HTTP Request** <br />
-    `GET /business/{business_id}/customers/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
-    **Query Parameters** <br />
-    - `search`: All or part of the customer's name (case-insensitive) you are
-    searching for.
-
     retrieve:
     Customers Detail
 
     Returns the details of a customer recored.
-
-    **HTTP Request** <br />
-    `GET /business/{business_id}/customers/{customer_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `customer_id`: The ID of the customer.
 
     create:
     Customers Create
 
     Creates a new customer recored for the current business account.
 
-    **HTTP Request** <br />
-    `POST /business/{business_id}/customers/`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-
     update:
     Cutomers Update
 
     Updates the details of a customer recored.
-
-    **HTTP Request** <br />
-    `PUT /business/{business_id}/customers/{customer_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `customer_id`: The ID of the customer.
 
     partial_update:
     Cutomers Partial Update
 
     Partially updates the details of a customer recored.
 
-    **HTTP Request** <br />
-    `PATCH /business/{business_id}/customers/{customer_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `customer_id`: The ID of the customer.
-
     destroy:
     Customers Delete
 
     Deletes a customer recored.
-
-    **HTTP Request** <br />
-    `DELETE /business/{business_id}/customers/{customer_id}`
-
-    **URL Parameters** <br />
-    - `business_id`: The ID of the business account.
-    - `customer_id`: The ID of the customer.
     """
     queryset = Customer.objects.all()
     serializer_class = BusinessCustomerSerializer
