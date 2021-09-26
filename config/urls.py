@@ -25,6 +25,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from shared import constants
 from shared.schema import CustomOpenAPISchemaGenerator
 
 
@@ -32,8 +33,8 @@ schema_view = get_schema_view(
    openapi.Info(
       title="Dukka API",
       default_version='v1.0.0',
-      description=('RESTful API endpoints for Dukka MVP version 1.0 app.'),
-      contact=openapi.Contact(email="hello@dukka.com")
+      description=constants.API_DESCRIPTION,
+      contact=openapi.Contact(email="support@dukka.com")
    ),
    public=True,
    permission_classes=[permissions.AllowAny],
