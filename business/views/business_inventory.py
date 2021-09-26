@@ -127,7 +127,7 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
     """
     queryset = Stock.objects.all()
     serializer_class = BusinessStockSerializer
-    permissions_classes = [IsBusinessOwnedResource]
+    permission_classes = [IsBusinessOwnedResource]
 
     def get_queryset(self):
         qs = super().get_queryset()
