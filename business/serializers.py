@@ -75,7 +75,7 @@ class BusinessCustomerSerializer(serializers.ModelSerializer):
             qs = Customer.objects.filter(**kwargs)
             if customer is not None:
                 qs = qs.exclude(email=customer.email)
-            if Customer.objects.filter(**kwargs).exists():
+            if qs.exists():
                 error = _('A customer with this email address is registered.')
                 raise serializers.ValidationError(error)
         return super().validate(data)
