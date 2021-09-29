@@ -28,7 +28,7 @@ the system needs the following main components and tools:
 * Backend RESTful API services
 * Secure Cloud hosting
 
-Thefore, this API documentation is going to meticulous document all uses cases
+Thefore, this API documentation is going to meticulously document all uses cases
 of the RESTful API endpoints that are going to be consumed by the mobile and web
 applications.
 """
