@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
@@ -88,3 +89,22 @@ class SalesViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsBusinessOwnedPayment]
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = SalesFilter
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        business_id = self.kwargs.get('business_id')
+        return qs.filter(order__business_account__id=business_id)
+
+    def get_business_account(self):
+        """
+        Return the current active business account.
+        """
+        business_id = self.kwargs.get('business_id')
+        user_business_accounts = self.request.user.business_accounts.all()
+        return get_object_or_404(user_business_accounts, pk=business_id)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['business_account'] = self.get_business_account()
+        context['request'] = self.request
+        return context
