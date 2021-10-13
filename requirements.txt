@@ -12,7 +12,6 @@ blessed==1.18.0
 boto3==1.17.54
 botocore==1.20.54
 cached-property==1.5.2
-cairocffi==1.2.0
 CairoSVG==2.5.2
 celery==4.4.2
 cement==2.8.2

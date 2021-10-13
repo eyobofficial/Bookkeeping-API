@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from weasyprint import HTML
 
+from inventory.units import MeasurementUnit
 from orders.models import Order
 
 
@@ -113,20 +114,6 @@ class Payment(models.Model):
 
 
 class SoldItem(models.Model):
-
-    # Measurement units
-    PCS = 'pc'
-    KILOGRAMS = 'kg'
-    LITERS = 'lt'
-    METERS = 'mt'
-
-    UNIT_CHOICES = (
-        (PCS, _('pcs')),
-        (KILOGRAMS, _('kilograms')),
-        (LITERS, _('lt')),
-        (METERS, _('mt')),
-    )
-
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     payment = models.ForeignKey(
         Payment,
@@ -135,9 +122,9 @@ class SoldItem(models.Model):
     )
     product = models.TextField()
     unit = models.CharField(
-        max_length=2,
-        choices=UNIT_CHOICES,
-        default=PCS,
+        max_length=3,
+        choices=MeasurementUnit.UNIT_CHOICES,
+        default=MeasurementUnit.PIECE,
         help_text=_('Measurement unit.')
     )
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
