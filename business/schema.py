@@ -4,8 +4,12 @@ from django.utils.translation import gettext_lazy as _
 from drf_yasg import openapi
 from django_countries import countries
 
+from inventory.units import MeasurementUnit
+
 
 PHONENUMBER_COUNTRY = countries.name(settings.PHONENUMBER_DEFAULT_REGION)
+
+measurement_unit = MeasurementUnit()
 
 
 # Sample request body for customer create/update endpoints
@@ -102,7 +106,7 @@ stock_request_body=openapi.Schema(
         ),
         'unit': openapi.Schema(
             type=openapi.TYPE_STRING,
-            enum=['pc', 'kg', 'lt', 'mt'],
+            enum=measurement_unit.all_units,
             description=_('Unit of measurement.')
         ),
         'quantity': openapi.Schema(

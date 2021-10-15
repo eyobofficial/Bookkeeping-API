@@ -4,7 +4,7 @@ from customers.models import Customer
 from expenses.models import Expense
 from inventory.models import Stock
 
-from .models import BusinessType, BusinessAccount
+from .models import BusinessType, BusinessAccount, BusinessAccountTax
 
 
 @admin.register(BusinessType)
@@ -28,9 +28,14 @@ class StockInline(admin.TabularInline):
     extra = 1
 
 
+class BusinessAccountTaxInline(admin.StackedInline):
+    model = BusinessAccountTax
+    extra = 1
+
+
 @admin.register(BusinessAccount)
 class BusinessAccountAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'business_type', 'created_at', 'updated_at')
     list_filter = ('business_type', )
     search_fields = ('business_name', )
-    inlines = [CustomerInline, ExpenseInline, StockInline]
+    inlines = [BusinessAccountTaxInline, CustomerInline, ExpenseInline, StockInline]

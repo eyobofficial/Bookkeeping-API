@@ -19,7 +19,7 @@ from notifications.models import Notification
 from shared.fields import PhotoUploadField
 from shared.models import PhotoUpload
 
-from .models import BusinessType, BusinessAccount
+from .models import BusinessType, BusinessAccount, BusinessAccountTax
 
 
 class BusinessTypeSerializer(serializers.ModelSerializer):
@@ -608,4 +608,17 @@ class NotificationSerializer(serializers.ModelSerializer):
             'action_date_label',
             'created_at',
             'updated_at'
+        )
+
+
+class BusinessAccountTaxSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the current business account taxes.
+    """
+
+    class Meta:
+        model = BusinessAccountTax
+        fields = (
+            'id', 'name', 'tax_identification_number', 'percentage', 'description',
+            'active', 'created_at', 'updated_at'
         )
