@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from business.views import business_accounts, business_customers, \
     business_expenses, business_inventory, business_orders, business_payments,\
-    business_sales, business_notifications
+    business_sales, business_notifications, business_taxes
 
 
 app_name = 'business'
@@ -41,6 +41,10 @@ router.register(
 router.register(
     r'(?P<business_id>[0-9a-f-]+)/notifications',
     business_notifications.NotificationViewSet
+)
+router.register(
+    r'(?P<business_id>[0-9a-f-]+)/taxes',
+    business_taxes.BusinessTaxViewSet
 )
 
 # Must be at the bottom to match '' pattern

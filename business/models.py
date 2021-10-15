@@ -78,3 +78,33 @@ class BusinessAccount(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BusinessAccountTax(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
+    business_account = models.ForeignKey(
+        BusinessAccount,
+        related_name='taxes',
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=100)
+    tax_identification_number = models.CharField(
+        max_length=100,
+        null=True, blank=True,
+        help_text=_('Unique TAX identification number issued by the government.'))
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text=_('The percentage to be deducted.')
+    )
+    description = models.TextField(blank=True, null=True)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('Business Account Tax')
+        verbose_name_plural = _('Business Account Taxes')
+
+    def __str__(self):
+        return self.name
