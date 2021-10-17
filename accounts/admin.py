@@ -34,7 +34,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('email', 'phone_number')
     fieldsets = (
         (None,
-            {'fields': ('phone_number', 'email', 'password')}
+            {'fields': ('phone_number', 'email', 'password', 'type')}
         ),
         ('Permissions',
             {

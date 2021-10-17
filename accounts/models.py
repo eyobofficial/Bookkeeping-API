@@ -17,9 +17,21 @@ class CustomUser(AbstractUser):
     """
     Default custom user.
     """
+    # User Types
+    BUSINESS = 1
+    PARTNER = 2
+    STAFF = 3
+
+    USER_TYPEC_CHOICES = (
+        (BUSINESS, _('Business Owner')),
+        (PARTNER, _('Partner')),
+        (STAFF, _('Staff'))
+    )
+
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     email = models.EmailField(_('email address'), unique=True, null=True)
     phone_number = PhoneNumberField(unique=True)
+    type = models.PositiveSmallIntegerField(choices=USER_TYPEC_CHOICES, default=BUSINESS)
 
     username = None
     first_name = None
