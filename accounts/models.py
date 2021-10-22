@@ -30,10 +30,10 @@ class CustomUser(AbstractUser):
 
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     email = models.EmailField(_('email address'), unique=True, null=True)
-    phone_number = PhoneNumberField(unique=True)
+    phone_number = PhoneNumberField(unique=True, null=True)
+    username = models.CharField(max_length=100, unique=True, null=True)
     type = models.PositiveSmallIntegerField(choices=USER_TYPEC_CHOICES, default=BUSINESS)
 
-    username = None
     first_name = None
     last_name = None
 

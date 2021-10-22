@@ -150,9 +150,18 @@ class SettingSerializer(serializers.ModelSerializer):
         ref_name = 'Settings'
 
 
+class TokenResponseSerializer(serializers.Serializer):
+    """
+    A read-only representation of the token response for including
+    in the API documentation.
+    """
+    access = serializers.ReadOnlyField()
+    refresh = serializers.ReadOnlyField()
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
-    Serializer for registrating new users.
+    Serializer for registrating new bussiness account users.
     """
     first_name = serializers.CharField(max_length=100, write_only=True)
     last_name = serializers.CharField(max_length=100, write_only=True)
@@ -180,7 +189,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'tokens', 'profile', 'settings'
         )
         extra_kwargs = {
-            'email': {'allow_blank': True}
+            'email': {'allow_blank': True},
+            'phone_number': {'required': True}
         }
 
     def validate_email(self, value):
@@ -227,17 +237,33 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.profile.first_name = first_name
         user.profile.last_name = last_name
         user.profile.save()
-
         return user
 
 
-class TokenResponseSerializer(serializers.Serializer):
-    """
-    A read-only representation of the token response for including
-    in the API documentation.
-    """
-    access = serializers.ReadOnlyField()
-    refresh = serializers.ReadOnlyField()
+class PartnerRegistrationSerializer(serializers.ModelSerializer):
+    tokens = TokenResponseSerializer()
+    password = serializers.CharField(max_length=120,
+                                     write_only=True,
+                                     style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'tokens')
+        extra_kwargs = {
+            'username': {'required': True, 'min_length': 6},
+            'email': {'required': True}
+        }
+
+    def create(self, valiated_data):
+        valiated_data['type'] = User.PARTNER
+        return super().create(valiated_data)
+
+    def get_tokens(self, obj):
+        jwt = RefreshToken.for_user(obj)
+        return {
+            'refresh': str(jwt),
+            'access': str(jwt.access_token)
+        }
 
 
 class UserResponseSerializer(UserRegistrationSerializer):

@@ -265,7 +265,8 @@ SWAGGER_SETTINGS = {
    },
    'SECURITY_REQUIREMENTS': [
        {'JWT': []}
-   ]
+   ],
+   'DEFAULT_AUTO_SCHEMA_CLASS': 'shared.schema.BadgesAutoSchema',
 }
 
 
