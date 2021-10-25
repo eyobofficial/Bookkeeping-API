@@ -2,18 +2,22 @@ from django.utils.translation import gettext_lazy as _
 
 from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
+from drf_yasg.inspectors import SwaggerAutoSchema
+
+
+class BadgesAutoSchema(SwaggerAutoSchema):
+    def get_badges(self):
+        return self.overrides.get('badges')
+
+    def get_operation(self, operation_keys=None):
+        operation = super().get_operation(operation_keys)
+        operation['x-badges'] = self.get_badges()
+        return operation
 
 
 class CustomOpenAPISchemaGenerator(OpenAPISchemaGenerator):
-
     def get_schema(self, request=None, public=False):
         swagger = super().get_schema(request, public)
-        swagger.tags = [
-            {
-                'name': 'Customers',
-                'description': 'API endpoints for managing business account customers.'
-            },
-        ]
         return swagger
 
 

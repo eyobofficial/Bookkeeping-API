@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.utils.translation import gettext_lazy as _
 
 from phonenumber_field.formfields import PhoneNumberField
 
@@ -18,7 +19,8 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
-        fields = ('email', 'phone_number')
+        fields = ('email', 'phone_number', 'type')
+        labels = {'type': _('User Type')}
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -26,7 +28,8 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta(UserChangeForm.Meta):
         model = CustomUser
-        fields = ('email', 'phone_number')
+        fields = ('email', 'phone_number', 'type')
+        labels = {'type': _('User Type')}
 
 
 class UserRegistrationForm(CustomUserCreationForm):

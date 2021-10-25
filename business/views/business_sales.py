@@ -7,10 +7,10 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from payments.models import Payment
-from business.serializers import PaymentSerializer
 from business.permissions import IsBusinessOwnedPayment
+from business.serializers import PaymentSerializer
 from payments.filters import SalesFilter
+from payments.models import Payment
 
 
 @method_decorator(

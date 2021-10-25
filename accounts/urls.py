@@ -2,12 +2,11 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from .views import UserLoginAPIView, UserRegistrationAPIView, \
-    EmailValidatorAPIView, PhoneNumberValidatorAPIView, PasswordChangeView, \
-    CustomTokenRefreshView, CustomTokenVerifyView, UserDetailAPIView, \
-    PasswordResetAPIView, PasswordResetConfirmAPIView, \
-    UserProfileDetailAPIView, UserSettingsAPIView, BusinessAccountViewSet, \
-    PhoneNumberConfirmAPIView
+from .views import UserLoginAPIView, UserRegistrationAPIView, EmailValidatorAPIView, \
+    PhoneNumberValidatorAPIView, PasswordChangeView, CustomTokenRefreshView, CustomTokenVerifyView,\
+    UserDetailAPIView, PasswordResetAPIView, PasswordResetConfirmAPIView, UserProfileDetailAPIView,\
+    UserSettingsAPIView, BusinessAccountViewSet, PhoneNumberConfirmAPIView, \
+    PartnerRegistrationAPIView
 
 
 app_name = 'accounts'
@@ -19,6 +18,7 @@ router.register(r'business', BusinessAccountViewSet)
 
 urlpatterns = [
     path('register/', UserRegistrationAPIView.as_view(), name='register'),
+    path('partners/register/', PartnerRegistrationAPIView.as_view(), name='partner-register'),
     path('login/', UserLoginAPIView.as_view(), name='login'),
     path(
         'email/validate/',
