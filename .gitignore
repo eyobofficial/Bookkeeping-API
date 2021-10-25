@@ -249,7 +249,8 @@ celerybeat.pid
 *.db
 
 
-# Elastic Beanstalk Files
+# Elastic Beanstalk Files!.elastic
 .elasticbeanstalk/*
+!.elasticbeanstalk/config.yml
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
