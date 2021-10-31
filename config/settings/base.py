@@ -38,7 +38,7 @@ INSTALLED_APPS += [
     'dj_rest_auth',
     'drf_yasg',
     'django_countries',
-    'django_filters'
+    'django_filters',
 ]
 
 

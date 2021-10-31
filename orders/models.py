@@ -84,12 +84,12 @@ class Order(models.Model):
             return round(total, 2)
         return self.custom_cost
 
-    @property
+    @cached_property
     def taxes(self):
         """
         Returns the TAX name, percentage, and tax amount of a Business Account
         """
-        taxes = self.business_account.taxes.active()
+        taxes = self.business_account.taxes.filter(active=True)
         return [dict(name=tax.name,
                       percentage=tax.percentage,
                       amount=tax.get_tax_amount(self.cost))

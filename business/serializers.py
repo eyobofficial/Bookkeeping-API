@@ -279,7 +279,7 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
 
     class Meta:
         model = Order
-        fields = [
+        fields = (
             'id',
             'order_type',
             'customer',
@@ -293,8 +293,8 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
             'order_items',
             'created_at',
             'updated_at'
-        ]
-        read_only_fields = ('cost', 'order_type')
+        )
+        read_only_fields = ('order_type', )
 
     def create(self, validated_data):
         item_data = validated_data.pop('order_items')
@@ -320,7 +320,7 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
     """
     class Meta:
         model = Order
-        fields = [
+        fields = (
             'id',
             'order_type',
             'customer',
@@ -333,7 +333,7 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
             'total_amount',
             'created_at',
             'updated_at'
-        ]
+        )
         read_only_fields = ('order_type', 'status')
 
     def create(self, validated_data):
@@ -362,7 +362,7 @@ class BusinessAllOrdersSerialize(BaseOrderTaxSerializer):
 
     class Meta:
         model = Order
-        fields = [
+        fields = (
             'id',
             'order_type',
             'customer',
@@ -375,7 +375,7 @@ class BusinessAllOrdersSerialize(BaseOrderTaxSerializer):
             'status',
             'created_at',
             'updated_at'
-        ]
+        )
         read_only_fields = ('order_type', )
 
 
@@ -391,11 +391,11 @@ class OrderDetailSerializer(BaseOrderTaxSerializer):
 
     class Meta:
         model = Order
-        fields = [
+        fields = (
             'id', 'order_type', 'customer', 'description', 'status', 'order_items', 'cost',
             'taxes', 'total_tax_percentage', 'total_tax_amount', 'total_amount',
             'created_at', 'updated_at'
-        ]
+        )
 
 
 class SoldItemSerializer(serializers.ModelSerializer):

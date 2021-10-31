@@ -111,9 +111,6 @@ class BusinessAccountTax(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Custom manager
-    objects = BusinessAccountTaxManager()
-
     class Meta:
         verbose_name = _('Business Account Tax')
         verbose_name_plural = _('Business Account Taxes')
