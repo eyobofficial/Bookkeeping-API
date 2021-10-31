@@ -318,6 +318,8 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
     """
     Serializer class for creating orders with `custom` order_type value.
     """
+    cost = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0)
+
     class Meta:
         model = Order
         fields = (

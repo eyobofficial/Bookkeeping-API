@@ -65,7 +65,6 @@ from .base import BaseBusinessAccountDetailViewSet
         ],
         responses={
             200: BusinessAllOrdersSerialize(many=True),
-            # 200: business_schema.order_list_response_body,
             400: 'Validation Error',
             401: 'Unauthorized',
             404: 'Not Found',

@@ -4,7 +4,6 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
-from drf_yasg.utils import swagger_serializer_method
 from weasyprint import HTML
 
 from business.models import BusinessAccount
@@ -185,7 +184,7 @@ class OrderItem(models.Model):
         return self.order.customer.name
 
     @cached_property
-    def cost(self) -> float:
+    def cost(self):
         """
         Sub-total of the order item.
         """
