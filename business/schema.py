@@ -94,6 +94,7 @@ order_detail_200_response = openapi.Response(
     }
 )
 
+
 # Sample Request Body for Stock Objects
 stock_request_body=openapi.Schema(
     type=openapi.TYPE_OBJECT,

@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
+from drf_yasg.utils import swagger_serializer_method
 from weasyprint import HTML
 
 from business.models import BusinessAccount
@@ -69,7 +70,7 @@ class Order(models.Model):
         return self.customer.name
 
     @cached_property
-    def cost(self) -> float:
+    def cost(self):
         """
         Return a total cost of the order.
 
@@ -82,6 +83,41 @@ class Order(models.Model):
             total = sum([item.cost for item in items])
             return round(total, 2)
         return self.custom_cost
+
+    @property
+    def taxes(self):
+        """
+        Returns the TAX name, percentage, and tax amount of a Business Account
+        """
+        taxes = self.business_account.taxes.active()
+        return [dict(name=tax.name,
+                      percentage=tax.percentage,
+                      amount=tax.get_tax_amount(self.cost))
+                      for tax in taxes]
+
+    @cached_property
+    def total_tax_percentage(self):
+        """
+        Returns the sum of all TAX percentages that are applied.
+        """
+        total = sum([tax['percentage'] for tax in self.taxes])
+        return round(total, 2)
+
+    @cached_property
+    def total_tax_amount(self):
+        """
+        Returns the TAX amount to be deducted.
+        """
+        total = sum([tax['amount'] for tax in self.taxes])
+        return round(total, 2)
+
+    @cached_property
+    def total_amount(self):
+        """
+        Returns the total order amount after tax.
+        """
+        total = self.cost + self.total_tax_amount
+        return round(total, 2)
 
     def save_order_items_description(self):
         """

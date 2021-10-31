@@ -65,6 +65,7 @@ from .base import BaseBusinessAccountDetailViewSet
         ],
         responses={
             200: BusinessAllOrdersSerialize(many=True),
+            # 200: business_schema.order_list_response_body,
             400: 'Validation Error',
             401: 'Unauthorized',
             404: 'Not Found',
@@ -92,7 +93,7 @@ class OrderListView(BaseBusinessAccountDetailViewSet, ListAPIView):
         operation_id='business-order-detail',
         tags=['Orders'],
         responses={
-            200: business_schema.order_detail_200_response,
+            200: OrderDetailSerializer,
             400: 'Validation Error',
             401: 'Unauthorized',
             404: 'Not Found',
