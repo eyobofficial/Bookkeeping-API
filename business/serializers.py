@@ -242,7 +242,7 @@ class BaseOrderTaxSerializer(serializers.ModelSerializer):
         return obj.cost
 
     @swagger_serializer_method(serializer_or_field=TaxTypeSerializer(many=True))
-    def get_taxes(self, obj) -> list[TaxTypeSerializer]:
+    def get_taxes(self, obj):
         return obj.taxes
 
     def get_total_tax_percentage(self, obj) -> float:

@@ -80,6 +80,15 @@ class BusinessAccount(models.Model):
         return self.name
 
 
+class BusinessAccountTaxManager(models.Manager):
+    def active(self):
+        """
+        Returns only only active taxes.
+        """
+        qs = self.get_queryset()
+        return qs.filter(active=True)
+
+
 class BusinessAccountTax(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     business_account = models.ForeignKey(
@@ -101,6 +110,9 @@ class BusinessAccountTax(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Custom manager
+    objects = BusinessAccountTaxManager()
 
     class Meta:
         verbose_name = _('Business Account Tax')

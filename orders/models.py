@@ -88,7 +88,7 @@ class Order(models.Model):
         """
         Returns the TAX name, percentage, and tax amount of a Business Account
         """
-        taxes = self.business_account.taxes.filter(active=True)
+        taxes = self.business_account.taxes.active()
         return [dict(name=tax.name,
                       percentage=tax.percentage,
                       amount=tax.get_tax_amount(self.cost))
