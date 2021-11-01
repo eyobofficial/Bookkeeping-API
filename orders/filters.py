@@ -12,6 +12,7 @@ class OrderFilter(filters.FilterSet):
     status = filters.CharFilter(field_name='status', lookup_expr='iexact')
     date = filters.CharFilter(field_name='created_at', lookup_expr='date')
     search = filters.CharFilter(method='search_filter')
+    description = filters.CharFilter(field_name='description', lookup_expr='icontains')
 
     class Meta:
         model = Order
