@@ -95,7 +95,7 @@ class Order(models.Model):
                       for tax in taxes]
 
     @cached_property
-    def total_tax_percentage(self):
+    def tax_percentage(self):
         """
         Returns the sum of all TAX percentages that are applied.
         """
@@ -103,7 +103,7 @@ class Order(models.Model):
         return round(total, 2)
 
     @cached_property
-    def total_tax_amount(self):
+    def tax_amount(self):
         """
         Returns the TAX amount to be deducted.
         """
@@ -115,7 +115,7 @@ class Order(models.Model):
         """
         Returns the total order amount after tax.
         """
-        total = self.cost + self.total_tax_amount
+        total = self.cost + self.tax_amount
         return round(total, 2)
 
     def save_order_items_description(self):
