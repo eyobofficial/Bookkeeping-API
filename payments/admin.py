@@ -12,7 +12,7 @@ class SoldItemInline(admin.TabularInline):
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
         'order', 'mode_of_payment', 'order_amount',
-        'tax_amount', 'total_amount', 'status', 'created_at'
+        'total_tax_amount', 'total_amount', 'status', 'created_at'
     )
     list_filter = ('mode_of_payment', 'status')
     inlines = [SoldItemInline]

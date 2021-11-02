@@ -413,11 +413,14 @@ class PaymentSerializer(serializers.ModelSerializer):
     order_amount = serializers.SerializerMethodField(
         help_text=_('Total amount of the order (i.e. before TAX).')
     )
-    tax_percentage = serializers.SerializerMethodField(
-        help_text=_('TAX Percentage in decimals.')
+    taxes = serializers.SerializerMethodField(
+        help_text=_('List of all taxes applied.')
     )
-    tax_amount = serializers.SerializerMethodField(
-        help_text=_('TAX amount to be added.')
+    total_tax_percentage = serializers.SerializerMethodField(
+        help_text=_('Total amount of tax percentage to be deducted')
+    )
+    total_tax_amount = serializers.SerializerMethodField(
+        help_text=_('Total tax amount to be deducted.')
     )
     total_amount = serializers.SerializerMethodField(
         help_text=_('Total amount of the payment (i.e. after TAX).')
@@ -428,7 +431,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = (
             'id', 'order', 'customer', 'description', 'order_amount', 'sold_items',
-            'tax_percentage', 'tax_amount', 'total_amount', 'status',
+            'taxes', 'total_tax_percentage', 'total_tax_amount', 'total_amount', 'status',
             'mode_of_payment', 'pay_later_date', 'created_at', 'updated_at'
         )
 
@@ -436,18 +439,16 @@ class PaymentSerializer(serializers.ModelSerializer):
     def get_customer(self, obj):
         serializer = CustomerSerializer(instance=obj.order.customer, context=self.context)
         return serializer.data
+    
+    @swagger_serializer_method(serializer_or_field=TaxTypeSerializer(many=True))
+    def get_taxes(self, obj):
+        return obj.taxes
 
-    def get_tax_percentage(self, obj) -> Decimal:
-        """
-        Returns the tax percentage.
-        """
-        return settings.VAT
-
-    def get_tax_amount(self, obj) -> Decimal:
-        """
-        Returns the VAT amount.
-        """
-        return obj.tax_amount
+    def get_total_tax_percentage(self, obj) -> float:
+        return obj.total_tax_percentage
+    
+    def get_total_tax_amount(self, obj) -> Decimal:
+        return obj.total_tax_amount
 
     def get_order_amount(self, obj) -> Decimal:
         """

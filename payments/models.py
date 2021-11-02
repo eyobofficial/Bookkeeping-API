@@ -78,28 +78,44 @@ class Payment(models.Model):
 
     def __str__(self):
         return self.order.customer.name
+    
+    @cached_property
+    def taxes(self):
+        """
+        Returns the TAX name, percentage, and tax amount of a Business Account
+        """
+        return self.order.taxes
+    
+    @cached_property
+    def total_tax_percentage(self):
+        """
+        Returns the sum of all TAX percentages that are applied.
+        """
+        return self.order.total_tax_percentage
 
     @cached_property
-    def tax_amount(self) -> float:
+    def total_tax_amount(self) -> float:
         """
         Returns the VAT Tax amount based order's cost.
         """
-        return round(self.order_amount * settings.VAT, 2)
+        return self.order.total_tax_amount
 
     @cached_property
     def order_amount(self):
         """
         Returns a total order amount for the payment *before* tax.
         """
-        total = sum(item.amount for item in self.sold_items.all())
-        return round(total, 2)
+        if self.order.order_type == Order.FROM_LIST and self.status == Payment.COMPLETED:
+            total = sum(item.amount for item in self.sold_items.all())
+            return round(total, 2)
+        return self.order.cost
 
     @cached_property
     def total_amount(self):
         """
         Returns a total order amount for the payment *after* tax.
         """
-        return round(self.order_amount + self.tax_amount, 2)
+        return round(self.order_amount + self.total_tax_amount, 2)
 
     def generate_pdf(self, request):
         """Generate a PDF file of the order."""
