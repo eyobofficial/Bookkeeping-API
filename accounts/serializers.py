@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -19,6 +20,7 @@ from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
     AccountNotRegisteredException, WrongOTPException, \
     InvalidCredentialsException, AccountDisabledException
 from .models import Profile, Setting
+from .validators import is_digit
 
 
 User = get_user_model()
@@ -165,11 +167,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     first_name = serializers.CharField(max_length=100, write_only=True)
     last_name = serializers.CharField(max_length=100, write_only=True)
-    password = serializers.CharField(
-        max_length=120,
-        write_only=True,
-        style={'input_type': 'password'}
-    )
+    pin = serializers.CharField(write_only=True,
+                                min_length=4, max_length=4,
+                                validators=[is_digit],
+                                style={'input_type': 'password'})
     phone_number = CustomPhoneNumberField(
         required=True,
         error_messages={
@@ -183,11 +184,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            'id', 'phone_number', 'email', 'password',
-            'first_name', 'last_name', 'is_active',
-            'tokens', 'profile', 'settings'
-        )
+        fields = ('id', 'phone_number', 'email', 'pin', 'first_name', 'last_name', 'is_active',
+                  'tokens', 'profile', 'settings')
         extra_kwargs = {
             'email': {'allow_blank': True},
             'phone_number': {'required': True}
@@ -200,9 +198,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if value and value.strip() == '':
             return None
         return value
-
-    def validate_password(self, password):
-        return get_adapter().clean_password(password)
 
     def validate_phone_number(self, value):
         """
@@ -221,16 +216,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        raw_password = validated_data.pop('password')
+        raw_pin = validated_data.pop('pin')
         first_name = validated_data.pop('first_name')
         last_name = validated_data.pop('last_name')
 
         # User Object
-        user = User(
-            phone_number=validated_data['phone_number'],
-            email=validated_data.get('email')
-        )
-        user.set_password(raw_password)
+        user = User(phone_number=validated_data['phone_number'], email=validated_data.get('email'))
+        user.pin = make_password(raw_pin)
         user.save()
 
         # User Profile
