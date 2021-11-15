@@ -4,10 +4,12 @@ from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.inspectors import SwaggerAutoSchema
 
+from .badges import app_badge
+
 
 class BadgesAutoSchema(SwaggerAutoSchema):
     def get_badges(self):
-        return self.overrides.get('badges')
+        return self.overrides.get('badges', [app_badge])
 
     def get_operation(self, operation_keys=None):
         operation = super().get_operation(operation_keys)

@@ -57,7 +57,7 @@ class UserLoginAPIView(GenericAPIView):
         },
         operation_id='user-login',
         tags=['User Account'],
-        security=[]
+        security=[],
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -84,8 +84,7 @@ class UserLoginAPIView(GenericAPIView):
         },
         operation_id='user-registration',
         tags=['User Account'],
-        security=[],
-        badges=[{'color': 'red', 'label': 'Mobile App'}]
+        security=[]
     )
 )
 class UserRegistrationAPIView(CreateAPIView):
