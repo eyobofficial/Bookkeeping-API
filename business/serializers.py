@@ -439,14 +439,14 @@ class PaymentSerializer(serializers.ModelSerializer):
     def get_customer(self, obj):
         serializer = CustomerSerializer(instance=obj.order.customer, context=self.context)
         return serializer.data
-    
+
     @swagger_serializer_method(serializer_or_field=TaxTypeSerializer(many=True))
     def get_taxes(self, obj):
         return obj.taxes
 
     def get_tax_percentage(self, obj) -> float:
         return obj.tax_percentage
-    
+
     def get_tax_amount(self, obj) -> Decimal:
         return obj.tax_amount
 
@@ -547,7 +547,4 @@ class BusinessAccountTaxSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessAccountTax
-        fields = (
-            'id', 'name', 'tax_identification_number', 'percentage', 'description',
-            'active', 'created_at', 'updated_at'
-        )
+        fields = ('id', 'name', 'percentage', 'description', 'active', 'created_at', 'updated_at')

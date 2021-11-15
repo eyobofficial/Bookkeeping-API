@@ -63,6 +63,11 @@ class BusinessAccount(models.Model):
         choices=CURRENCY_CHOICES,
         default=NGN
     )
+    tax_identification_number = models.CharField(
+        max_length=100,
+        null=True, blank=True,
+        help_text=_('Unique TAX identification number issued by the government.')
+    )
     address = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     country = CountryField()
@@ -97,10 +102,6 @@ class BusinessAccountTax(models.Model):
         on_delete=models.CASCADE
     )
     name = models.CharField(max_length=100)
-    tax_identification_number = models.CharField(
-        max_length=100,
-        null=True, blank=True,
-        help_text=_('Unique TAX identification number issued by the government.'))
     percentage = models.DecimalField(
         max_digits=5,
         decimal_places=2,
