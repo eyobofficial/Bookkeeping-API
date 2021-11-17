@@ -56,10 +56,11 @@ class CustomUser(AbstractUser):
         """Getter property for getting a full name."""
         return f'{self.profile.first_name} {self.profile.last_name}'
 
-    def check_password(self, raw_pin, *args, **kwargs):
+    def check_password(self, raw_password, *args, **kwargs):
         if self.type == CustomUser.BUSINESS and self.pin is not None:
-            return check_password(raw_pin, self.pin)
-        return super().check_pin(raw_pin, *args, **kwargs)
+            return check_password(raw_password, self.pin)
+        return check_password(raw_password, self.password)
+
 
 class Profile(models.Model):
     """
