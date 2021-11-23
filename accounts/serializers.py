@@ -121,10 +121,10 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
         )
         ref_name = 'Profile'
 
-    def update(self, instance, valiated_data):
-        photo_data = valiated_data.pop('profile_photo')
+    def update(self, instance, validated_data):
+        photo_data = validated_data.pop('profile_photo')
         instance.profile_photo = self._get_photo(instance, photo_data)
-        return super().update(instance, valiated_data)
+        return super().update(instance, validated_data)
 
     def _get_photo(self, instance, photo_data):
         """
@@ -165,8 +165,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     Serializer for registrating new bussiness account users.
     """
-    first_name = serializers.CharField(max_length=100, write_only=True)
-    last_name = serializers.CharField(max_length=100, write_only=True)
+    first_name = serializers.CharField(max_length=100, write_only=True, required=False)
+    last_name = serializers.CharField(max_length=100, write_only=True, required=False)
     pin = serializers.CharField(write_only=True,
                                 min_length=4, max_length=4,
                                 validators=[is_digit],
@@ -216,19 +216,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        raw_pin = validated_data.pop('pin')
-        first_name = validated_data.pop('first_name')
-        last_name = validated_data.pop('last_name')
+        # Required fields
+        phone_number = validated_data['phone_number']
+        raw_pin = validated_data['pin']
+
+        # Optional fields
+        email = validated_data.get('email')
+        first_name = validated_data.get('first_name')
+        last_name = validated_data.get('last_name')
 
         # User Object
-        user = User(phone_number=validated_data['phone_number'], email=validated_data.get('email'))
+        user = User(phone_number=phone_number, email=email)
         user.pin = make_password(raw_pin)
         user.save()
 
         # User Profile
-        user.profile.first_name = first_name
-        user.profile.last_name = last_name
-        user.profile.save()
+        if first_name and last_name:
+            user.profile.first_name = first_name
+            user.profile.last_name = last_name
+            user.profile.save()
         return user
 
 
@@ -246,9 +252,9 @@ class PartnerRegistrationSerializer(serializers.ModelSerializer):
             'email': {'required': True}
         }
 
-    def create(self, valiated_data):
-        valiated_data['type'] = User.PARTNER
-        return super().create(valiated_data)
+    def create(self, validated_data):
+        validated_data['type'] = User.PARTNER
+        return super().create(validated_data)
 
     def get_tokens(self, obj):
         jwt = RefreshToken.for_user(obj)

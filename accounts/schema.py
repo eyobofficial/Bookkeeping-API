@@ -218,11 +218,11 @@ password_reset_confirm_400_response = openapi.Response(
     description=_('Invalid Phone Number'),
     examples={
         'application/json': {
-            'otp': [_('This field may not be blank.')],
             'phoneNumber': [_('Enter a valid phone number.')],
-            'newPassword': [
-                _('This password is too short. It must contain at least 8 characters.'),
-                _('This password is too common.')
+            'pin': [
+                _('Value should be digits.'),
+                _('Ensure this field has no more than 4 characters.'),
+                _('Ensure this field has at least 4 characters.')
             ]
         }
     }
