@@ -408,3 +408,8 @@ class UserBusinessAccountSerializer(serializers.ModelSerializer):
             'id', 'name', 'business_type', 'currency', 'address', 'city',
             'country', 'postal_code', 'email', 'created_at', 'updated_at'
         )
+        extra_kwargs = {
+            # Cannot be on the model since we already have null city at this point.
+            'city': {'required': True},
+            'country': {'default': 'NG'}
+        }

@@ -70,7 +70,7 @@ class BusinessAccount(models.Model):
     )
     address = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
-    country = CountryField()
+    country = CountryField(default='NG')
     postal_code = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
