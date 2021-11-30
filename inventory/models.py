@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
@@ -7,6 +8,46 @@ from business.models import BusinessAccount
 from shared.models import PhotoUpload
 
 from .units import MeasurementUnit
+
+
+User = get_user_model()
+
+
+class Barcode(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
+    code = models.CharField(max_length=255, unique=True)
+    product_name = models.CharField(max_length=100)
+    description = models.TextField(help_text='Short description about the product.', blank=True)
+    product_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
+    barcode_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
+    created_by_api = models.BooleanField(default=False,
+                                         help_text=('Barcode is created by during API calls by a '
+                                                    'Business Account.'))
+    business_account = models.ForeignKey(BusinessAccount,
+                                         null=True, blank=True,
+                                         on_delete=models.SET_NULL,
+                                         related_name='barcodes')
+    verified = models.BooleanField(default=False,
+                                   help_text=('Verify the entered barcode matches with the number '
+                                              'in the uploaded photo.'))
+    archived = models.BooleanField(default=False)
+    created_by = models.ForeignKey(User,
+                                   null=True, blank=True,
+                                   related_name='created_barcodes',
+                                   on_delete=models.SET_NULL)
+    verified_by = models.ForeignKey(User,
+                                   null=True, blank=True,
+                                   related_name='verified_barcodes',
+                                   on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('-created_at', )
+
+    def __str__(self):
+        return self.code
 
 
 class Stock(models.Model):
@@ -33,6 +74,10 @@ class Stock(models.Model):
         related_name='stock_photo',
         null=True, blank=True
     )
+    barcode = models.ForeignKey(Barcode,
+                                null=True, blank=True,
+                                on_delete=models.SET_NULL,
+                                related_name='stocks')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

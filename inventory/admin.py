@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Stock, Sold
+from .models import Barcode, Stock, Sold
 
 
 @admin.register(Stock)
@@ -31,3 +31,12 @@ class SoldAdmin(admin.ModelAdmin):
         return obj.stock.business_account
 
     get_business_account.short_description = 'Business Account'
+
+
+@admin.register(Barcode)
+class BarcodeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'product_name', 'verified', 'archived')
+    list_display_links = ('code', 'product_name')
+    list_editable = ('verified', 'archived')
+    list_filter = ('verified', 'archived', 'created_at')
+    search_fields = ('code', 'product_name', 'description')

@@ -55,6 +55,7 @@ urlpatterns += [
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('business/', include('business.urls', namespace='business')),
     path('orders/', include('orders.urls', namespace='orders')),
+    path('inventory/', include('inventory.urls', namespace='inventory')),
     path('', include('shared.urls', namespace='shared')),
 ]
 
