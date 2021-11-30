@@ -35,8 +35,8 @@ class SoldAdmin(admin.ModelAdmin):
 
 @admin.register(Barcode)
 class BarcodeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'product_name', 'verified', 'archived')
-    list_display_links = ('code', 'product_name')
+    list_display = ('barcode_number', 'product_name', 'verified', 'archived')
+    list_display_links = ('barcode_number', 'product_name')
     list_editable = ('verified', 'archived')
     list_filter = ('verified', 'archived', 'created_at')
     search_fields = ('code', 'product_name', 'description')

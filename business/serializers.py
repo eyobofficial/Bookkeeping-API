@@ -118,10 +118,8 @@ class BusinessStockSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Stock
-        fields = (
-            'id', 'product', 'unit', 'quantity', 'price',
-            'photo', 'created_at', 'updated_at'
-        )
+        fields = ('id', 'product', 'unit', 'quantity', 'price', 'barcode_number', 'photo',
+                  'created_at', 'updated_at')
 
     def update(self, instance, valiated_data):
         photo_data = valiated_data.pop('photo', None)
@@ -135,7 +133,20 @@ class BusinessStockSerializer(serializers.ModelSerializer):
         photo_data = validated_data.pop('photo', None)
         if photo_data is not None:
             validated_data['photo'] = self._get_photo(photo_data)
-        return super().create(validated_data)
+        stock = super().create(validated_data)
+        if stock.barcode_number:
+            self._create_barcode(stock.barcode_number, stock.product, stock.business_account)
+        return stock
+
+    def _create_barcode(self, barcode_number, product_name, business_account):
+        from inventory.models import Barcode
+        barcode_data = {
+            'product_name': product_name,
+            'business_account': business_account,
+            'verified': False,
+            'created_by_api': True
+        }
+        Barcode.objects.get_or_create(barcode_number=barcode_number, defaults=barcode_data)
 
     def _get_photo(self, photo_data):
         """

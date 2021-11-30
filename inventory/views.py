@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 
@@ -57,17 +56,9 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
     - A *verified* barcodes, Or
     - A *non-verified* barcodes that is created by the current user
     """
-    queryset = Barcode.objects.filter(archived=False)
+    queryset = Barcode.objects.filter(archived=False, verified=True)
     serializer_class = BarcodeSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        business_accounts = self.request.user.business_accounts.all()
-        verified_barcodes = qs.filter(verified=True)
-        owned_barcodes = qs.filter(verified=False, business_account__in=business_accounts)
-        qs = verified_barcodes | owned_barcodes
-        return qs.distinct()
 
     @swagger_auto_schema(
         operation_id='inventory-barcode-find',
@@ -92,6 +83,6 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
         serializer = BarcodeFindSerializer(data=request.data)
         if serializer.is_valid():
             barcode_number = serializer.validated_data['barcode_number']
-            barcode = get_object_or_404(Barcode, code=barcode_number)
+            barcode = get_object_or_404(Barcode, barcode_number=barcode_number)
             return BarcodeSerializer(barcode).data
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

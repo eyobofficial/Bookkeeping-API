@@ -15,7 +15,7 @@ User = get_user_model()
 
 class Barcode(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    code = models.CharField(max_length=255, unique=True)
+    barcode_number = models.CharField(max_length=255, unique=True)
     product_name = models.CharField(max_length=100)
     description = models.TextField(help_text='Short description about the product.', blank=True)
     product_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
@@ -47,7 +47,7 @@ class Barcode(models.Model):
         ordering = ('-created_at', )
 
     def __str__(self):
-        return self.code
+        return self.barcode_number
 
 
 class Stock(models.Model):
@@ -74,10 +74,7 @@ class Stock(models.Model):
         related_name='stock_photo',
         null=True, blank=True
     )
-    barcode = models.ForeignKey(Barcode,
-                                null=True, blank=True,
-                                on_delete=models.SET_NULL,
-                                related_name='stocks')
+    barcode_number = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
