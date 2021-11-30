@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
@@ -57,7 +58,7 @@ class UserLoginAPIView(GenericAPIView):
         },
         operation_id='user-login',
         tags=['User Account'],
-        security=[]
+        security=[],
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -84,8 +85,7 @@ class UserLoginAPIView(GenericAPIView):
         },
         operation_id='user-registration',
         tags=['User Account'],
-        security=[],
-        badges=[{'color': 'red', 'label': 'Mobile App'}]
+        security=[]
     )
 )
 class UserRegistrationAPIView(CreateAPIView):
@@ -98,10 +98,9 @@ class UserRegistrationAPIView(CreateAPIView):
     resource. The refersh token is used to retrieve new access tokens when the
     existing token expires.
 
-    **Password Requirements**
-    - Username should be at least 6 characters long.
-    - Password should be at least 8 characters long.
-    - Password should not be similar to the user phone number or email address.
+    **PIN Requirements**
+    - PIN should be a string with only digit charachters.
+    - PIN should be 4 characters long.
     """
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -127,7 +126,7 @@ class UserRegistrationAPIView(CreateAPIView):
         },
         operation_id='partner-registration',
         tags=['User Account'],
-        badges=[{'color': 'blue', 'label': 'Dexter'}],
+        badges=[settings.BADGES['dexter']],
         security=[]
     )
 )

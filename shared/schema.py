@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from drf_yasg import openapi
@@ -7,7 +8,8 @@ from drf_yasg.inspectors import SwaggerAutoSchema
 
 class BadgesAutoSchema(SwaggerAutoSchema):
     def get_badges(self):
-        return self.overrides.get('badges')
+        mobile_badge = settings.BADGES['mobile']
+        return self.overrides.get('badges', [mobile_badge])
 
     def get_operation(self, operation_keys=None):
         operation = super().get_operation(operation_keys)

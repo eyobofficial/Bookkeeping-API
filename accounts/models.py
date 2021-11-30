@@ -1,6 +1,7 @@
 from uuid import uuid4
 from datetime import timedelta
 
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -32,6 +33,8 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True, null=True)
     phone_number = PhoneNumberField(unique=True, null=True)
     username = models.CharField(max_length=100, unique=True, null=True)
+    password = models.CharField(_('password'), max_length=128, blank=True, null=True)
+    pin = models.CharField(_('PIN'), max_length=128, blank=True, null=True)
     type = models.PositiveSmallIntegerField(choices=USER_TYPEC_CHOICES, default=BUSINESS)
 
     first_name = None
@@ -52,6 +55,11 @@ class CustomUser(AbstractUser):
     def full_name(self):
         """Getter property for getting a full name."""
         return f'{self.profile.first_name} {self.profile.last_name}'
+
+    def check_password(self, raw_password, *args, **kwargs):
+        if self.type == CustomUser.BUSINESS and self.pin is not None:
+            return check_password(raw_password, self.pin)
+        return check_password(raw_password, self.password)
 
 
 class Profile(models.Model):

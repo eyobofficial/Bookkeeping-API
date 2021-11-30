@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -19,6 +20,7 @@ from .exceptions import NonUniqueEmailException, NonUniquePhoneNumberException,\
     AccountNotRegisteredException, WrongOTPException, \
     InvalidCredentialsException, AccountDisabledException
 from .models import Profile, Setting
+from .validators import is_digit
 
 
 User = get_user_model()
@@ -119,10 +121,10 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
         )
         ref_name = 'Profile'
 
-    def update(self, instance, valiated_data):
-        photo_data = valiated_data.pop('profile_photo')
+    def update(self, instance, validated_data):
+        photo_data = validated_data.pop('profile_photo')
         instance.profile_photo = self._get_photo(instance, photo_data)
-        return super().update(instance, valiated_data)
+        return super().update(instance, validated_data)
 
     def _get_photo(self, instance, photo_data):
         """
@@ -163,13 +165,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     Serializer for registrating new bussiness account users.
     """
-    first_name = serializers.CharField(max_length=100, write_only=True)
-    last_name = serializers.CharField(max_length=100, write_only=True)
-    password = serializers.CharField(
-        max_length=120,
-        write_only=True,
-        style={'input_type': 'password'}
-    )
+    first_name = serializers.CharField(max_length=100, write_only=True, required=False)
+    last_name = serializers.CharField(max_length=100, write_only=True, required=False)
+    pin = serializers.CharField(write_only=True,
+                                min_length=4, max_length=4,
+                                validators=[is_digit],
+                                style={'input_type': 'password'})
     phone_number = CustomPhoneNumberField(
         required=True,
         error_messages={
@@ -183,11 +184,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            'id', 'phone_number', 'email', 'password',
-            'first_name', 'last_name', 'is_active',
-            'tokens', 'profile', 'settings'
-        )
+        fields = ('id', 'phone_number', 'email', 'pin', 'first_name', 'last_name', 'is_active',
+                  'tokens', 'profile', 'settings')
         extra_kwargs = {
             'email': {'allow_blank': True},
             'phone_number': {'required': True}
@@ -200,9 +198,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if value and value.strip() == '':
             return None
         return value
-
-    def validate_password(self, password):
-        return get_adapter().clean_password(password)
 
     def validate_phone_number(self, value):
         """
@@ -221,22 +216,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        raw_password = validated_data.pop('password')
-        first_name = validated_data.pop('first_name')
-        last_name = validated_data.pop('last_name')
+        # Required fields
+        phone_number = validated_data['phone_number']
+        raw_pin = validated_data['pin']
+
+        # Optional fields
+        email = validated_data.get('email')
+        first_name = validated_data.get('first_name')
+        last_name = validated_data.get('last_name')
 
         # User Object
-        user = User(
-            phone_number=validated_data['phone_number'],
-            email=validated_data.get('email')
-        )
-        user.set_password(raw_password)
+        user = User(phone_number=phone_number, email=email)
+        user.pin = make_password(raw_pin)
         user.save()
 
         # User Profile
-        user.profile.first_name = first_name
-        user.profile.last_name = last_name
-        user.profile.save()
+        if first_name and last_name:
+            user.profile.first_name = first_name
+            user.profile.last_name = last_name
+            user.profile.save()
         return user
 
 
@@ -254,9 +252,9 @@ class PartnerRegistrationSerializer(serializers.ModelSerializer):
             'email': {'required': True}
         }
 
-    def create(self, valiated_data):
-        valiated_data['type'] = User.PARTNER
-        return super().create(valiated_data)
+    def create(self, validated_data):
+        validated_data['type'] = User.PARTNER
+        return super().create(validated_data)
 
     def get_tokens(self, obj):
         jwt = RefreshToken.for_user(obj)
@@ -410,3 +408,8 @@ class UserBusinessAccountSerializer(serializers.ModelSerializer):
             'id', 'name', 'business_type', 'currency', 'address', 'city',
             'country', 'postal_code', 'email', 'created_at', 'updated_at'
         )
+        extra_kwargs = {
+            # Cannot be on the model since we already have null city at this point.
+            'city': {'required': True},
+            'country': {'default': 'NG'}
+        }
