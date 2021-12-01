@@ -84,5 +84,6 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
         if serializer.is_valid():
             barcode_number = serializer.validated_data['barcode_number']
             barcode = get_object_or_404(Barcode, barcode_number=barcode_number)
-            return BarcodeSerializer(barcode).data
+            data = BarcodeSerializer(barcode).data
+            return Response(data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
