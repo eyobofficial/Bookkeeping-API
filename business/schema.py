@@ -125,5 +125,10 @@ stock_request_body=openapi.Schema(
             format=openapi.FORMAT_UUID,
             description=_('The ID of the photo instance to be uploaded.')
         ),
+        'barcodeNumber': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            max_length=100,
+            description=_('Barcode Number')
+        ),
     }
 )
