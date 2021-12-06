@@ -74,7 +74,9 @@ class Stock(models.Model):
         related_name='stock_photo',
         null=True, blank=True
     )
-    barcode_number = models.CharField(max_length=255, null=True, blank=True)
+    barcode_number = models.CharField(max_length=255,
+                                      null=True, blank=True,
+                                      unique=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

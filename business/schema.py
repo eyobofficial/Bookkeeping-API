@@ -128,7 +128,7 @@ stock_request_body=openapi.Schema(
         'barcodeNumber': openapi.Schema(
             type=openapi.TYPE_STRING,
             max_length=100,
-            description=_('Barcode Number')
+            description=_('Barcode Number should be *unique* or `None`.')
         ),
     }
 )
