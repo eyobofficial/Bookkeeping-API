@@ -11,6 +11,7 @@ class StockAdmin(admin.ModelAdmin):
         'unit',
         'quantity',
         'price',
+        'barcode_number',
         'created_at',
         'updated_at'
     )

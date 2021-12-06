@@ -51,10 +51,8 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
     retrieve:
     Barcode Detail
 
-    Returns a detail of a single barcode objects in database using their ID. The returned
-    barcode object is:
-    - A *verified* barcodes, Or
-    - A *non-verified* barcodes that is created by the current user
+    Returns a detail of a single barcode objects in database using their ID. Only *verified*
+    and *non-archived* barcodes are returned.
     """
     queryset = Barcode.objects.filter(archived=False, verified=True)
     serializer_class = BarcodeSerializer
@@ -76,9 +74,7 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
         Barcode Find
 
         Find and return the details of a single matched barcode object using the
-        barcode number. The returned barcode object is:
-        - A *verified* barcodes, Or
-        - A *non-verified* barcodes that is created by the current user
+        barcode number. Only *verified* and *non-archived* barcodes are returned.
         """
         serializer = BarcodeFindSerializer(data=request.data)
         if serializer.is_valid():

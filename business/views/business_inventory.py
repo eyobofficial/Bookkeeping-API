@@ -1,12 +1,18 @@
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
+from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from shared import schema as shared_schema
+from inventory import schema as inventory_schema
 from inventory.models import Stock, Sold
+from inventory.serializers import BarcodeFindSerializer
 
 from business import schema as business_schema
 from business.serializers import BusinessStockSerializer, BusinessSoldSerializer
@@ -136,6 +142,33 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
             if search_query is not None:
                 qs = qs.filter(product__icontains=search_query)
         return qs
+
+    @swagger_auto_schema(
+        operation_id='inventory-stock-barcode-find',
+        tags=['Inventory'],
+        responses={
+            200: BusinessStockSerializer,
+            400: inventory_schema.barcode_number_400_response,
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+    @action(detail=False, methods=['post'], serializer_class=BarcodeFindSerializer)
+    def barcode(self, request, *args, **kwargs):
+        """
+        Stock Barcode Find
+
+        Find and return the details of a single matched inventory stock object using the
+        barcode number.
+        """
+        serializer = BarcodeFindSerializer(data=request.data)
+        if serializer.is_valid():
+            barcode_number = serializer.validated_data['barcode_number']
+            queryset = self.get_queryset()
+            stock = get_object_or_404(queryset, barcode_number=barcode_number)
+            data = BusinessStockSerializer(stock).data
+            return Response(data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(
