@@ -281,9 +281,6 @@ class UserResponseSerializer(UserRegistrationSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    """
-    Serializer for a User model serializer.
-    """
     email = serializers.EmailField()
     profile = ProfileSerializer(
         read_only=True,
@@ -310,9 +307,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class PasswordChangeSerializer(serializers.Serializer):
-    """
-    Serializer for changing user password.
-    """
     current_password = serializers.CharField(
         max_length=120, write_only=True,
         style={'input_type': 'password'}
@@ -341,6 +335,33 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context.get('user')
         new_password = self.validated_data['new_password']
         user.set_password(new_password)
+        user.save()
+
+
+class PinChangeSerializer(serializers.Serializer):
+    current_pin = serializers.CharField(max_length=4,
+                                        write_only=True,
+                                        style={'input_type': 'password'})
+    new_pin = serializers.CharField(max_length=4,
+                                    write_only=True,
+                                    style={'input_type': 'password'})
+
+    def validate_current_pin(self, value, *args, **kwargs):
+        user = self.context.get('user')
+        if not user.check_password(value):
+            err_message = _('Wrong current PIN.')
+            raise serializers.ValidationError(err_message)
+        return value
+
+    def validate_new_pin(self, value, *args, **kwargs):
+        if not value.isdigit():
+            raise ValidationError(_('PIN must be a digit.'))
+        return value
+
+    def save(self, *args, **kwargs):
+        user = self.context.get('user')
+        new_pin = self.validated_data['new_pin']
+        user.set_pin(new_pin)
         user.save()
 
 

@@ -6,7 +6,7 @@ from .views import UserLoginAPIView, UserRegistrationAPIView, EmailValidatorAPIV
     PhoneNumberValidatorAPIView, PasswordChangeView, CustomTokenRefreshView, CustomTokenVerifyView,\
     UserDetailAPIView, PasswordResetAPIView, PasswordResetConfirmAPIView, UserProfileDetailAPIView,\
     UserSettingsAPIView, BusinessAccountViewSet, PhoneNumberConfirmAPIView, \
-    PartnerRegistrationAPIView, PinResetAPIView, PinResetConfirmAPIView
+    PartnerRegistrationAPIView, PinResetAPIView, PinResetConfirmAPIView, PinChangeView
 
 
 app_name = 'accounts'
@@ -40,6 +40,7 @@ urlpatterns = [
         PasswordChangeView.as_view(),
         name='change-password'
     ),
+    path('pin/change/', PinChangeView.as_view(), name='change-pin'),
     path(
         'password/reset/',
         PasswordResetAPIView.as_view(),
@@ -68,11 +69,7 @@ urlpatterns = [
         UserProfileDetailAPIView.as_view(),
         name='user-profile-detail'
     ),
-    path(
-        'user/settings/',
-        UserSettingsAPIView.as_view(),
-        name='user-settings'
-    ),
+    path('user/settings/', UserSettingsAPIView.as_view(), name='user-settings'),
 
     # ViewSets
     path('user/', include(router.urls)),

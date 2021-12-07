@@ -119,7 +119,18 @@ password_change_200_response = openapi.Response(
 )
 
 
-# Example HTTP response with 400 status for password change view
+# Example HTTP response with 200 status for password change view
+pin_change_200_response = openapi.Response(
+    description=_('Success'),
+    examples={
+        'application/json': {
+            'detail': _('PIN changed successfully.')
+        }
+    }
+)
+
+
+# Example HTTP response with 400 status for pin change view
 password_change_400_response = openapi.Response(
     description=_('Validation Errors'),
     examples={
@@ -129,6 +140,22 @@ password_change_400_response = openapi.Response(
                 _('This password is too common.')
             ],
             'currentPassword': [_('Wrong current password.')]
+        }
+    }
+)
+
+
+# Example HTTP response with 400 status for pin change view
+pin_change_400_response = openapi.Response(
+    description=_('Validation Errors'),
+    examples={
+        'application/json': {
+            'newPin': [
+                 _('Value should be digits.'),
+                _('Ensure this field has no more than 4 characters.'),
+                _('Ensure this field has at least 4 characters.')
+            ],
+            'currentPin': [_('Wrong current PIN.')]
         }
     }
 )

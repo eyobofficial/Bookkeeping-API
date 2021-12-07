@@ -23,7 +23,8 @@ from .serializers import UserRegistrationSerializer, LoginSerializer, \
     PasswordChangeSerializer,TokenVerifySerializer, UserResponseSerializer, \
     UserDetailSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, \
     ProfileSerializer, SettingSerializer, UserBusinessAccountSerializer, \
-    PartnerRegistrationSerializer, PinResetSerializer, PinResetConfirmSerializer
+    PartnerRegistrationSerializer, PinResetSerializer, PinResetConfirmSerializer, \
+    PinChangeSerializer
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
     IsSettingOwner, IsBusinessOwner
 from .models import Profile, Setting
@@ -289,6 +290,43 @@ class PasswordChangeView(GenericAPIView):
         if serializer.is_valid():
             serializer.save()
             response = {'detail': _('Password changed successfully.')}
+            return Response(response)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PinChangeView(GenericAPIView):
+    """
+    post:
+    Change PIN
+
+    Change PIN for authenticated users.
+
+    **PIN Requirements**
+    - PIN should be a string with only digit charachters.
+    - PIN should be 4 characters long.
+    """
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = PinChangeSerializer
+    permission_classes = [IsAccountOwner]
+
+    @swagger_auto_schema(
+        operation_id='change-pin',
+        tags=['User Account'],
+        responses={
+            200: account_schema.pin_change_200_response,
+            400: account_schema.pin_change_400_response,
+            401: shared_schema.unauthorized_401_response
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.get_serializer(
+            context={'user': user},
+            data=request.data
+        )
+        if serializer.is_valid():
+            serializer.save()
+            response = {'detail': _('PIN changed successfully.')}
             return Response(response)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
