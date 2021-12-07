@@ -368,6 +368,16 @@ class PasswordResetSerializer(serializers.Serializer):
         return value
 
 
+class PinResetSerializer(serializers.Serializer):
+    phone_number = CustomPhoneNumberField()
+
+    def validate_phone_number(self, value):
+        # Make sure account exists
+        if not User.objects.filter(phone_number=value).exists():
+            raise AccountNotRegisteredException()
+        return value
+
+
 class PasswordResetConfirmSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
     otp = serializers.CharField(max_length=6)
@@ -390,6 +400,31 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
                 to=phone_number,
                 service_id=twilio_service.service_id
             )
+            if client.check_verification(code=otp):
+                return validated_data
+            raise WrongOTPException()
+        except (TwilioRestException, TwilioService.DoesNotExist) as e:
+            raise WrongOTPException()
+
+
+class PinResetConfirmSerializer(serializers.Serializer):
+    phone_number = CustomPhoneNumberField()
+    otp = serializers.CharField(max_length=6)
+    new_pin = serializers.CharField(max_length=4, )
+
+    def validate_new_pin(self, value, *args, **kwargs):
+        if not value.isdigit():
+            raise ValidationError(_('PIN must be a digit.'))
+        return value
+
+    def validate(self, validated_data):
+        phone_number = str(validated_data['phone_number'])
+        otp = validated_data['otp']
+
+        try:
+            twilio_service = TwilioService.objects.get(phone_number=phone_number)
+            client = TwilioTokenService(to=phone_number,
+                                        service_id=twilio_service.service_id)
             if client.check_verification(code=otp):
                 return validated_data
             raise WrongOTPException()

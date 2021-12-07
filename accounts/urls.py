@@ -6,7 +6,7 @@ from .views import UserLoginAPIView, UserRegistrationAPIView, EmailValidatorAPIV
     PhoneNumberValidatorAPIView, PasswordChangeView, CustomTokenRefreshView, CustomTokenVerifyView,\
     UserDetailAPIView, PasswordResetAPIView, PasswordResetConfirmAPIView, UserProfileDetailAPIView,\
     UserSettingsAPIView, BusinessAccountViewSet, PhoneNumberConfirmAPIView, \
-    PartnerRegistrationAPIView
+    PartnerRegistrationAPIView, PinResetAPIView, PinResetConfirmAPIView
 
 
 app_name = 'accounts'
@@ -46,9 +46,19 @@ urlpatterns = [
         name='password-reset'
     ),
     path(
+        'pin/reset/',
+        PinResetAPIView.as_view(),
+        name='pin-reset'
+    ),
+    path(
         'password/reset/confirm/',
         PasswordResetConfirmAPIView.as_view(),
         name='password-reset-confirm'
+    ),
+    path(
+        'pin/reset/confirm/',
+        PinResetConfirmAPIView.as_view(),
+        name='pin-reset-confirm'
     ),
     path('token/verify/', CustomTokenVerifyView.as_view(), name='token-verify'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token-refresh'),

@@ -23,7 +23,7 @@ from .serializers import UserRegistrationSerializer, LoginSerializer, \
     PasswordChangeSerializer,TokenVerifySerializer, UserResponseSerializer, \
     UserDetailSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, \
     ProfileSerializer, SettingSerializer, UserBusinessAccountSerializer, \
-    PartnerRegistrationSerializer
+    PartnerRegistrationSerializer, PinResetSerializer, PinResetConfirmSerializer
 from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
     IsSettingOwner, IsBusinessOwner
 from .models import Profile, Setting
@@ -559,6 +559,45 @@ class PasswordResetAPIView(GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class PinResetAPIView(GenericAPIView):
+    """
+    post:
+    PIN Reset
+
+    If a user account with this phone number exists, it sends an OTP (One-time Password)
+    code to the user mobile phone via SMS.
+
+    *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
+    """
+    serializer_class = PasswordResetSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+    @swagger_auto_schema(
+        operation_id='pin-reset',
+        tags=['User Account'],
+        security=[],
+        responses={
+            200: PinResetSerializer(),
+            400: account_schema.password_reset_400_response,
+            404: account_schema.password_reset_404_response
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Send OTP SMS
+            phone_number = str(serializer.validated_data['phone_number'])
+            client = TwilioTokenService(to=str(phone_number))
+            client.send_verification()
+            TwilioService.objects.update_or_create(
+                phone_number=phone_number,
+                defaults={'service_id': client.service_id}
+            )
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class PasswordResetConfirmAPIView(GenericAPIView):
     """
     post:
@@ -595,6 +634,46 @@ class PasswordResetConfirmAPIView(GenericAPIView):
             user.set_password(new_password)
             user.save()
             message = {'detail': _('New password is set successfully.')}
+            return Response(message)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PinResetConfirmAPIView(GenericAPIView):
+    """
+    post:
+    PIN Reset Confirm
+
+    Resets a forgotten PIN using the one-time passowrds (OTP) which the
+    user received via SMS.
+
+    **PIN Requirements**
+    - PIN should be a string with only digit charachters.
+    - PIN should be 4 characters long.
+
+    *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
+    """
+    serializer_class = PinResetConfirmSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_id='pin-reset-confirm',
+        responses={
+            200: account_schema.pin_reset_confirm_200_response,
+            400: account_schema.password_reset_confirm_400_response,
+            404: account_schema.password_reset_confirm_404_response
+        },
+        tags=['User Account'],
+        security=[]
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+            new_pin = serializer.validated_data['new_pin']
+            user = User.objects.get(phone_number=phone_number)
+            user.set_pin(new_pin)
+            user.save()
+            message = {'detail': _('New PIN is set successfully.')}
             return Response(message)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

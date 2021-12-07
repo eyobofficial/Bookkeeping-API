@@ -1,7 +1,7 @@
 from uuid import uuid4
 from datetime import timedelta
 
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -60,6 +60,9 @@ class CustomUser(AbstractUser):
         if self.type == CustomUser.BUSINESS and self.pin is not None:
             return check_password(raw_password, self.pin)
         return check_password(raw_password, self.password)
+
+    def set_pin(self, raw_pin):
+        self.pin = make_password(raw_pin)
 
 
 class Profile(models.Model):
