@@ -278,7 +278,7 @@ class PasswordChangeView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='change-password',
         tags=['User Account'],
-        badges=[settings.BADGES['to_be_deprecated']],
+        badges=[settings.BADGES['mobile'], settings.BADGES['deprecated']],
         responses={
             200: account_schema.password_change_200_response,
             400: account_schema.password_change_400_response,
@@ -580,7 +580,7 @@ class PasswordResetAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='password-reset',
         tags=['User Account'],
-        badges=[settings.BADGES['to_be_deprecated']],
+        badges=[settings.BADGES['mobile'], settings.BADGES['deprecated']],
         security=[],
         responses={
             200: PasswordResetSerializer(),
@@ -669,7 +669,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
             404: account_schema.password_reset_confirm_404_response
         },
         tags=['User Account'],
-        badges=[settings.BADGES['to_be_deprecated']],
+        badges=[settings.BADGES['mobile'], settings.BADGES['deprecated']],
         security=[]
     )
     def post(self, request, *args, **kwargs):
