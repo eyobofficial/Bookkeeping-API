@@ -267,6 +267,9 @@ class PasswordChangeView(GenericAPIView):
     **Password Requirements**
     - Password should be at least 8 characters long.
     - Password should not be similar to the user phone number or email address.
+
+    For new users please use the *PIN Change* endpoint as this is marked for deprecation
+    in upcoming releases.
     """
     queryset = User.objects.filter(is_active=True)
     serializer_class = PasswordChangeSerializer
@@ -275,6 +278,7 @@ class PasswordChangeView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='change-password',
         tags=['User Account'],
+        badges=[settings.BADGES['to_be_deprecated']],
         responses={
             200: account_schema.password_change_200_response,
             400: account_schema.password_change_400_response,
@@ -564,7 +568,8 @@ class PasswordResetAPIView(GenericAPIView):
     Password Reset
 
     If a user account with this phone number exists, it sends an OTP (One-time Password)
-    code to the user mobile phone via SMS.
+    code to the user mobile phone via SMS. For new users please use the *PIN Reset*
+    endpoint as this is marked for deprecation in upcoming releases.
 
     *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
@@ -575,6 +580,7 @@ class PasswordResetAPIView(GenericAPIView):
     @swagger_auto_schema(
         operation_id='password-reset',
         tags=['User Account'],
+        badges=[settings.BADGES['to_be_deprecated']],
         security=[],
         responses={
             200: PasswordResetSerializer(),
@@ -642,7 +648,9 @@ class PasswordResetConfirmAPIView(GenericAPIView):
     Password Reset Confirm
 
     Resets a forgotten password using the one-time passowrds (OTP) which
-    the user received via SMS.
+    the user received via SMS. For new users please use the *PIN Reset Confirm*
+    endpoint as this is marked for deprecation in upcoming releases.
+
 
     **Password Requirements**
     - Password should be at least 8 characters long.
@@ -661,6 +669,7 @@ class PasswordResetConfirmAPIView(GenericAPIView):
             404: account_schema.password_reset_confirm_404_response
         },
         tags=['User Account'],
+        badges=[settings.BADGES['to_be_deprecated']],
         security=[]
     )
     def post(self, request, *args, **kwargs):

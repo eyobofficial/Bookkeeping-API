@@ -278,5 +278,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'  # New in Django 3.2
 BADGES = {
     'mobile': {'color': 'red', 'label': 'Mobile App'},
     'dexter': {'color': 'blue', 'label': 'Dexter'},
-    'simone': {'color': 'white', 'label': 'Simone'}
+    'simone': {'color': 'white', 'label': 'Simone'},
+    'to_be_deprecated': {'color': 'yellow', 'label': 'To Be Deprecated'}
 }
