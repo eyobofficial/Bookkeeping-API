@@ -144,7 +144,7 @@ class BusinessStockSerializer(serializers.ModelSerializer):
             'product_name': product_name,
             'business_account': business_account,
             'verified': False,
-            'created_by_api': True
+            'created_strategy': Barcode.API
         }
         Barcode.objects.get_or_create(barcode_number=barcode_number, defaults=barcode_data)
 

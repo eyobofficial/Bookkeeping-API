@@ -14,15 +14,26 @@ User = get_user_model()
 
 
 class Barcode(models.Model):
+    MANUALLY = 1
+    API = 2
+    CSV = 3
+
+    CREATED_STRATEGY_OPTIONS = (
+        (MANUALLY, _('Manually via Django Admin')),
+        (API, _('API Calls')),
+        (CSV, _('Imported from a CSV file')),
+    )
+
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     barcode_number = models.CharField(max_length=255, unique=True)
-    product_name = models.CharField(max_length=100)
+    product_name = models.CharField(max_length=255)
     description = models.TextField(help_text='Short description about the product.', blank=True)
     product_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
     barcode_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
-    created_by_api = models.BooleanField(default=False,
-                                         help_text=('Barcode is created by during API calls by a '
-                                                    'Business Account.'))
+    manufacturer_name = models.CharField(max_length=255, blank=True, null=True)
+    brand_name = models.CharField(max_length=255, blank=True, null=True)
+    created_strategy = models.IntegerField(choices=CREATED_STRATEGY_OPTIONS, default=MANUALLY,
+                                           help_text=_('The strategy used to create this record.'))
     business_account = models.ForeignKey(BusinessAccount,
                                          null=True, blank=True,
                                          on_delete=models.SET_NULL,
