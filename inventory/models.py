@@ -28,7 +28,11 @@ class Barcode(models.Model):
     barcode_number = models.CharField(max_length=255, unique=True)
     product_name = models.CharField(max_length=255)
     description = models.TextField(help_text='Short description about the product.', blank=True)
-    product_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
+    product_photo = models.OneToOneField(PhotoUpload,
+                                         on_delete=models.CASCADE,
+                                         related_name='barcode_product_photo',
+                                         null=True, blank=True,
+                                         help_text=_('A foreign key to the Photo Upload object.'))
     barcode_photo = models.ImageField(upload_to='barcodes', blank=True, null=True)
     manufacturer_name = models.CharField(max_length=255, blank=True, null=True)
     brand_name = models.CharField(max_length=255, blank=True, null=True)

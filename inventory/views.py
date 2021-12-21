@@ -48,11 +48,19 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
     - All *verified* barcodes, Or
     - *Non-verified* barcodes that are created by the current user
 
+    The `productPhoto` field returns an ID to it's corresponding Product Upload object. Thus,
+    to retrieve other details of the object (Example: URL, Timestamp, etc), use the Photo Upload
+    Detail endpoint: `GET /photos/uploads/<photo_id>/`
+
     retrieve:
     Barcode Detail
 
     Returns a detail of a single barcode objects in database using their ID. Only *verified*
     and *non-archived* barcodes are returned.
+
+    The `productPhoto` field returns an ID to it's corresponding Product Upload object. Thus,
+    to retrieve other details of the object (Example: URL, Timestamp, etc), use the Photo Upload
+    Detail endpoint: `GET /photos/uploads/<photo_id>/`
     """
     queryset = Barcode.objects.filter(archived=False, verified=True)
     serializer_class = BarcodeSerializer
@@ -75,6 +83,10 @@ class BarcodeViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
 
         Find and return the details of a single matched barcode object using the
         barcode number. Only *verified* and *non-archived* barcodes are returned.
+
+        The `productPhoto` field returns an ID to it's corresponding Product Upload object. Thus,
+        to retrieve other details of the object (Example: URL, Timestamp, etc), use the Photo Upload
+        Detail endpoint: `GET /photos/uploads/<photo_id>/`
         """
         serializer = BarcodeFindSerializer(data=request.data)
         if serializer.is_valid():
