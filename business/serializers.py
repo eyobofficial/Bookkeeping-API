@@ -119,7 +119,7 @@ class BusinessStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
         fields = ('id', 'product', 'unit', 'quantity', 'price', 'barcode_number', 'photo',
-                  'created_at', 'updated_at')
+                  'last_restocked_date', 'created_at', 'updated_at')
 
     def update(self, instance, valiated_data):
         photo_data = valiated_data.pop('photo', None)

@@ -92,6 +92,7 @@ class Stock(models.Model):
     barcode_number = models.CharField(max_length=255,
                                       null=True, blank=True,
                                       unique=True, default=None)
+    last_restocked_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

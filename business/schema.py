@@ -130,5 +130,9 @@ stock_request_body=openapi.Schema(
             max_length=100,
             description=_('Barcode Number should be *unique* or `None`.')
         ),
+        'lastRestockedDate': openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_DATETIME
+        ),
     }
 )
