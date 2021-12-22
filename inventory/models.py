@@ -67,28 +67,20 @@ class Barcode(models.Model):
 
 class Stock(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    business_account = models.ForeignKey(
-        BusinessAccount,
-        on_delete=models.CASCADE,
-        related_name='stocks'
-    )
+    business_account = models.ForeignKey(BusinessAccount,
+                                         on_delete=models.CASCADE,
+                                         related_name='stocks')
     product = models.CharField(_('product name'), max_length=100)
-    unit = models.CharField(
-        max_length=3,
-        choices=MeasurementUnit.UNIT_CHOICES,
-        help_text=_('Measurement unit.')
-    )
-    quantity = models.DecimalField(
-        max_digits=12, decimal_places=2,
-        help_text=_('Quantity left.')
-    )
+    unit = models.CharField(max_length=3,
+                            choices=MeasurementUnit.UNIT_CHOICES,
+                            help_text=_('Measurement unit.'))
+    quantity = models.DecimalField(max_digits=12, decimal_places=2,
+                                   help_text=_('Quantity left.'))
     price = models.DecimalField(max_digits=12, decimal_places=2)
-    photo = models.OneToOneField(
-        PhotoUpload,
-        on_delete=models.CASCADE,
-        related_name='stock_photo',
-        null=True, blank=True
-    )
+    photo = models.OneToOneField(PhotoUpload,
+                                 on_delete=models.CASCADE,
+                                 related_name='stock_photo',
+                                 null=True, blank=True)
     barcode_number = models.CharField(max_length=255,
                                       null=True, blank=True,
                                       unique=True, default=None)
@@ -121,18 +113,15 @@ class Sold(models.Model):
     Track sold inventory items.
     """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    stock = models.OneToOneField(
-        Stock,
-        on_delete=models.CASCADE,
-        related_name='sold'
-    )
+    stock = models.OneToOneField(Stock,
+                                on_delete=models.CASCADE,
+                                related_name='sold')
     quantity = models.DecimalField(_('quantity sold'),
-        max_digits=12, decimal_places=2, default=0
-    )
-    sales_date = models.DateField(
-        auto_now=True,
-        help_text=_('last sales date')
-    )
+                                   max_digits=12,
+                                   decimal_places=2,
+                                   default=0)
+    sales_date = models.DateField(auto_now=True,
+                                  help_text=_('last sales date'))
 
     class Meta:
         verbose_name = _('Product Sold')
