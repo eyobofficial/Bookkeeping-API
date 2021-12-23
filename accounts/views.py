@@ -76,7 +76,6 @@ class UserLoginAPIView(GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @method_decorator(
     name='post',
     decorator=swagger_auto_schema(
@@ -615,7 +614,6 @@ class PinResetAPIView(GenericAPIView):
     """
     serializer_class = PasswordResetSerializer
     permission_classes = [permissions.AllowAny]
-
 
     @swagger_auto_schema(
         operation_id='pin-reset',
