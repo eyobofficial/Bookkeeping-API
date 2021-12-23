@@ -15,7 +15,8 @@ from inventory.models import Stock, Sold
 from inventory.serializers import BarcodeFindSerializer
 
 from business import schema as business_schema
-from business.serializers import BusinessStockSerializer, BusinessSoldSerializer
+from business.serializers import BusinessStockSerializer, RestockingSerializer, \
+    BusinessSoldSerializer
 from business.permissions import IsBusinessOwnedResource, \
     IsBusinessOwnedSoldItem
 from .base import BaseBusinessAccountDetailViewSet
@@ -168,6 +169,32 @@ class BusinessStockViewSet(BaseBusinessAccountDetailViewSet, ModelViewSet):
             stock = get_object_or_404(queryset, barcode_number=barcode_number)
             data = BusinessStockSerializer(stock).data
             return Response(data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        operation_id='inventory-stock-restocking',
+        tags=['Inventory'],
+        request_body=RestockingSerializer(),
+        responses={
+            200: RestockingSerializer,
+            400: inventory_schema.barcode_number_400_response,
+            401: shared_schema.unauthorized_401_response,
+            404: shared_schema.not_found_404_response
+        }
+    )
+    @action(detail=True, methods=['put'], serializer_class=RestockingSerializer)
+    def restock(self, request, *args, **kwargs):
+        """
+        Restock Inventory
+
+        Restock an inventory item by adding additional quantity to the instance. This
+        also updates the `lastRestockedDate` field with the current datetime timestamp.
+        """
+        stock = self.get_object()
+        serializer = RestockingSerializer(stock, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

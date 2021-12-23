@@ -113,6 +113,38 @@ class BusinessExpenseSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'amount', 'date', 'created_at')
 
 
+class RestockingSerializer(serializers.ModelSerializer):
+    restocked_quantity = serializers.DecimalField(max_digits=12,
+                                                  decimal_places=2,
+                                                  write_only=True,
+                                                  help_text=_('The amount of additional quantity '
+                                                              'to restock.'))
+
+    class Meta:
+        model = Stock
+        fields = ('id', 'quantity', 'restocked_quantity', 'last_restocked_date')
+        extra_kwargs = {
+            'quantity': {
+                'read_only': True,
+                'help_text': _('The current quantity of the stock.')
+            },
+            'last_restocked_date': {'read_only': True}
+        }
+
+    def validate_restocked_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(_('Restocked quantity must be greater than zero.'))
+        return value
+
+    def save(self, *args, **kwargs):
+        restocked_quantity = self.validated_data.pop('restocked_quantity', None)
+        if self.instance:
+            self.instance.quantity += restocked_quantity
+            self.instance.last_restocked_date = timezone.now()
+            self.instance.save()
+            return self.instance
+
+
 class BusinessStockSerializer(serializers.ModelSerializer):
     photo = PhotoUploadField(required=False, allow_null=True)
 
@@ -120,6 +152,9 @@ class BusinessStockSerializer(serializers.ModelSerializer):
         model = Stock
         fields = ('id', 'product', 'unit', 'quantity', 'price', 'barcode_number', 'photo',
                   'last_restocked_date', 'created_at', 'updated_at')
+        extra_kwargs = {
+            'last_restocked_date': {'read_only': True}
+        }
 
     def update(self, instance, valiated_data):
         photo_data = valiated_data.pop('photo', None)
