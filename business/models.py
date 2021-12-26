@@ -6,14 +6,13 @@ from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
 
+from shared.models import PhotoUpload
+
 
 User = settings.AUTH_USER_MODEL
 
 
 class BusinessType(models.Model):
-    """
-    Business categories.
-    """
     title = models.CharField(max_length=100)
     icon = models.URLField(null=True, blank=True)
 
@@ -27,17 +26,10 @@ class BusinessType(models.Model):
 
 
 def get_default_business_type():
-    """
-    Returns a default business types.
-    """
     return BusinessType.objects.get_or_create(title__iexact='Others')[0]
 
 
 class BusinessAccount(models.Model):
-    """
-    User business account model.
-    """
-
     # Currency Choices
     USD = 'USD'   # US Dollar
     EURO = 'EUR'  # Euro
@@ -73,6 +65,10 @@ class BusinessAccount(models.Model):
     country = CountryField(default='NG')
     postal_code = models.CharField(max_length=10, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
+    photo = models.OneToOneField(PhotoUpload,
+                                 null=True, blank=True,
+                                 related_name='business_account',
+                                 on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

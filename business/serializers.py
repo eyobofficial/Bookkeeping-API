@@ -29,7 +29,6 @@ class BusinessTypeSerializer(serializers.ModelSerializer):
 
 
 class BusinessAccountSerializer(CountryFieldMixin, serializers.ModelSerializer):
-
     class Meta:
         model = BusinessAccount
         fields = '__all__'
@@ -40,10 +39,7 @@ class BusinessCustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = (
-            'id', 'name', 'phone_number', 'email',
-            'photo', 'created_at', 'updated_at'
-        )
+        fields = ('id', 'name', 'phone_number', 'email', 'photo', 'created_at', 'updated_at')
 
     def validate(self, data):
         business_account = self.context['business_account']
@@ -196,9 +192,6 @@ class BusinessStockSerializer(serializers.ModelSerializer):
 
 
 class BusinessSoldSerializer(serializers.ModelSerializer):
-    """
-    Inventory sold serializer class.
-    """
     product = serializers.ReadOnlyField(source='stock.product')
     unit = serializers.ReadOnlyField(source='stock.unit')
     price = serializers.DecimalField(
@@ -215,9 +208,6 @@ class BusinessSoldSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    """
-    Customer serializer to be included in order serializer
-    """
     photo = PhotoUploadSerializer(read_only=True)
 
     class Meta:
@@ -254,9 +244,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
         }
 
     def get_price(self, obj) -> float:
-        """
-        Returns the item price per unit.
-        """
         return obj.item.price
 
     def get_cost(self, obj) -> float:
@@ -302,13 +289,6 @@ class BaseOrderTaxSerializer(serializers.ModelSerializer):
 
 
 class BaseOrderModelSerializer(BaseOrderTaxSerializer):
-    """
-    Base model serializer for orders with different types.
-
-    This is necessary to share common logic (example: validation)
-    in accordance to the DRY principle.
-    """
-
     def to_representation(self, instance):
         fields = super().to_representation(instance)
         # Include customer object serializered data
@@ -318,28 +298,13 @@ class BaseOrderModelSerializer(BaseOrderTaxSerializer):
 
 
 class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
-    """
-    Serializer class for an order with `from_list` order type value.
-    """
     order_items = OrderItemSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = (
-            'id',
-            'order_type',
-            'customer',
-            'cost',
-            'taxes',
-            'tax_percentage',
-            'tax_amount',
-            'total_amount',
-            'description',
-            'status',
-            'order_items',
-            'created_at',
-            'updated_at'
-        )
+        fields = ('id', 'order_type', 'customer', 'cost', 'taxes', 'tax_percentage', 'tax_amount',
+                  'total_amount', 'description', 'status', 'order_items', 'created_at',
+                  'updated_at')
         read_only_fields = ('order_type', )
 
     def create(self, validated_data):
@@ -361,27 +326,12 @@ class BusinessInventoryOrdersSerializer(BaseOrderModelSerializer):
 
 
 class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
-    """
-    Serializer class for creating orders with `custom` order_type value.
-    """
     cost = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0)
 
     class Meta:
         model = Order
-        fields = (
-            'id',
-            'order_type',
-            'customer',
-            'description',
-            'status',
-            'cost',
-            'taxes',
-            'tax_percentage',
-            'tax_amount',
-            'total_amount',
-            'created_at',
-            'updated_at'
-        )
+        fields = ('id', 'order_type', 'customer', 'description', 'status', 'cost', 'taxes',
+                  'tax_percentage', 'tax_amount', 'total_amount', 'created_at', 'updated_at')
         read_only_fields = ('order_type', 'status')
 
     def create(self, validated_data):
@@ -403,51 +353,27 @@ class BusinessCustomOrderSerializer(BaseOrderModelSerializer):
 
 
 class BusinessAllOrdersSerialize(BaseOrderTaxSerializer):
-    """
-    Serializer class for the list view of all orders.
-    """
     customer = CustomerSerializer(read_only=True)
 
     class Meta:
         model = Order
-        fields = (
-            'id',
-            'order_type',
-            'customer',
-            'cost',
-            'taxes',
-            'tax_percentage',
-            'tax_amount',
-            'total_amount',
-            'description',
-            'status',
-            'created_at',
-            'updated_at'
-        )
+        fields = ('id', 'order_type', 'customer', 'cost', 'taxes', 'tax_percentage', 'tax_amount',
+                  'total_amount', 'description', 'status', 'created_at', 'updated_at')
         read_only_fields = ('order_type', )
 
 
 class OrderDetailSerializer(BaseOrderTaxSerializer):
-    """
-    A *Read-Only serializer* for a customer order of all type.
-
-    This is necessary to have a uniform response object for all order
-    types (i.e. `FROM_LIST` and `CUSTOM`).
-    """
     customer = CustomerSerializer()
     order_items = OrderItemSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = (
-            'id', 'order_type', 'customer', 'description', 'status', 'order_items', 'cost',
-            'taxes', 'tax_percentage', 'tax_amount', 'total_amount',
-            'created_at', 'updated_at'
-        )
+        fields = ('id', 'order_type', 'customer', 'description', 'status', 'order_items', 'cost',
+                  'taxes', 'tax_percentage', 'tax_amount', 'total_amount', 'created_at',
+                  'updated_at')
 
 
 class SoldItemSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = SoldItem
         fields = ('product', 'unit', 'quantity', 'price', 'amount')
@@ -456,30 +382,21 @@ class SoldItemSerializer(serializers.ModelSerializer):
 class PaymentSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     description = serializers.ReadOnlyField(source='order.description')
-    order_amount = serializers.SerializerMethodField(
-        help_text=_('Total amount of the order (i.e. before TAX).')
-    )
-    taxes = serializers.SerializerMethodField(
-        help_text=_('List of all taxes applied.')
-    )
-    tax_percentage = serializers.SerializerMethodField(
-        help_text=_('Total amount of tax percentage to be deducted')
-    )
-    tax_amount = serializers.SerializerMethodField(
-        help_text=_('Total tax amount to be deducted.')
-    )
-    total_amount = serializers.SerializerMethodField(
-        help_text=_('Total amount of the payment (i.e. after TAX).')
-    )
+    order_amount = serializers.SerializerMethodField(help_text=_('Total amount of the order '
+                                                                 '(i.e. before TAX).'))
+    taxes = serializers.SerializerMethodField(help_text=_('List of all taxes applied.'))
+    tax_percentage = serializers.SerializerMethodField(help_text=_('Total amount of tax percentage '
+                                                                   'to be deducted'))
+    tax_amount = serializers.SerializerMethodField(help_text=_('Total tax amount to be deducted.'))
+    total_amount = serializers.SerializerMethodField(help_text=_('Total amount of the payment '
+                                                                 '(i.e. after TAX).'))
     sold_items = SoldItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Payment
-        fields = (
-            'id', 'order', 'customer', 'description', 'order_amount', 'sold_items',
-            'taxes', 'tax_percentage', 'tax_amount', 'total_amount', 'status',
-            'mode_of_payment', 'pay_later_date', 'created_at', 'updated_at'
-        )
+        fields = ('id', 'order', 'customer', 'description', 'order_amount', 'sold_items', 'taxes',
+                  'tax_percentage', 'tax_amount', 'total_amount', 'status', 'mode_of_payment',
+                  'pay_later_date', 'created_at', 'updated_at')
 
     @swagger_serializer_method(serializer_or_field=CustomerSerializer)
     def get_customer(self, obj):
@@ -497,15 +414,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         return obj.tax_amount
 
     def get_order_amount(self, obj) -> Decimal:
-        """
-        Returns the total order amount (i.e. before tax).
-        """
         return obj.order_amount
 
     def get_total_amount(self, obj) -> float:
-        """
-        Returns the total payment amount (i.e. after tax).
-        """
         return obj.total_amount
 
     def validate_pay_later_date(self, value):
@@ -564,33 +475,15 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    """
-    Serializer for current business account notifications.
-    """
-
     class Meta:
         model = Notification
-        fields = (
-            'id', 'notification_type', 'action_message', 'action_url',
-            'action_date', 'action_date_label', 'is_seen', 'created_at',
-            'updated_at'
-        )
-        read_only_fields = (
-            'notification_type',
-            'action_message',
-            'action_url',
-            'action_date',
-            'action_date_label',
-            'created_at',
-            'updated_at'
-        )
+        fields = ('id', 'notification_type', 'action_message', 'action_url', 'action_date',
+                  'action_date_label', 'is_seen', 'created_at', 'updated_at')
+        read_only_fields = ('notification_type', 'action_message', 'action_url', 'action_date',
+                            'action_date_label', 'created_at', 'updated_at')
 
 
 class BusinessAccountTaxSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the current business account taxes.
-    """
-
     class Meta:
         model = BusinessAccountTax
         fields = ('id', 'name', 'percentage', 'description', 'active', 'created_at', 'updated_at')
