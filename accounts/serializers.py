@@ -359,11 +359,13 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class PinResetConfirmSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
     otp = serializers.CharField(max_length=6)
-    new_pin = serializers.CharField(max_length=4, min_length=4)
+    new_password = serializers.CharField(max_length=4,
+                                         min_length=4,
+                                         help_text=_('New password PIN value.'))
 
-    def validate_new_pin(self, value, *args, **kwargs):
+    def validate_new_password(self, value, *args, **kwargs):
         if not value.isdigit():
-            raise ValidationError(_('PIN must be a digit.'))
+            raise ValidationError(_('Password PIN must be a digit.'))
         return value
 
     def validate(self, validated_data):

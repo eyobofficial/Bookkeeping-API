@@ -645,8 +645,8 @@ class PinResetConfirmAPIView(GenericAPIView):
     user received via SMS.
 
     **PIN Requirements**
-    - PIN should be a string with only digit charachters.
-    - PIN should be 4 characters long.
+    - Password PIN should be a string with only digit charachters.
+    - Password PIN should be 4 characters long.
 
     *NOTE: The One-Time Password (OTP) is only valid for 10 minutes.*
     """
@@ -667,11 +667,11 @@ class PinResetConfirmAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            new_pin = serializer.validated_data['new_pin']
+            new_pin = serializer.validated_data['new_password']
             user = User.objects.get(phone_number=phone_number)
             user.set_pin(new_pin)
             user.save()
-            message = {'detail': _('New PIN is set successfully.')}
+            message = {'detail': _('New password PIN is set successfully.')}
             return Response(message)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

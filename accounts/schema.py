@@ -247,7 +247,7 @@ pin_reset_confirm_200_response = openapi.Response(
     description=_('Success'),
     examples={
         'application/json': {
-            'detail': _('New PIN is set successfully.')
+            'detail': _('New password PIN is set successfully.')
         }
     }
 )
@@ -259,7 +259,7 @@ password_reset_confirm_400_response = openapi.Response(
     examples={
         'application/json': {
             'phoneNumber': [_('Enter a valid phone number.')],
-            'pin': [
+            'newPassword': [
                 _('Value should be digits.'),
                 _('Ensure this field has no more than 4 characters.'),
                 _('Ensure this field has at least 4 characters.')
