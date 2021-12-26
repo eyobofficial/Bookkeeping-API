@@ -126,7 +126,7 @@ pin_change_200_response = openapi.Response(
     description=_('Success'),
     examples={
         'application/json': {
-            'detail': _('PIN changed successfully.')
+            'detail': _('Password PIN changed successfully.')
         }
     }
 )
@@ -152,12 +152,12 @@ pin_change_400_response = openapi.Response(
     description=_('Validation Errors'),
     examples={
         'application/json': {
-            'newPin': [
+            'newPassword': [
                  _('Value should be digits.'),
                 _('Ensure this field has no more than 4 characters.'),
                 _('Ensure this field has at least 4 characters.')
             ],
-            'currentPin': [_('Wrong current PIN.')]
+            'currentPassword': [_('Wrong current Password PIN.')]
         }
     }
 )

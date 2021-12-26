@@ -276,28 +276,30 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 
 class PinChangeSerializer(serializers.Serializer):
-    current_pin = serializers.CharField(max_length=4,
-                                        write_only=True,
-                                        style={'input_type': 'password'})
-    new_pin = serializers.CharField(max_length=4,
-                                    write_only=True,
-                                    style={'input_type': 'password'})
+    current_password = serializers.CharField(max_length=4,
+                                             write_only=True,
+                                             help_text=_("User's current PIN value."),
+                                             style={'input_type': 'password'})
+    new_password = serializers.CharField(max_length=4,
+                                         write_only=True,
+                                         help_text=_("User's new PIN value."),
+                                         style={'input_type': 'password'})
 
-    def validate_current_pin(self, value, *args, **kwargs):
+    def validate_current_password(self, value, *args, **kwargs):
         user = self.context.get('user')
         if not user.check_password(value):
-            err_message = _('Wrong current PIN.')
+            err_message = _('Wrong current Password PIN.')
             raise serializers.ValidationError(err_message)
         return value
 
-    def validate_new_pin(self, value, *args, **kwargs):
+    def validate_new_password(self, value, *args, **kwargs):
         if not value.isdigit():
-            raise ValidationError(_('PIN must be a digit.'))
+            raise ValidationError(_('Password PIN must be a digit.'))
         return value
 
     def save(self, *args, **kwargs):
         user = self.context.get('user')
-        new_pin = self.validated_data['new_pin']
+        new_pin = self.validated_data['new_password']
         user.set_pin(new_pin)
         user.save()
 

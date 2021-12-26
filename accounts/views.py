@@ -258,8 +258,8 @@ class PinChangeView(GenericAPIView):
     Change PIN for authenticated users.
 
     **PIN Requirements**
-    - PIN should be a string with only digit charachters.
-    - PIN should be 4 characters long.
+    - Password PIN should be a string with only digit charachters.
+    - Password PIN should be 4 characters long.
     """
     queryset = User.objects.filter(is_active=True)
     serializer_class = PinChangeSerializer
@@ -282,7 +282,7 @@ class PinChangeView(GenericAPIView):
         )
         if serializer.is_valid():
             serializer.save()
-            response = {'detail': _('PIN changed successfully.')}
+            response = {'detail': _('Password PIN changed successfully.')}
             return Response(response)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
