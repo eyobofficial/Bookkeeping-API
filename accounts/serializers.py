@@ -133,10 +133,10 @@ class TokenResponseSerializer(serializers.Serializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=100, write_only=True, required=False)
     last_name = serializers.CharField(max_length=100, write_only=True, required=False)
-    pin = serializers.CharField(write_only=True,
-                                min_length=4, max_length=4,
-                                validators=[is_digit],
-                                style={'input_type': 'password'})
+    password = serializers.CharField(write_only=True,
+                                     min_length=4, max_length=4,
+                                     validators=[is_digit],
+                                     style={'input_type': 'password'})
     phone_number = CustomPhoneNumberField(required=True,
                                           error_messages={
                                               'invalid': _('Enter a valid phone number.')})
@@ -147,7 +147,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'phone_number', 'email', 'pin', 'first_name', 'last_name', 'is_active',
+        fields = ('id', 'phone_number', 'email', 'password', 'first_name', 'last_name', 'is_active',
                   'tokens', 'profile', 'settings')
         extra_kwargs = {
             'email': {'allow_blank': True},
@@ -161,7 +161,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate_phone_number(self, value):
         if User.objects.filter(phone_number=value).exists():
-            err_message = _('user with this phone number already exists.')
+            err_message = _('User with this phone number already exists.')
             raise serializers.ValidationError(err_message)
         return value
 
@@ -172,7 +172,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Required fields
         phone_number = validated_data['phone_number']
-        raw_pin = validated_data['pin']
+        raw_password = validated_data['password']  # PIN
 
         # Optional fields
         email = validated_data.get('email')
@@ -181,7 +181,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         # User Object
         user = User(phone_number=phone_number, email=email)
-        user.pin = make_password(raw_pin)
+        user.pin = make_password(raw_password)
         user.save()
 
         # User Profile

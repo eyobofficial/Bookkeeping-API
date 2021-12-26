@@ -109,53 +109,7 @@ class UserRegistrationAPIView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
-
-
-@method_decorator(
-    name='post',
-    decorator=swagger_auto_schema(
-        responses={
-            201: PartnerRegistrationSerializer(),
-            400: account_schema.registration_400_response
-        },
-        operation_id='partner-registration',
-        tags=['User Account'],
-        badges=[settings.BADGES['dexter']],
-        security=[]
-    )
-)
-class PartnerRegistrationAPIView(CreateAPIView):
-    """
-    post:
-    Partner Registration
-
-    The response body returns the new user data with *access* and *refresh* JWT
-    tokens. The access token is used to perform HTTP operations on restricted
-    resource. The refersh token is used to retrieve new access tokens when the
-    existing token expires.
-
-    **Password Requirements**
-    - Password should be at least 8 characters long.
-    - Password should not be similar to the user phone number or email address.
-    """
-    queryset = User.objects.all()
-    serializer_class = PartnerRegistrationSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class EmailValidatorAPIView(GenericAPIView):

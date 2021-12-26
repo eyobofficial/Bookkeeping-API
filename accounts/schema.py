@@ -31,11 +31,13 @@ registration_400_response = openapi.Response(
     description=_('Validation Errors'),
     examples={
         'application/json': {
-            'phoneNumber': [_('Enter a valid phone number.')],
-            'email': [_('Enter a valid email address.')],
+            'phoneNumber': [
+                _('User with this phone number already exists.'),
+                _('Enter a valid phone number.')
+            ],
             'password': [
-                _('This password is too short.'),
-                _('This password is too common.')
+                _('Value should be digits.'),
+                _('Ensure this field has no more than 4 characters.')
             ]
         }
     }
