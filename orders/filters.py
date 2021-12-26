@@ -19,29 +19,16 @@ class OrderFilter(filters.FilterSet):
         fields = ['customer', 'description', 'type', 'status', 'date']
 
     def customer_filter(self, queryset, _, value):
-        """
-        Filter order by customers name, phone number, or email.
-        """
-        return queryset.filter(
-            Q(customer__name__icontains=value) |
-            Q(customer__phone_number__icontains=value) |
-            Q(customer__email__icontains=value)
-        )
+        return queryset.filter(Q(customer__name__icontains=value) |
+                               Q(customer__phone_number__icontains=value) |
+                               Q(customer__email__icontains=value))
 
     def search_filter(self, queryset, _, value):
-        """
-        Filter orders by:
-          - Customer name, email, phone number
-          - Order description
-          - date
-        """
         try:
             pendulum.parse(value)
             return queryset.filter(created_at__date=value)
         except pendulum.exceptions.ParserError:
-            return queryset.filter(
-                Q(customer__name__icontains=value) |
-                Q(customer__phone_number__icontains=value) |
-                Q(customer__email__icontains=value) |
-                Q(description__icontains=value)
-            )
+            return queryset.filter(Q(customer__name__icontains=value) |
+                                   Q(customer__phone_number__icontains=value) |
+                                   Q(customer__email__icontains=value) |
+                                   Q(description__icontains=value))

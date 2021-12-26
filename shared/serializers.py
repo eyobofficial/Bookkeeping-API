@@ -11,8 +11,5 @@ class PhotoUploadSerializer(serializers.ModelSerializer):
         fields = ('id', 'photo_url', 'created_at')
 
     def get_photo_url(self, obj):
-        """
-        Returns the absolute URL path of the photo.
-        """
         return self.context['request'].build_absolute_uri(obj.photo.url)
 

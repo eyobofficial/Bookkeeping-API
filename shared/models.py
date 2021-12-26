@@ -9,9 +9,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 class PhotoUpload(models.Model):
-    """
-    User uploaded profile photo.
-    """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     photo = models.ImageField(upload_to='shared', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

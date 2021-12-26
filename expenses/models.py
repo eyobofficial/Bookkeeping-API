@@ -8,11 +8,9 @@ from business.models import BusinessAccount
 
 class Expense(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    business_account = models.ForeignKey(
-        BusinessAccount,
-        on_delete=models.CASCADE,
-        related_name='expenses'
-    )
+    business_account = models.ForeignKey(BusinessAccount,
+                                         on_delete=models.CASCADE,
+                                         related_name='expenses')
     title = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField()

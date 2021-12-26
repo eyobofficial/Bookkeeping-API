@@ -17,31 +17,18 @@ class SalesFilter(filters.FilterSet):
         fields = ['customer', 'date', 'search', 'modeOfPayment']
 
     def customer_filter(self, queryset, _, value):
-        """
-        Filter order by customers name, phone number, or email.
-        """
-        return queryset.filter(
-            Q(order__customer__name__icontains=value) |
-            Q(order__customer__phone_number__icontains=value) |
-            Q(order__customer__email__icontains=value)
-        )
+        return queryset.filter(Q(order__customer__name__icontains=value) |
+                               Q(order__customer__phone_number__icontains=value) |
+                               Q(order__customer__email__icontains=value))
 
     def search_filter(self, queryset, _, value):
-        """
-        Filter orders by:
-          - Customer name, email, phone number
-          - Order description
-          - date
-        """
         try:
             pendulum.parse(value)
             return queryset.filter(created_at__date=value)
         except pendulum.exceptions.ParserError:
-            return queryset.filter(
-                Q(mode_of_payment__iexact=value) |
-                Q(order__customer__name__icontains=value) |
-                Q(order__customer__phone_number__icontains=value) |
-                Q(order__customer__email__icontains=value) |
-                Q(order__description__icontains=value)
-            )
+            return queryset.filter(Q(mode_of_payment__iexact=value) |
+                                   Q(order__customer__name__icontains=value) |
+                                   Q(order__customer__phone_number__icontains=value) |
+                                   Q(order__customer__email__icontains=value) |
+                                   Q(order__description__icontains=value))
 

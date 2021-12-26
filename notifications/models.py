@@ -7,9 +7,6 @@ from business.models import BusinessAccount
 
 
 class Notification(models.Model):
-    """
-    Notifications directed to a business account.
-    """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     notification_type = models.CharField(
         max_length=255,

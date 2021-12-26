@@ -74,7 +74,7 @@ class Profile(models.Model):
     profile_photo = models.OneToOneField(PhotoUpload,
                                          null=True, blank=True,
                                          related_name='profile',
-                                         on_delete=models.CASCADE)
+                                         on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
     class Meta:
