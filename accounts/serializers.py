@@ -386,8 +386,8 @@ class PinResetConfirmSerializer(serializers.Serializer):
 class UserBusinessAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessAccount
-        fields = ('id', 'name', 'business_type', 'currency', 'address', 'city',
-                  'country', 'postal_code', 'email', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'business_type', 'currency', 'address', 'city', 'country',
+                  'postal_code', 'email', 'photo', 'created_at', 'updated_at')
         extra_kwargs = {
             # Cannot be on the model since we already have null city at this point.
             'city': {'required': True},
