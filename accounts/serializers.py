@@ -27,15 +27,8 @@ User = get_user_model()
 
 
 class LoginSerializer(serializers.Serializer):
-    """
-    Custom serializer to log users with phone number or email
-    and password.
-    """
     username = serializers.CharField(help_text='Phone number or email')
-    password = serializers.CharField(
-        write_only=True,
-        style={'input_type': 'password'}
-    )
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     def validate(self, validated_data):
         username = validated_data.get('username')
@@ -52,9 +45,6 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ValidEmailSerialzier(serializers.Serializer):
-    """
-    Check email address for valid email format and non-duplication.
-    """
     email = serializers.EmailField()
 
     def validate_email(self, value):
@@ -65,9 +55,6 @@ class ValidEmailSerialzier(serializers.Serializer):
 
 
 class ValidPhoneNumberSerialzier(serializers.Serializer):
-    """
-    Check phone number for valid phone number format and non-duplication.
-    """
     phone_number = CustomPhoneNumberField()
 
     def validate_phone_number(self, value):
@@ -78,9 +65,6 @@ class ValidPhoneNumberSerialzier(serializers.Serializer):
 
 
 class ValidPhoneNumberConfirmSerialzier(serializers.Serializer):
-    """
-    Check phone number for valid phone number format and non-duplication.
-    """
     phone_number = CustomPhoneNumberField()
     otp = serializers.CharField(max_length=6)
 
@@ -96,10 +80,7 @@ class ValidPhoneNumberConfirmSerialzier(serializers.Serializer):
 
         try:
             twilio_service = TwilioService.objects.get(phone_number=phone_number)
-            client = TwilioTokenService(
-                to=phone_number,
-                service_id=twilio_service.service_id
-            )
+            client = TwilioTokenService(to=phone_number, service_id=twilio_service.service_id)
             if client.check_verification(code=otp):
                 return validated_data
             raise WrongOTPException()
@@ -108,17 +89,12 @@ class ValidPhoneNumberConfirmSerialzier(serializers.Serializer):
 
 
 class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
-    """
-    Serializer for the user profile model.
-    """
     profile_photo = PhotoUploadField(required=False)
 
     class Meta:
         model = Profile
-        fields = (
-            'first_name', 'last_name', 'date_of_birth', 'address', 'city',
-            'country', 'postal_code', 'profile_photo', 'updated_at'
-        )
+        fields = ('first_name', 'last_name', 'date_of_birth', 'address', 'city', 'country',
+                  'postal_code', 'profile_photo', 'updated_at')
         ref_name = 'Profile'
 
     def update(self, instance, validated_data):
@@ -140,9 +116,6 @@ class ProfileSerializer(CountryFieldMixin, serializers.ModelSerializer):
 
 
 class SettingSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the user setting model.
-    """
     font_size = serializers.IntegerField(min_value=1, max_value=50, default=11)
     terms_and_condition = serializers.NullBooleanField(default=None)
 
@@ -153,30 +126,20 @@ class SettingSerializer(serializers.ModelSerializer):
 
 
 class TokenResponseSerializer(serializers.Serializer):
-    """
-    A read-only representation of the token response for including
-    in the API documentation.
-    """
     access = serializers.ReadOnlyField()
     refresh = serializers.ReadOnlyField()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """
-    Serializer for registrating new bussiness account users.
-    """
     first_name = serializers.CharField(max_length=100, write_only=True, required=False)
     last_name = serializers.CharField(max_length=100, write_only=True, required=False)
     pin = serializers.CharField(write_only=True,
                                 min_length=4, max_length=4,
                                 validators=[is_digit],
                                 style={'input_type': 'password'})
-    phone_number = CustomPhoneNumberField(
-        required=True,
-        error_messages={
-            'invalid': _('Enter a valid phone number.')
-        }
-    )
+    phone_number = CustomPhoneNumberField(required=True,
+                                          error_messages={
+                                              'invalid': _('Enter a valid phone number.')})
     is_active = serializers.BooleanField(read_only=True)
     tokens = serializers.SerializerMethodField()
     profile = ProfileSerializer(read_only=True)
@@ -192,17 +155,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate_email(self, value):
-        """
-        Convert blank values to None values.
-        """
         if value and value.strip() == '':
             return None
         return value
 
     def validate_phone_number(self, value):
-        """
-        Validate phone number is unique.
-        """
         if User.objects.filter(phone_number=value).exists():
             err_message = _('user with this phone number already exists.')
             raise serializers.ValidationError(err_message)
@@ -210,10 +167,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def get_tokens(self, obj):
         jwt = RefreshToken.for_user(obj)
-        return {
-            'refresh': str(jwt),
-            'access': str(jwt.access_token)
-        }
+        return {'refresh': str(jwt), 'access': str(jwt.access_token)}
 
     def create(self, validated_data):
         # Required fields
@@ -265,31 +219,21 @@ class PartnerRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserResponseSerializer(UserRegistrationSerializer):
-    """
-    Read-only representation of the `User` model in a successful response.
-    """
     tokens = TokenResponseSerializer(read_only=True)
     profile = ProfileSerializer(read_only=True)
     settings = SettingSerializer(read_only=True)
 
     class Meta:
         model = User
-        fields = (
-            'id', 'phone_number', 'email', 'is_active', 'tokens',
-            'profile', 'settings'
-        )
+        fields = ('id', 'phone_number', 'email', 'is_active', 'tokens', 'profile', 'settings')
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
-    profile = ProfileSerializer(
-        read_only=True,
-        help_text=_('A read-only representation of the user profile.')
-    )
-    settings = SettingSerializer(
-        read_only=True,
-        help_text=_('A read-only representation of the user profile.')
-    )
+    profile = ProfileSerializer(read_only=True,
+                                help_text=_('A read-only representation of the user profile.'))
+    settings = SettingSerializer(read_only=True,
+                                 help_text=_('A read-only representation of the user profile.'))
 
     class Meta:
         model = User
@@ -297,9 +241,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ('phone_number', )
 
     def validate_email(self, value):
-        """
-        Check if email is unique or raise `409 Conflict` error.
-        """
         queryset = User.objects.filter(email=value)
         if value and queryset.exists():
             raise NonUniqueEmailException()
@@ -307,14 +248,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class PasswordChangeSerializer(serializers.Serializer):
-    current_password = serializers.CharField(
-        max_length=120, write_only=True,
-        style={'input_type': 'password'}
-    )
-    new_password = serializers.CharField(
-        max_length=120, write_only=True,
-        style={'input_type': 'password'}
-    )
+    current_password = serializers.CharField(max_length=120, write_only=True,
+                                             style={'input_type': 'password'})
+    new_password = serializers.CharField(max_length=120, write_only=True,
+                                         style={'input_type': 'password'})
 
     def validate_current_password(self, value, *args, **kwargs):
         user = self.context.get('user')
@@ -366,12 +303,6 @@ class PinChangeSerializer(serializers.Serializer):
 
 
 class TokenVerifySerializer(serializers.Serializer):
-    """
-    Serializer for verifying access tokens.
-
-    This serializer is adapation of the `TokenVerifySerializer` from
-    the `django-rest-simplejwt` library.
-    """
     token = serializers.CharField()
 
     def validate(self, attrs):
@@ -383,7 +314,6 @@ class PasswordResetSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
 
     def validate_phone_number(self, value):
-        # Make sure account exists
         if not User.objects.filter(phone_number=value).exists():
             raise AccountNotRegisteredException()
         return value
@@ -393,7 +323,6 @@ class PinResetSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
 
     def validate_phone_number(self, value):
-        # Make sure account exists
         if not User.objects.filter(phone_number=value).exists():
             raise AccountNotRegisteredException()
         return value
@@ -417,10 +346,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         try:
             twilio_service = TwilioService.objects.get(phone_number=phone_number)
-            client = TwilioTokenService(
-                to=phone_number,
-                service_id=twilio_service.service_id
-            )
+            client = TwilioTokenService(to=phone_number, service_id=twilio_service.service_id)
             if client.check_verification(code=otp):
                 return validated_data
             raise WrongOTPException()
@@ -431,7 +357,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class PinResetConfirmSerializer(serializers.Serializer):
     phone_number = CustomPhoneNumberField()
     otp = serializers.CharField(max_length=6)
-    new_pin = serializers.CharField(max_length=4, )
+    new_pin = serializers.CharField(max_length=4, min_length=4)
 
     def validate_new_pin(self, value, *args, **kwargs):
         if not value.isdigit():
@@ -454,16 +380,10 @@ class PinResetConfirmSerializer(serializers.Serializer):
 
 
 class UserBusinessAccountSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the `BusinessAccount
-    """
-
     class Meta:
         model = BusinessAccount
-        fields = (
-            'id', 'name', 'business_type', 'currency', 'address', 'city',
-            'country', 'postal_code', 'email', 'created_at', 'updated_at'
-        )
+        fields = ('id', 'name', 'business_type', 'currency', 'address', 'city',
+                  'country', 'postal_code', 'email', 'created_at', 'updated_at')
         extra_kwargs = {
             # Cannot be on the model since we already have null city at this point.
             'city': {'required': True},

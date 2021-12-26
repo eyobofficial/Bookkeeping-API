@@ -6,8 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework import status, permissions
-from rest_framework.generics import GenericAPIView, CreateAPIView, \
-    RetrieveUpdateAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -25,8 +24,8 @@ from .serializers import UserRegistrationSerializer, LoginSerializer, \
     ProfileSerializer, SettingSerializer, UserBusinessAccountSerializer, \
     PartnerRegistrationSerializer, PinResetSerializer, PinResetConfirmSerializer, \
     PinChangeSerializer
-from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, \
-    IsSettingOwner, IsBusinessOwner
+from .permissions import IsAccountOwner, IsAccountActive, IsProfileOwner, IsSettingOwner, \
+    IsBusinessOwner
 from .models import Profile, Setting
 
 

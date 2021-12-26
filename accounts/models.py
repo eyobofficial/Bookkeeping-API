@@ -15,9 +15,6 @@ from .managers import CustomUserManager
 
 
 class CustomUser(AbstractUser):
-    """
-    Default custom user.
-    """
     # User Types
     BUSINESS = 1
     PARTNER = 2
@@ -53,7 +50,6 @@ class CustomUser(AbstractUser):
 
     @property
     def full_name(self):
-        """Getter property for getting a full name."""
         return f'{self.profile.first_name} {self.profile.last_name}'
 
     def check_password(self, raw_password, *args, **kwargs):
@@ -66,9 +62,6 @@ class CustomUser(AbstractUser):
 
 
 class Profile(models.Model):
-    """
-    User profile
-    """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
@@ -78,12 +71,10 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     country = CountryField(blank=True, null=True)
     postal_code = models.CharField(max_length=10, blank=True, null=True)
-    profile_photo = models.OneToOneField(
-        PhotoUpload,
-        null=True, blank=True,
-        related_name='profile',
-        on_delete=models.CASCADE
-    )
+    profile_photo = models.OneToOneField(PhotoUpload,
+                                         null=True, blank=True,
+                                         related_name='profile',
+                                         on_delete=models.CASCADE)
     updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
     class Meta:
@@ -95,26 +86,15 @@ class Profile(models.Model):
 
     @property
     def fullname(self):
-        """
-        Returns user full name.
-        """
         return f'{self.first_name} {self.last_name}'
 
 
 class Setting(models.Model):
-    """
-    User specific settings, configurations, and preferences.
-    """
     id = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    user = models.OneToOneField(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='settings'
-    )
-    font_size = models.PositiveSmallIntegerField(
-        default=11,
-        help_text='Font size in pixels.'
-    )
+    user = models.OneToOneField(CustomUser,
+                                on_delete=models.CASCADE,
+                                related_name='settings')
+    font_size = models.PositiveSmallIntegerField(default=11, help_text='Font size in pixels.')
     terms_and_condition = models.BooleanField(default=False)
     updated_at = models.DateTimeField(_('last updated date'), auto_now=True)
 
@@ -127,9 +107,6 @@ class Setting(models.Model):
 
 
 def get_otp_expiration():
-    """
-    Returns the OTP code expiration date & time.
-    """
     EXPIRATION_DURATION = 30  # 30 minutes
     delta = timedelta(minutes=EXPIRATION_DURATION)
     return timezone.now() + delta
