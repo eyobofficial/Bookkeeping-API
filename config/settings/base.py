@@ -150,7 +150,7 @@ DEFAULT_ADMIN_LAST_NAME = config('ADMIN_LAST_NAME', 'User')
 
 
 # Project Name
-PROJECT_NAME = 'Dukka API'
+PROJECT_NAME = 'Bookkeeping API'
 
 
 # Django Phonenumber Field

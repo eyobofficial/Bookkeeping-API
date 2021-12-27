@@ -1,4 +1,4 @@
-# Dukka Inc. REST API
+# Bookkeeping REST API
 
 ## Prerequisites
 * [Python 3.8](https://www.python.org/downloads/)
